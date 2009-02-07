@@ -22,20 +22,20 @@
 
 \usage{
 arvi(red, nir, blue)
-wdvi(red, nir, slslope = 1)
-sr(red, nir)
-savi(red, nir)
-pvi(red, nir)
-ndvi(red, nir)
-msavi(red, nir)
-msavi2(red, nir)
-ipvi(red, nir)
+dvi(red, nir)
+evi(blue, red, nir)
 gvi(blue, green, red, nir, ch5, ch7)
 gemi(red, nir)
 gari(red, nir, blue, green)
-evi(blue, red, nir)
-dvi(red, nir)
+ipvi(red, nir)
+msavi(red, nir)
+msavi2(red, nir)
+ndvi(red, nir)
+pvi(red, nir)
+sr(red, nir)
+savi(red, nir)
 vari(blue, green, red)
+wdvi(red, nir, slslope = 1)
 }
 
 
@@ -44,8 +44,8 @@ vari(blue, green, red)
   \item{nir}{nir channel (band) data}
   \item{blue}{blue channel (band) data}
   \item{green}{green channel (band) data}
-  \item{ch5}{Channel5 channel (band) data}
-  \item{ch7}{Channel7 channel (band) data}
+  \item{ch5}{fifth channel (band) data}
+  \item{ch7}{seventh channel (band) data}
   \item{slslope}{value of soil line slope}  
 }
 
