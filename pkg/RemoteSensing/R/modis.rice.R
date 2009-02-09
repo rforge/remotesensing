@@ -31,6 +31,11 @@ modisFilesClean <- function(path) {
 	m <- cbind(m, f)
 	colnames(m) <- c('date', 'zone', 'band', 'filename')
 	m <- as.data.frame(m)
+	m$band <- strsplit(as.vector(m$band), '\\.grd' )
+	
+	m$year <- as.integer(substr(as.vector(m$date), 2, 5))
+	m$doy <- as.integer(substr(as.vector(m$date), 6, 8))
+	m$caldate <- as.Date(m$doy, origin=paste(m$year-1, "-12-31", sep=''))
 	return(m)
 }
 
@@ -44,6 +49,13 @@ modis.sqa500a_adj <- function (pixel) {
     return(pixel)
 }
 
+
+watermask <- function(pixel) {
+	res <- modis.sqa500c(pixel)
+	res[res < 1 | res > 5] <- 0
+	res[res > 0] <- 1
+	return(res)
+}
 
 
 modisClean <- function(inpath, outpath, overwrite=TRUE) {
@@ -63,11 +75,10 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 			b <- subset(mm, mm$date == d & mm$band != "sta")
 
 			rq <- rasterFromFile(qfile, TRUE)
-			# mask <- coulds | snow 
+
 			# changed cloud mask from modis.sqa500a_adj to modis.sqa500f
-			mask <- calc(rq, modis.sqa500f) | calc(rq, modis.sqa500h)
 			# mask <- coulds | snow | water
-#			mask <- calc(rq, modis.sqa500a) | calc(rq, modis.sqa500h) | calc(rq, watermask)
+			mask <- calc(rq, modis.sqa500a) | calc(rq, modis.sqa500h) | calc(rq, watermask)
 
 			fname1 <- paste(outpath, d, '_', z, '_', sep='')
 			
@@ -100,6 +111,8 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 flooded <- function(lswi, ndvi, evi) { 
 	return( (lswi+0.05 >= evi) | (lswi+0.05 >= ndvi) )
 }
+
+
 
 
 vegIndices <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
@@ -142,25 +155,69 @@ vegIndices <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 }
 
 
+mysum <- function(x){sum(x, na.rm=T)}
+sumNotNA <- function(x){sum(!is.na(x))}
 
-persistentwater <- function(ndvi, lswi){
- 	return( (ndvi < 0.10) & (ndvi < lswi) )
+mymean <- function(x) {
+	sumv <- mysum(x)
+	sumnotna <- sumNotNA(x)
+	return(sumv/sumnotna)
+}
+
+mymax <- function(x) {
+	x <- na.omit(x)
+	if (length(x) > 0) {return(max(x)) 
+	} else { return(NA) }
 }
 
 
-watermask <- function(pixel) {
-	res <- modis.sqa500c(pixel)
-	res[res < 1 | res > 5] <- NA
-	res[!is.na(res)] <- 1
-	return(res)
+forest <- function(ndvi){ sum(ndvi, na.rm=T) > 14 }
+shrub <- function(lswi){ sum(lswi > 0.1, na.rm=T) > 1 }
+
+bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 1 }
+
+
+timeSeries <- function(inpath, outpath) {
+	m <- modisFilesClean(inpath)
+	m$filename <- paste(inpath, m$filename, sep="")
+	dir.create(outpath, showWarnings = FALSE)
+	zones <- as.vector(unique(m$zone))
+	for (z in zones) {
+		mm <- subset(m, m$zone==z)
+		years <- as.vector(unique(mm$year))
+		for (y in years) {
+			mmm <- subset(mm, mm$year == y)
+			dates <- as.vector(unique(mmm$date))
+			dates <- sort(dates)
+			if (length(dates) < 46) { 
+				if (length(dates) < 43) { 
+					stop(paste('expected 46 files, found:', length(dates))) 
+				}
+				warning(paste('expected 46 files, found:', length(dates))) 
+			}
+			ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi']) )
+			evistk <- stack( as.vector( mmm$filename[mmm$band=='evi']) )
+			lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi']) )
+			floodstk <- stack( as.vector( mmm$filename[mmm$band=='flood']) )
+			
+
+			flooded <- mCalc(floodstk, fun=mysum,  filename="")
+			permanent <- flooded > 30
+			flooded[flooded > 0] <- 1
+			
+			forest <- mCalc(ndvistk, fun=forest)
+			shrub <- mCalc(lswistk, fun=shrub)
+			bare <- mCalc(ndvistk, fun=bare)
+			shrub  <- shrub & (forest[forest==0])
+			
+			notrice <- max(permanent * forest * shrub)
+			perhapsrice <- flooded[notrice==0]
+			
+			perhapsrice <- setFilename(perhapsrice, paste(outpath, 'perhapsrice.grd', sep=''))
+			
+		}
+	}
 }
-
-
-
-forest <- function(ndvi) {
-	result <- (ndvi > 0.7)
-	return(result)
-}
-	
+			
 
 
