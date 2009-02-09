@@ -1,4 +1,4 @@
-
+# snow index
 
 
 ndsi <- function (green, nir) {

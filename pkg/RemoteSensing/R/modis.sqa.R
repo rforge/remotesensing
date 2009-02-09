@@ -99,7 +99,7 @@ modis.sqa500h<-function(pixel,bandno)
  #MOD35 snow/ice flag unsigned int bits [12]
 {
 	#MOD35 snow/ice flag unsigned int bits [12]
-	#0 -> class 0: Yes
+	#0 -> class 0: Yes (snow)
 	#1 -> class 1: No
 	pixel <- bitShiftR(pixel,12)
 	pixel <- bitAnd(pixel,1)
