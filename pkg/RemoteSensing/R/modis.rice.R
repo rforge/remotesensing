@@ -131,24 +131,24 @@ vegIndices <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 				if (b$band[i] == 'b01') {
 					red <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM )
 				} else if (b$band[i] == 'b02') {
-					nir2 <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM )
+					nir <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM )
 				} else if (b$band[i] == 'b03') {
 					blue <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b04') {
 					green <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b05') {
-					#nir5 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
+					#swir1 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else if (b$band[i] == 'b06') {
-					swir6 <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
+					swir2 <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b07') {
-					#swir7 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
+					#swir3<- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else {
 					stop(paste('unknown band:', b$band[i]))
 				}
 			}
-			NDVI <- overlay(red, nir2, fun=ndvi, filename=paste(fname1, 'ndvi.grd', sep=''), overwrite=overwrite)
-			LSWI <- overlay(nir2, swir6, fun=lswi,  filename=paste(fname1, 'lswi.grd', sep=''), overwrite=overwrite)
-			EVI <- overlay(blue, red, nir2, fun=evi, filename=paste(fname1, 'evi.grd', sep=''), overwrite=overwrite)
+			NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname1, 'ndvi.grd', sep=''), overwrite=overwrite)
+			LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname1, 'lswi.grd', sep=''), overwrite=overwrite)
+			EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname1, 'evi.grd', sep=''), overwrite=overwrite)
 			flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname1, 'flooded.grd', sep=''), overwrite=overwrite,  asInt=TRUE)
 		}
 	}
