@@ -96,7 +96,7 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 				if (maxValue(r) > 32767) {
 					stop(paste('maxvalue too high:', maxValue(r)))
 				}
-				r <- setDatatype(r, datatype="integer", datasize=4)
+				r <- setDatatype(r, datatype="INT4S")
 				r <- setFilename(r,  paste(fname1, b$band[i], '_clean.grd', sep=''))
 				r <- writeRaster(r)
 			}

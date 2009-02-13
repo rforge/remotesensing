@@ -1,9 +1,9 @@
 \name{albedo}
 
-\alias{albedo.aster}
-\alias{albedo.landsat}
-\alias{albedo.modis}
-\alias{albedo.noaa}
+\alias{albedoAster}
+\alias{albedoLandsat}
+\alias{albedoModis}
+\alias{albedoAvhrr}
 
 
 \title{ Albedo }
@@ -12,29 +12,27 @@
 }
 
 \usage{
-albedo.aster(greenchan, nirchan, swirchan2, swirchan3, swirchan5, swirchan6) 
-albedo.landsat(bluechan, greenchan, redchan, nirchan, chan5, chan7)
-albedo.modis(redchan, nirchan, chan3, chan4, chan5, chan6, chan7) 
-albedo.noaa(redchan, nirchan)
+albedoAster(green, nir, swir2, swir3, swir5, swir6) 
+albedoLandsat(blue, green, red, nir, chan5, chan7)
+albedoModis(red, nir, blue, green, swir1, swir2, swir3) 
+albedoAvhrr(red, nir)
 }
 
 
 \arguments{
-  \item{redchan}{ ~~Describe \code{redchan} here~~ }
-  \item{nirchan}{ ~~Describe \code{nirchan} here~~ }
-  \item{bluechan}{ ~~Describe \code{bluechan} here~~ }
-  \item{greenchan}{ ~~Describe \code{bluechan} here~~ }
-  \item{swirchan2}{ ~~Describe \code{chan} here~~ }
-  \item{swirchan3}{ ~~Describe \code{chan} here~~ }
-  \item{swirchan5}{ ~~Describe \code{han} here~~ }
-  \item{swirchan6}{ ~~Describe \code{chan} here~~ }  
-  \item{chan3}{ ~~Describe \code{chan3} here~~ }
-  \item{chan4}{ ~~Describe \code{chan4} here~~ }
+  \item{red}{ red wavelength channel (band) }
+  \item{nir}{ near infra-red wavelength channel (band) }
+  \item{blue}{ blue wavelength channel (band) }
+  \item{green}{ green wavelength channel (band)}
+  \item{swir1}{ ~~Describe \code{chan} here~~ }  
+  \item{swir2}{ ~~Describe \code{chan} here~~ }
+  \item{swir3}{ ~~Describe \code{chan} here~~ }
+  \item{swir5}{ ~~Describe \code{han} here~~ }
+  \item{swir6}{ ~~Describe \code{chan} here~~ }  
   \item{chan5}{ ~~Describe \code{chan5} here~~ }
-  \item{chan6}{ ~~Describe \code{chan6} here~~ }
   \item{chan7}{ ~~Describe \code{chan7} here~~ }
-
 }
+
 \details{
   ~~ If necessary, more details than the description above ~~
 }

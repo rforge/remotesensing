@@ -3,7 +3,7 @@ Type: Package
 Title: Remote Sensing 
 Version: 0.1.4
 Date: 7-Feb-2009
-Depends: bitops, raster
+Depends: bitops, raster, methods, 
 Author: Yann Chemin and Robert J. Hijmans
 Maintainer: <yann.chemin@gmail.com>
 Description: Sattelite image analysis algorithms

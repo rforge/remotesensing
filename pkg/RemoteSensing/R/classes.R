@@ -1,32 +1,60 @@
 
-
-setClass('ModisLayer',
+setClass('SatelliteImage', contains='VIRTUAL',
 	representation (
+		platform = 'character',
+		sensor = 'character',
+		date = 'character',
+		time = 'character',
 		zone = 'character',
-		year = 'integer',
-		doy = 'integer',
-		date = 'Date',
-		red = 'RasterLayer',
-		nir = 'RasterLayer',
-		blue = 'RasterLayer',
-		green = 'RasterLayer',
-		swir1 = 'RasterLayer',		
-		swir2 = 'RasterLayer',
-		swir3 = 'RasterLayer'
+		image = 'RasterStack'
+	),
+	prototype (
+	)
+)
+
+
+setClass('ModisImage', contains='SatelliteImage',
+	representation (
+		
 	),
 )
 
-setClass('ModisStack',
+
+setClass('AsterImage', contains='SatelliteImage',
 	representation (
-		layers = 'list',
-		nlayers = 'integer',
+		
+	),
+)
+
+
+setClass('ModisTimeSeries',
+	representation (
+		images = 'list',
+		dates = 'vector',
 		startdate = 'Date',
 		enddate = 'Date'
 	),
 	prototype (
-		layers = list(),
-		nlayers = as.integer(0)
+		images = list()
 	),
 )
+
+
+
+setClass('LandsatImage', 
+	contains=c('SatelliteImage', 'VIRTUAL'),
+	representation (
+		raster = 'RasterLayer'
+	
+	),
+)
+
+
+setClass('LandsatTM', contains='LandsatImage',
+	representation (
+	
+	),
+)
+
 
 
