@@ -6,11 +6,6 @@
 \alias{modis.qc250d} 
 \alias{modis.qc250e}
 \alias{modis.qc250f}
-\alias{modis.qc500a}
-\alias{modis.qc500c}
-\alias{modis.qc500d}
-\alias{modis.qc500e}
-
 
 \title{ MODIS Quality Assessment Extractor }
 \description{ Makes Human-readable images of Quality Assessment binary bits from MOD09AQ products.
@@ -20,16 +15,10 @@
 
 modis.qc250a(pixel)
 modis.qc250b(pixel)
-modis.qc250c(pixel,bandno) 
+modis.qc250c(pixel, bandno) 
 modis.qc250d(pixel) 
 modis.qc250e(pixel)
 modis.qc250f(pixel)
-modis.qc500a(pixel) 
-modis.qc500c(pixel,bandno)
-modis.qc500d(pixel)
-modis.qc500e(pixel)
-
-
 
 }
 
@@ -41,17 +30,13 @@ modis.qc500e(pixel)
 }
 
 \details{
-modis.qc250a returns Cloud State
-modis.qc250b returns Cloud shadow
-modis.qc250c returns LAND/WATER FLAG
-modis.qc250d returns AEROSOL QUANTITY
-modis.qc250e returns CIRRUS DETECTED
-modis.qc250f returns Internal Cloud Algorithm Flag
-modis.qc500a returns Cloud State
-modis.qc500c returns LAND/WATER FLAG
-modis.qc500d returns AEROSOL QUANTITY
-modis.qc500e returns CIRRUS DETECTED
-}
+ \item{modis.qc250a} returns MODLAND QA bits
+ \item{modis.qc250b} returns Cloud State
+ \item{modis.qc250c} returns BAND 1/2 data quality
+ \item{modis.qc250d} returns Atmospheric Correction performed
+ \item{modis.qc250e} returns Adjacency Correction performed
+ \item{modis.qc250f} returns Different orbit from 500m
+ }
 \value{
   
 }
