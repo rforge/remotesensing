@@ -1,16 +1,71 @@
 
-setClass('SatelliteImage', contains='VIRTUAL',
+setClass('SatelliteImage',
 	representation (
-		platform = 'character',
+		spacecraft = 'character',
 		sensor = 'character',
-		date = 'character',
-		time = 'character',
+		acquisition_date = 'character',
+		acquisition_time = 'character',
+		sun_elevation = 'numeric',
+		sun_azimuth = 'numeric',
 		zone = 'character',
-		image = 'RasterStack'
+		band_filenames = 'vector',
+		meta_filename = 'vector'
+		bands = 'RasterStack'
 	),
 	prototype (
 	)
 )
+
+
+
+setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL', 'RasterStack')
+	representation (
+		cpf_file_name 	= 'character'
+		product_creation_date = 'Date',
+		lmax 			= 'vector',
+		lmin 			= 'vector',
+		qcalmax 		= 'vector',
+		qcalmin 		= 'vector',
+		
+#		gain 			= 'vector',
+#		bias 			= 'vector',
+		
+#		wrs_path 			= 'integer',
+#		starting_row 			= 'integer',
+#		ending_row 			= 'integer',
+#		nbands 				= 'integer',
+#		bands				= 'vector',
+		
+#		raster 				= 'RasterLayer',
+		
+	),
+	prototype (
+		
+	),
+)
+
+setClass('LandsatMSS', contains='LandsatImage',
+	representation (
+
+	),
+)
+
+
+setClass('LandsatTM', contains='LandsatImage',
+	representation (
+		thermalband = 'RasterLayer'
+	
+	),
+)
+
+setClass('LandsatETMp', contains='LandsatImage',
+	representation (
+		thermalbands = 'RasterStack'
+		panchromatic = 'RasterLayer'
+	),
+)
+
+
 
 
 setClass('ModisImage', contains='SatelliteImage',
@@ -38,45 +93,5 @@ setClass('ModisTimeSeries',
 		images = list()
 	),
 )
-
-
-
-setClass('LandsatImage',  contains='SatelliteImage',
-	representation (
-		raster 				= 'RasterLayer',
-		spacecraft_id 			= 'character',
-		sensor_id 			= 'character',
-		product_creation_date 	= 'Date',
-		acquisition_date 		= 'Date',
-		doy 					= 'integer',
-		sun_elevation 			= 'numeric',
-		sun_azimuth 			= 'numeric',
-		wrs_path 			= 'integer',
-		starting_row 			= 'integer',
-		ending_row 			= 'integer',
-		band_combination 		= 'character',
-		nbands 				= 'integer',
-		bands				= 'vector',
-		band_filenames		= 'vector',
-		lmax 				= 'vector',
-		lmin 					= 'vector',
-		qcalmax 				= 'vector',
-		qcalmin 				= 'vector',
-		gain 				= 'vector',
-		bias 				= 'vector',
-		cpf_file_name 			= 'character'
-	),
-	prototype (
-		
-	),
-)
-
-
-setClass('LandsatTM', contains='LandsatImage',
-	representation (
-	
-	),
-)
-
 
 

@@ -35,19 +35,20 @@ readLandsatCPF <- function(filename) {
 }
 
 #parse Landsat metadata file and extract needed parameters
-getLandsatParameters <- function(filename) {
+landsat <- function(filename) {
+
 	pars <- readMetadata(filename)
 	
 	spacecraft_id   		<- pars[pars[,1]=="SPACECRAFT_ID",2]
-	sensor_id        	        <-  pars[pars[,1]=="SENSOR_ID",2]
-	acquisition_date	        <-  as.Date(pars[pars[,1]=="ACQUISITION_DATE",2])
-	product_creation_date	<-  as.Date(pars[pars[,1]=="PRODUCT_CREATION_TIME",2])
-	doy                 			<- as.integer(format(acquisition_date,"%j"))
+	sensor_id        	    <-  pars[pars[,1]=="SENSOR_ID",2]
+	acquisition_date	    <-  pars[pars[,1]=="ACQUISITION_DATE",2]
+	product_creation_date	<-  pars[pars[,1]=="PRODUCT_CREATION_TIME",2]
+	doy                 	<- as.integer(format(acquisition_date,"%j"))
 	sun_elevation 			<- as.numeric(pars[pars[,1]=="SUN_ELEVATION",2])
 	sun_azimuth 			<- as.numeric(pars[pars[,1]=="SUN_AZIMUTH",2])
 	bandcomb       			<- pars[pars[,1]=="BAND_COMBINATION",2]
 	cpf_file_name			<- pars[pars[,1]=="CPF_FILE_NAME",2]
-	n_bands              		<- as.integer(nchar(bandcomb))
+	n_bands              	<- as.integer(nchar(bandcomb))
 	wrs_path				<- as.integer(pars[pars[,1]=="WRS_PATH",2])
 	starting_row			<- as.integer(pars[pars[,1]=="STARTING_ROW",2])
 	ending_row			<- as.integer(pars[pars[,1]=="ENDING_ROW",2])
@@ -65,8 +66,6 @@ getLandsatParameters <- function(filename) {
 	lmin       <- rep(NA, n_bands)
 	qcalmax <- rep(NA, n_bands)
 	qcalmin  <- rep(NA, n_bands)
-	gain       <- rep(NA, n_bands)
-	bias       <- rep(NA, n_bands)
 	band_filenames  <- rep(NA, n_bands)
 	
 	names(lmax) 	  <- bands
@@ -87,8 +86,11 @@ getLandsatParameters <- function(filename) {
 		band_filenames[i]  <- pars[pars[,1]==paste( bands[i], "_FILE_NAME", sep=""),2]
 	}
 	
-	Landsat <- new ("LandsatImage",
-		spacecraft_id   		= spacecraft_id,
+	
+	if (sensor_id == "ETM+") {
+		img <- new("LandsatETMp")
+
+		img@spacecraft_id   		= spacecraft_id,
 		sensor_id        	        =  sensor_id,
 		product_creation_date	=  product_creation_date,
 		acquisition_date	        =  acquisition_date,
@@ -109,8 +111,9 @@ getLandsatParameters <- function(filename) {
 		qcalmin				= qcalmin,
 		gain					= gain,
 		bias					= bias
-		
-	)
+
+		bands <- stack( selected_bandfiles )
+
 	#cpf <- readLandsatCPF(filename)
 	#acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2]
 	
