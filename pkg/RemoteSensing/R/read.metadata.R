@@ -68,13 +68,13 @@ landsat <- function(filename) {
 	qcalmin  <- rep(NA, n_bands)
 	band_filenames  <- rep(NA, n_bands)
 	
-	names(lmax) 	  <- bands
-	names(lmin) 	  <- bands
+	names(lmax) <- bands
+	names(lmin) <- bands
 	names(qcalmax) <- bands
 	names(qcalmin)  <- bands
-	names(gain)  	   <- bands
-	names(bias) 	   <- bands
-	names(band_filenames)  <- bands
+	names(gain) <- bands
+	names(bias) <- bands
+	names(band_filenames) <- bands
 	
 	
 	
@@ -87,37 +87,34 @@ landsat <- function(filename) {
 	}
 	
 	
-	if (sensor_id == "ETM+") {
+	if (sensor_id == "MSS") {
+		img <- new("LandsatMSS")
+	} else if (sensor_id == "TM") {
+		img <- new("LandsatTM")
+	} else if (sensor_id == "ETM+") {
 		img <- new("LandsatETMp")
+	}
 
-		img@spacecraft_id   		= spacecraft_id,
-		sensor_id        	        =  sensor_id,
-		product_creation_date	=  product_creation_date,
-		acquisition_date	        =  acquisition_date,
-		doy                 			= doy,
-		sun_elevation 			= sun_elevation,
-		sun_azimuth 			= sun_azimuth,
-		band_combination		= bandcomb,
-		cpf_file_name			= cpf_file_name,
-		nbands              		= n_bands,
-		bands 				= bands,
-		band_filenames 		= band_filenames,
-		wrs_path				= wrs_path,
-		starting_row			= starting_row,
-		ending_row			= ending_row,
-		lmax	     				= lmax,
-		lmin          			= lmin,
-		qcalmax				= qcalmax,
-		qcalmin				= qcalmin,
-		gain					= gain,
-		bias					= bias
+	img@spacecraft  		<- spacecraft_id
+	img@sensor       	    <-  sensor_id
+	img@product_creation_date	<-  product_creation_date
+	img@acquisition_date	<-  acquisition_date
+	img@sun_elevation 		<- sun_elevation
+	img@sun_azimuth 		<- sun_azimuth
+	img@cpf_file_name		<- cpf_file_name
+	img@band_filenames 		<- band_filenames
+	img@lmax	     		<- lmax
+	img@lmin          		<- lmin
+	img@qcalmax				<- qcalmax
+	img@qcalmin				<- qcalmin
 
-		bands <- stack( selected_bandfiles )
-
+	
+	bands <- stack( selected_bandfiles )
+	
 	#cpf <- readLandsatCPF(filename)
 	#acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2]
 	
-	return (Landsat)
+	return (img)
  }
  
  

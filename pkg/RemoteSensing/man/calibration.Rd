@@ -56,15 +56,15 @@ library(raster)
 library(RemoteSensing)
 
 #read Landsat metadata file and get parameters
-inifile<-"L71129046_04620080329_MTL.txt"
-LandsatImg <- getLandsatParameters(inifile)
+#metafile<-"L71129046_04620080329_MTL.txt"
+#LandsatImg <- landsat(metafile)
 
 #convert Band 1 DN to reflectance
-ref <- dn2ref (LandsatImg, 1) 
+#ref <- dn2ref (LandsatImg, 1) 
 
 #convert Band61 DN to temperature in kelvin
-b <- "BAND61"
-temp <- dn2temp(LandsatImg, b)
+#b <- "BAND61"
+#temp <- dn2temp(LandsatImg, b)
 }
 
 \keyword{spatial}

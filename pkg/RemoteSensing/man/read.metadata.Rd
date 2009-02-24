@@ -1,7 +1,7 @@
 \name{read.Metadata}
 \alias{readMetadata}
 \alias{readLandsatCPF}
-\alias{getLandsatParameters}
+\alias{landsat}
 
 \title{Read metadata}
 \description{
@@ -11,7 +11,7 @@
 \usage{
 readMetadata(filename)
 readLandsatCPF(filename)
-getLandsatParameters(filename) 
+landsat(filename) 
 }
 
 
@@ -27,9 +27,9 @@ getLandsatParameters(filename)
 \author{Alice Laborte}
 
 \examples{
-metafilename <- "L71129046_04620080329_MTL.txt"
-x <- readMetadata(metafilename)
-LandsatClass <- getLandsatParameters(metafilename)
+#metafilename <- "L71129046_04620080329_MTL.txt"
+#x <- readMetadata(metafilename)
+#LandsatClass <- landsat(metafilename)
 
 }
 
