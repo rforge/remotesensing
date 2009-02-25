@@ -27,13 +27,13 @@ dn2ref  <- function(SatImgObject, band, outfilename) {
 	names(ESUN)	<- SatImgObject@bands
 	radiance 		<- dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
 	doy                 	<- as.integer(format(SatImgObject@acquisition_date,"%j"))
-		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[band])
-	#reflectance <- calc(radiance, fun=rad2ref(radiance, doy, sun_elevation, ESUN[band]), filename = outfilename)
+	frad2ref 		<- function(rad) { rad2ref(radiance, doy, sun_elevation, ESUN[band]) }
+	reflectance 	<- calc(radiance, fun=frad2ref, filename = outfilename)
 	return(reflectance)
 }
 
 #Conversion of DN to temperature
-dn2temp <- function(SatImgObject, band) {
+dn2temp <- function(SatImgObject, band, outfilename) {
 	DN			<- rasterFromFile(x@band_filenames[band])
 	gain 		<- SatImgObject@gain[band]
 	bias 		<- SatImgObject@bias[band]
@@ -42,9 +42,8 @@ dn2temp <- function(SatImgObject, band) {
 	qcalmax 		<- SatImgObject@qcalmax[band]
 	qcalmin  		<-SatImgObject@qcalmin[band]
 	radiance 		<- dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
-	temp	 	<- rad2temp(radiance, SatImgObject)
-	temp	 	<- rad2temp(radiance, SatImgObject)
-	#temp <- calc(radiance, fun=rad2temp(radiance, SatImgObj), filename = outfilename)
+	frad2temp 	<- function(rad) { rad2temp(radiance, SatImgObject) }
+	temp 		<- calc(radiance, fun=frad2temp, filename = outfilename)
 	return(temp)
 }
 

@@ -59,7 +59,13 @@ landsat <- function(filename) {
 	qcalmin  <- rep(NA, n_bands)
 	band_filenames  <- rep(NA, n_bands)
 	
-	names(lmax) 	  <- bandn	names(lmin) 	  <- bandn	names(qcalmax) <- bandn	names(qcalmin)  <- bandn	names(band_filenames)  <- bandn	for (i in 1:n_bands) {
+	names(lmax) 	  <- bandn	
+	names(lmin) 	  <- bandn	
+	names(qcalmax) <- bandn	
+	names(qcalmin)  <- bandn	
+	names(band_filenames)  <- bandn	
+	
+	for (i in 1:n_bands) {
 		lmax[i]      <- as.numeric(pars[pars[,1]==paste("LMAX_", bandn[i], sep=""),2])
 		lmin[i]       <- as.numeric(pars[pars[,1]==paste("LMIN_", bandn[i], sep=""),2])
 		qcalmax[i] <- as.numeric(pars[pars[,1]==paste("QCALMAX_", bandn[i], sep=""),2])

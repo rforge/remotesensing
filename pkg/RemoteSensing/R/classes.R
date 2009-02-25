@@ -23,8 +23,15 @@ setClass('SatelliteImage',
 
 
 
-setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),	representation (
-		cpf_filename =  'character',		product_creation_date = 'character',		lmax = 'vector',		lmin 	= 'vector',		qcalmax = 'vector',		qcalmin = 'vector'	),
+setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),	
+	representation (
+		cpf_filename =  'character',		
+		product_creation_date = 'character',		
+		lmax = 'vector',		
+		lmin 	= 'vector',		
+		qcalmax = 'vector',		
+		qcalmin = 'vector'	
+	),
 	prototype (
 		
 	),
