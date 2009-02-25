@@ -76,8 +76,31 @@ landsat <- function(filename) {
 	cpf <- readLandsatCPF(sensor, cpf_filename)
 	acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2]
 	
-	if (sensor == "ETM+") {		img <- new("LandsatETMp")
-		img@spacecraft	   		<- spacecraft		img@sensor	        	        <-  sensor		img@product_creation_date	<-  product_creation_date		img@acquisition_date	        <-  acquisition_date		img@acquisition_time		<- acquisition_time		img@sun_elevation 		<- sun_elevation		img@sun_azimuth 			<- sun_azimuth		img@cpf_filename			<- cpf_filename		img@meta_filename		<- filename		img@band_filenames 		<- band_filenames		img@zone				<- zone		img@lmax	     			<- lmax		img@lmin          			<- lmin		img@qcalmax				<- qcalmax		img@qcalmin				<- qcalmin		#bands 					<- stackFromFiles( )		#thermalbands 			<- stack( selected_bandfiles )		#panchromatic 			<- stack( selected_bandfiles )	#	)	}	
+	if (sensor == "ETM+") {	
+		img <- new("LandsatETMp")
+	} else {
+		stop('not done yet')
+	}
+	
+		img@spacecraft	   		<- spacecraft
+		img@sensor	        	<-  sensor
+		img@product_creation_date	<-  product_creation_date
+		img@acquisition_date	<-  acquisition_date
+		img@acquisition_time	<- acquisition_time
+		img@sun_elevation 		<- sun_elevation		
+		img@sun_azimuth			<- sun_azimuth
+		img@cpf_filename		<- cpf_filename
+		img@meta_filename		<- filename
+		img@band_filenames 		<- band_filenames
+		img@zone				<- zone
+		img@lmax	     		<- lmax
+		img@lmin          		<- lmin
+		img@qcalmax				<- qcalmax
+		img@qcalmin				<- qcalmin
+		#bands 					<- stackFromFiles( )
+		#thermalbands 			<- stack( selected_bandfiles )	
+		#panchromatic 			<- stack( selected_bandfiles )	#	)	
+		
 	return (img)
  }
  
