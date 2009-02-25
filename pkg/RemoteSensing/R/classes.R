@@ -14,7 +14,7 @@ setClass('SatelliteImage',
 		sun_azimuth = 'numeric',
 		zone = 'character',
 		band_filenames = 'vector',
-		meta_filename = 'vector',
+		meta_filename = 'character',
 		bands = 'RasterStack'
 	),
 	prototype (
@@ -23,27 +23,8 @@ setClass('SatelliteImage',
 
 
 
-setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),
-	representation (
-		cpf_file_name 	= 'character',
-		product_creation_date = 'character',
-		lmax 			= 'vector',
-		lmin 			= 'vector',
-		qcalmax 		= 'vector',
-		qcalmin 		= 'vector'
-		
-#		gain 			= 'vector',
-#		bias 			= 'vector',
-		
-#		wrs_path 			= 'integer',
-#		starting_row 			= 'integer',
-#		ending_row 			= 'integer',
-#		nbands 				= 'integer',
-#		bands				= 'vector',
-		
-#		raster 				= 'RasterLayer',
-		
-	),
+setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),	representation (
+		cpf_filename =  'character',		product_creation_date = 'character',		lmax = 'vector',		lmin 	= 'vector',		qcalmax = 'vector',		qcalmin = 'vector'	),
 	prototype (
 		
 	),

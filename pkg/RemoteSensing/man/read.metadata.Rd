@@ -30,7 +30,6 @@ landsat(filename)
 #metafilename <- "L71129046_04620080329_MTL.txt"
 #x <- readMetadata(metafilename)
 #LandsatClass <- landsat(metafilename)
-
 }
 
 \keyword{spatial}

@@ -26,7 +26,8 @@ dn2ref  <- function(SatImgObject, band, outfilename) {
 	ESUN		<- esun(SatImgObject@spacecraft_id, SatImgObject@sensor_id)
 	names(ESUN)	<- SatImgObject@bands
 	radiance 		<- dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
-	reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[band])
+	doy                 	<- as.integer(format(SatImgObject@acquisition_date,"%j"))
+		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[band])
 	#reflectance <- calc(radiance, fun=rad2ref(radiance, doy, sun_elevation, ESUN[band]), filename = outfilename)
 	return(reflectance)
 }
