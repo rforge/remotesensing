@@ -59,44 +59,47 @@ landsat <- function(filename) {
 	qcalmin  <- rep(NA, n_bands)
 	band_filenames  <- rep(NA, n_bands)
 	
-	names(lmax) 	  <- bandn	
-	names(lmin) 	  <- bandn	
-	names(qcalmax) <- bandn	
-	names(qcalmin)  <- bandn	
+	names(lmax) 	  		<- bandn	
+	names(lmin) 	  		<- bandn	
+	names(qcalmax) 		<- bandn	
+	names(qcalmin)  		<- bandn	
 	names(band_filenames)  <- bandn	
 	
 	for (i in 1:n_bands) {
-		lmax[i]      <- as.numeric(pars[pars[,1]==paste("LMAX_", bandn[i], sep=""),2])
-		lmin[i]       <- as.numeric(pars[pars[,1]==paste("LMIN_", bandn[i], sep=""),2])
-		qcalmax[i] <- as.numeric(pars[pars[,1]==paste("QCALMAX_", bandn[i], sep=""),2])
-		qcalmin[i]  <- as.numeric(pars[pars[,1]==paste("QCALMIN_", bandn[i], sep=""),2])
-		band_filenames[i]  <- pars[pars[,1]==paste( bandn[i], "_FILE_NAME", sep=""),2]
+		lmax[i]      		<- as.numeric(pars[pars[,1]==paste("LMAX_", bandn[i], sep=""),2])
+		lmin[i]       		<- as.numeric(pars[pars[,1]==paste("LMIN_", bandn[i], sep=""),2])
+		qcalmax[i] 		<- as.numeric(pars[pars[,1]==paste("QCALMAX_", bandn[i], sep=""),2])
+		qcalmin[i]  		<- as.numeric(pars[pars[,1]==paste("QCALMIN_", bandn[i], sep=""),2])
+		band_filenames[i]  	<- pars[pars[,1]==paste( bandn[i], "_FILE_NAME", sep=""),2]
 	}
 	
-	cpf <- readLandsatCPF(sensor, cpf_filename)
-	acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2]
+	#cpf <- readLandsatCPF(sensor, cpf_filename)
+	#acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2]
 	
 	if (sensor == "ETM+") {			
-		img <- new("LandsatETMp")	} 
+		img <- new("LandsatETMp")	
+		img@bands <- stackFromFiles(c(band_filenames["BAND1"], band_filenames["BAND2"], band_filenames["BAND3"], band_filenames["BAND4"], band_filenames["BAND5"], band_filenames["BAND7"]))
+		img@thermal <- stackFromFiles(c(band_filenames["BAND61"], band_filenames["BAND62"]))
+		img@panchromatic <- rasterFromFile(band_filenames["BAND8"])
+	}
 	else {		stop('not done yet')	}			
-		img@spacecraft	   		<- spacecraft		
-		img@sensor	        		<-  sensor		
-		img@product_creation_date	<-  product_creation_date		
-		img@acquisition_date		<-  acquisition_date		
-		img@acquisition_time		<- acquisition_time		
-		img@sun_elevation 		<- sun_elevation				
-		img@sun_azimuth			<- sun_azimuth		
-		img@cpf_filename			<- cpf_filename		
-		img@meta_filename		<- filename		
-		img@band_filenames 		<- band_filenames		
-		img@zone				<- zone		
-		img@lmax	     			<- lmax		
-		img@lmin          			<- lmin		
-		img@qcalmax				<- qcalmax		
-		img@qcalmin				<- qcalmin		
-		#bands 					<- stackFromFiles( )		
-		#thermalbands 			<- stack( selected_bandfiles )			
-		#panchromatic 			<- stack( selected_bandfiles )	#	
+	
+	img@spacecraft	   		<- spacecraft		
+	img@sensor	        		<-  sensor		
+	img@product_creation_date	<-  product_creation_date		
+	img@acquisition_date		<-  acquisition_date		
+	#img@acquisition_time		<- acquisition_time		
+	img@sun_elevation 		<- sun_elevation				
+	img@sun_azimuth			<- sun_azimuth		
+	img@cpf_filename			<- cpf_filename		
+	img@meta_filename		<- filename		
+	img@band_filenames 		<- band_filenames		
+	img@zone				<- zone		
+	img@lmax	     			<- lmax		
+	img@lmin          			<- lmin		
+	img@qcalmax				<- qcalmax		
+	img@qcalmin				<- qcalmin		
+
 	return (img)
  }
  

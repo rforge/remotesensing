@@ -14,9 +14,9 @@
 }
 
 \usage{
-dn2ref (SatImgObject, band)
-dn2temp (SatImgObject, band)
-dn2rad(gain, bias, lmax, lmin, qcalmax, qcalmin)
+dn2ref (SatImgObject, outfilename)
+dn2temp (SatImgObject, outfilename)
+dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
 rad2ref(radiance, doy, sun_elevation, ESUN ) 
 rad2temp(radiance_thermal, K)
 GainBias(spacecraft_id, sensor_id, acquisition_date, product_creation_date) 
@@ -27,7 +27,8 @@ K_landsat(spacecraft_id, sensor_id)
 
 \arguments{
   \item{SatImgObject}{Satellite image object}
-  \item{band}{band name or band number, e.g., "BAND1", "BAND2", "BAND61", "BAND62"}
+  \item{outfilename}{filename to output raster stack of reflectance or temperature values}
+  \item{DN}{Digital number}
   \item{gain}{band-specific rescaling gain factor, W/(m^2 * sr * µm)/DN}
   \item{bias}{band-specific rescaling bias factor, W/(m^2 * sr * µm) }
   \item{lmin, lmax}{spectral radiance that is scaled to qcalmin/qcalmax, W/(m^2 * sr * µm) }

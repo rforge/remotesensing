@@ -13,50 +13,104 @@
 #       ASTER:                    ASTER Surface Reflectance/Radiance VNIR/SWIR Product. URL: http://asterweb.jpl.nasa.gov/content/03_data/01_Data_Products/release_aster_surface_reflectance.htm
 
 #Conversion of DN to reflectance
-dn2ref  <- function(SatImgObject, band, outfilename) {
-	DN			<- rasterFromFile(x@band_filenames[band])
-	lmax 		<- SatImgObject@lmax[band]
-	lmin 	      		<- SatImgObject@lmin[band]
-	qcalmax 		<- SatImgObject@qcalmax[band]
-	qcalmin  		<-SatImgObject@qcalmin[band]
+dn2ref  <- function(SatImgObject, outfilename) {
+	lmax 		<- SatImgObject@lmax
+	lmin 	      		<- SatImgObject@lmin
+	qcalmax 		<- SatImgObject@qcalmax
+	qcalmin  		<-SatImgObject@qcalmin
 	sun_elevation	<- SatImgObject@sun_elevation
 	ESUN		<- esun(SatImgObject@spacecraft, SatImgObject@sensor)
 	doy                 	<- as.integer(format(as.Date(SatImgObject@acquisition_date),"%j"))
-
-	if (is.na(lmax)) {
+	
+	if (is.na(lmax[1])) {
 		gb <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
-		gain <- gb[band, "gain"]
-		bias <- gb[band,"bias"]
+		gain <- gb[, "gain"]
+		bias <- gb[,"bias"]
 	}
 	else {
 		gain <- NA
 		bias <- NA
 	}
-	radiance 		<- dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
-	doy    		<- as.integer(format(as.Date(SatImgObject@acquisition_date),"%j"))
 	
-	frad2ref 		<- function(radiance) { rad2ref(radiance, doy, sun_elevation, ESUN[band]) }
-	reflectance 	<- calc(radiance, fun=frad2ref, filename = outfilename)
-	return(reflectance)
+	if (SatImgObject@sensor %in% c("TM","ETM+")) {
+		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") }
+	else if (SatImgObject@sensor  == "MSS") {
+		b <- c("BAND1","BAND2","BAND3","BAND4") }
+	else {
+		stop('not done yet')	}
+	if (!is.na(outfilename)) {
+		b_filename <- vector(length=length(b))
+		for (i in 1:length(b)) {
+			b_filename[i] <- paste(outfilename,"_",b[i],sep="") }
+		names(b_filename) <- b
+	}
+
+	ref_stk <- new("RasterStack")
+	
+	for (i in b) {
+		DN			<- rasterFromFile(SatImgObject@band_filenames[i])
+		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
+		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
+		ref_stk		<- addRasters(ref_stk, reflectance)
+		if (!is.na(outfilename)) {
+			reflectance	<- setFilename(reflectance, b_filename[i])
+			reflectance	<- writeRaster(reflectance, overwrite=TRUE)
+		}
+	} 
+	if (!is.na(outfilename)) {
+		#ref_stk <- setFilename(ref_stk, outfilename)
+		#ref_stk <- writeStack(ref_stk, overwrite=TRUE)
+	}
+
+	return(ref_stk)
 }
 
+
 #Conversion of DN to temperature
-dn2temp <- function(SatImgObject, band, outfilename) {
-	DN			<- rasterFromFile(x@band_filenames[band])
-	lmax 		<- SatImgObject@lmax[band]
-	lmin 	      		<- SatImgObject@lmin[band]
-	qcalmax 		<- SatImgObject@qcalmax[band]
-	qcalmin  		<-SatImgObject@qcalmin[band]
+dn2temp <- function(SatImgObject, outfilename) {
+	lmax 		<- SatImgObject@lmax
+	lmin 	      		<- SatImgObject@lmin
+	qcalmax 		<- SatImgObject@qcalmax
+	qcalmin  		<-SatImgObject@qcalmin
 	
-	if (is.na(lmax)) {
+	if (is.na(lmax[1])) {
 		gb <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
-		gain <- gb[band,"gain"]
-		bias <- gb[band,"bias"]
+		gain <- gb[,"gain"]
+		bias <- gb[,"bias"]
 	}	
-	radiance 		<- dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
-	frad2temp 	<- function(radiance) { rad2temp(radiance, SatImgObject) }
-	temp 		<- calc(radiance, fun=frad2temp, filename = outfilename)
-	return(temp)
+
+	if (SatImgObject@sensor %in% c("TM","ETM+")) {
+		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") 
+		}
+	else if (SatImgObject@sensor  == "MSS") {
+		b <- c("BAND1","BAND2","BAND3","BAND4") }
+	else  stop('not done yet')
+
+	if (!is.na(outfilename)) {
+	b_filename <- vector(length=length(b))
+		for (i in 1:length(b)) {
+			b_filename[i] <- paste(outfilename,"_",b[i],sep="") 
+		}
+	names(b_filename) <- b
+	}
+	temp_stk <- new("RasterStack")
+	
+	for (j in b) {
+		DN			<- rasterFromFile(SatImgObject@band_filenames[j])
+		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
+		temp 		<- rad2temp(radiance, SatImgObject)
+		temp_stk		<- addRasters(temp_stk, temp)
+		if (!is.na(outfilename)) {
+			temp	<- setFilename(temp, b_filename[j])
+			temp	<- writeRaster(temp, overwrite=TRUE)
+		}
+	}
+	if (!is.na(outfilename)) {
+		#temp_stk <- setFilename(temp_stk, outfilename)
+		#temp_stk <- stackSave(temp_stk)
+	}
+
+	return(temp_stk)
 }
 
 #Conversion of DN to radiance 
@@ -131,7 +185,7 @@ if (sensor == "MSS" ) {
 		else qcalmax <- c(127, 127, 127, 127)
 		gain <- (lmax - lmin) / qcalmax
 		bias <- lmin
-		bandnames <- c("band1","band2","band3","band4")
+		bandnames <- c("BAND1","BAND2","BAND3","BAND4")
 	}	
 }
 else if (sensor == "TM") {
@@ -165,12 +219,12 @@ else if (sensor == "TM") {
 	}
 	else chk <- FALSE
 	
-	if (chk)  bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
+	if (chk)  bandnames <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7")
 }
 else if (sensor == "Aster") {
 	gain <- c(0.676, 0.708, 0.862, 0.2174, 0.0696, 0.0625, 0.0597, 0.0417, 0.0318)
 	bias <- c(-0.676, -0.708, -0.862, -0.2174, -0.0696, -0.0625, -0.0597, -0.0417, -0.0318)
-	bandnames <- c("band1","band2","band3","band4","band5","band6","band7","band8","band9")
+	bandnames <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7","BAND8","BAND9")
 }
 else chk <- FALSE
 

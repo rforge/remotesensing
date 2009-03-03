@@ -53,7 +53,7 @@ setClass('LandsatTM', contains='LandsatImage',
 
 setClass('LandsatETMp', contains='LandsatImage',
 	representation (
-		thermalbands = 'RasterStack',
+		thermal = 'RasterStack',
 		panchromatic = 'RasterLayer'
 	),
 )
