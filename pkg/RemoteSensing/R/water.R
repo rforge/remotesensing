@@ -1,7 +1,7 @@
-# Author: Yann Chemin
+# Author: Yann Chemin & Aileen Maunahan
 # IRRI
 # License GPL3
-# Version 1, October 2008
+# Version 2, March 2009
 
 lswi<-function(nir, swir)
  #LSWI: Land Surface Water Index
@@ -9,28 +9,20 @@ lswi<-function(nir, swir)
 	result <- (nir - swir) / (nir + swir)
 	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
-	result[result >1] <- 1
+	result[result > 1] <- 1
 	return(result)
 }
 
-water<-function(ndvi, albedo)
+water<-function(ndvi, albedo) 
  #water: generic water mapping tool
 {
-	ndvi[ndvi<0.1]<-1
-	ndvi[ndvi>0.1]<-0
-	albedo[albedo<0.1]<-1
-	albedo[albedo>0.1]<-0
-	result<- ndvi * albedo
-#	result[is.nan(result)] <- NA
-	return(result)
+	return( (ndvi < 0.1) & (albedo < 0.1) )
 }
 
 waterModis<-function(ndvi, band7)
  #water.modis: Terra-MODIS water mapping tool
- #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., 
- #Salas W., Moore III B. (2005). 
- #Mapping paddy rice agriculture in southern China using 
- #multi-temporal MODIS images. 
+ #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
+ #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 
  #Remote Sensing of Environment 95:480-492.
  #
  #Roy D.P., Jin Y., Lewis P.E., Justice C.O. (2005). 
@@ -38,13 +30,9 @@ waterModis<-function(ndvi, band7)
  #area mapping using MODIS time series data. 
  #Remote Sensing of Environment 97:137-162.
 {
-	ndvi[ndvi<0.1]<-1
-	ndvi[ndvi>0.1]<-0
-	band7[band7<0.04]<-1
-	band7[band7>0.04]<-0
 	result<- ndvi * band7
-#	result[is.nan(result)] <- NA
-	return(result)
+	return( (ndvi < 0.1) & (band7 < 0.04) )	
+	
 }
 
 

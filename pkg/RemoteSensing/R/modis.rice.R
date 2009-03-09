@@ -201,13 +201,13 @@ timeSeries <- function(inpath, outpath) {
 			floodstk <- stack( as.vector( mmm$filename[mmm$band=='flood']) )
 			
 
-			flooded <- mCalc(floodstk, fun=mysum,  filename="")
+			flooded <- calc(floodstk, fun=mysum,  filename="")
 			permanent <- flooded > 30
 			flooded[flooded > 0] <- 1
 			
-			forest <- mCalc(ndvistk, fun=forest)
-			shrub <- mCalc(lswistk, fun=shrub)
-			bare <- mCalc(ndvistk, fun=bare)
+			forest <- calc(ndvistk, fun=forest)
+			shrub <- calc(lswistk, fun=shrub)
+			bare <- calc(ndvistk, fun=bare)
 			shrub  <- shrub & (forest[forest==0])
 			
 			notrice <- max(permanent * forest * shrub)

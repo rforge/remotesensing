@@ -1,4 +1,5 @@
 \name{calibration}
+
 \alias{dn2ref}
 \alias{dn2rad}
 \alias{dn2temp}
@@ -9,8 +10,9 @@
 \alias{K_landsat}
 
 \title{Radiometric calibration}
+
 \description{
-  Convert DNs to radiance, reflectance or temperature.
+  Convert the raw satellite image value (the "digital number"), to radiance, reflectance or temperature.
 }
 
 \usage{
@@ -29,18 +31,18 @@ K_landsat(spacecraft_id, sensor_id)
   \item{SatImgObject}{Satellite image object}
   \item{outfilename}{filename to output raster stack of reflectance or temperature values}
   \item{DN}{Digital number}
-  \item{gain}{band-specific rescaling gain factor, W/(m^2 * sr * µm)/DN}
-  \item{bias}{band-specific rescaling bias factor, W/(m^2 * sr * µm) }
-  \item{lmin, lmax}{spectral radiance that is scaled to qcalmin/qcalmax, W/(m^2 * sr * µm) }
+  \item{gain}{band-specific rescaling gain factor, W\/(m\^2 * sr * µm)\/DN}
+  \item{bias}{band-specific rescaling bias factor, W\/(m2 * sr * µm) }
+  \item{lmin, lmax}{spectral radiance that is scaled to qcalmin/qcalmax, W\/(m2 * sr * µm) }
   \item{qcalmin, qcalmax}{minimum/maximum quantized calibrated pixel value corresponding to lmin/lmax}
-  \item{radiance}{spectral radiance at the sensor's aperture, W/(m^2 * sr * µm)}
+  \item{radiance}{spectral radiance at the sensor's aperture, W\/(m2 * sr * µm)}
   \item{doy}{day of the year}
   \item{sun_elevation}{sun elevation in degrees}
-  \item{ESUN}{mean solar exoatmospheric irradiances, W/(m^2 * sr * µm)}
-  \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W/(m^2 * sr * µm)}
-  \item{K}{vector of thermal band calibration constants: K1 is the calibration constant in W/(m^2 * sr * µm) , K2 in kelvin}
+  \item{ESUN}{mean solar exoatmospheric irradiances, W\/(m2 * sr * µm)}
+  \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W\/(m2 * sr * µm)}
+  \item{K}{vector of thermal band calibration constants: K1 is the calibration constant in W\/(m2 * sr * µm) , K2 in Kelvin}
   \item{spacecraft_id}{space craft id: Landsat1, Landsat2, Landsat3, Landsat4, Landsat5, Landsat7, Terra}
-  \item{sensor_id}{sensor: MSS, TM, ETM+, Aster}
+  \item{sensor_id}{sensor: MSS, TM, ETMplus, Aster}
   \item{acquisition_date}{image acquisition date}
   \item{product_creation_date}{image processing date}
 }
