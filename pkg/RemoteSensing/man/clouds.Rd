@@ -9,14 +9,14 @@
 
 \usage{
 cloudMask(reflectance, temperature) 
-applyMask2Stack(raster, mask, outfilename)
+applyMask2Stack(rstack, mask, outfilename)
 }
 
 
 \arguments{
   \item{reflectance}{RasterStack of reflectance values}
   \item{temperature}{Band61 for Landsat ETM+, Band 6 for Landsat TM}
-  \item{raster}{raster layer to be masked}
+  \item{rstack}{RasterStack to be masked}
   \item{mask}{mask}
  \item{outfilename}{---}
    
