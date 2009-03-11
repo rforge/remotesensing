@@ -49,17 +49,21 @@ dn2ref  <- function(SatImgObject, outfilename) {
 	
 	for (i in b) {
 		DN			<- rasterFromFile(SatImgObject@band_filenames[i])
+		DN			<- setNAvalue(DN, 0)
+		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
 		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
-		ref_stk		<- addRasters(ref_stk, reflectance)
-		if (!is.na(outfilename)) {
+		if (!missing(outfilename)) {
 			reflectance	<- setFilename(reflectance, b_filename[i])
 			reflectance	<- writeRaster(reflectance, overwrite=TRUE)
 		}
+		ref_stk		<- addRasters(ref_stk, reflectance)
+
 	} 
-	if (!is.na(outfilename)) {
-		#ref_stk <- setFilename(ref_stk, outfilename)
-		#ref_stk <- writeStack(ref_stk, overwrite=TRUE)
+	if (!missing(outfilename)) {
+		ref_stk <- setFilename(ref_stk, outfilename)
+		#ref_stk <- writeStack(ref_stk,  overwrite=TRUE)
+		ref_stk <- stackSave(ref_stk)
 	}
 
 	return(ref_stk)
@@ -73,41 +77,44 @@ dn2temp <- function(SatImgObject, outfilename) {
 	qcalmax 		<- SatImgObject@qcalmax
 	qcalmin  		<-SatImgObject@qcalmin
 	
+
 	if (is.na(lmax[1])) {
 		gb <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
 		gain <- gb[,"gain"]
 		bias <- gb[,"bias"]
 	}	
 
-	if (SatImgObject@sensor %in% c("TM","ETM+")) {
-		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") 
+	if (SatImgObject@sensor == "ETM+") {
+		b <- c("BAND61","BAND62")
 		}
-	else if (SatImgObject@sensor  == "MSS") {
-		b <- c("BAND1","BAND2","BAND3","BAND4") }
+	else if (SatImgObject@sensor  == "TM") {
+		b <- "BAND61" }
 	else  stop('not done yet')
 
 	if (!is.na(outfilename)) {
-	b_filename <- vector(length=length(b))
+		b_filename <- vector(length=length(b))
 		for (i in 1:length(b)) {
 			b_filename[i] <- paste(outfilename,"_",b[i],sep="") 
 		}
 	names(b_filename) <- b
 	}
+
 	temp_stk <- new("RasterStack")
 	
 	for (j in b) {
 		DN			<- rasterFromFile(SatImgObject@band_filenames[j])
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
-		temp_stk		<- addRasters(temp_stk, temp)
-		if (!is.na(outfilename)) {
+		if (!missing(outfilename)) {
 			temp	<- setFilename(temp, b_filename[j])
 			temp	<- writeRaster(temp, overwrite=TRUE)
 		}
+		temp_stk		<- addRasters(temp_stk, temp)
 	}
-	if (!is.na(outfilename)) {
-		#temp_stk <- setFilename(temp_stk, outfilename)
-		#temp_stk <- stackSave(temp_stk)
+	if (!missing(outfilename)) {
+		temp_stk <- setFilename(temp_stk, outfilename)
+		#temp_stk <- writeStack(temp_stk, overwrite=TRUE)
+		temp_stk <- stackSave(temp_stk)
 	}
 
 	return(temp_stk)
