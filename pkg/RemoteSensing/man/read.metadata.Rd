@@ -1,6 +1,8 @@
-\name{read.Metadata}
+\name{readMetadata}
+
 \alias{readMetadata}
 \alias{readLandsatCPF}
+
 \alias{landsat}
 
 \title{Read metadata}
@@ -10,18 +12,19 @@
 
 \usage{
 readMetadata(filename)
-readLandsatCPF(filename)
+readLandsatCPF(sensor, filename)
 landsat(filename) 
 }
 
 
 \arguments{
+  \item{sensor}{....}
   \item{filename}{metadata or calibration parameter file (CPF) filename}
 }
 
 \value{
-  matrix of names and values	for readMetadata and readLandsatCPF
-  LandsatImage class		for getLandsatParameters
+  readMetadata and readLandsatCPF: matrix of names and values	
+  getLandsatParameters: LandsatImage object
 }
 
 \author{Alice Laborte}

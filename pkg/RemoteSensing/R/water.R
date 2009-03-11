@@ -3,6 +3,9 @@
 # License GPL3
 # Version 2, March 2009
 
+
+
+
 lswi<-function(nir, swir)
  #LSWI: Land Surface Water Index
 {
@@ -36,3 +39,11 @@ waterModis<-function(ndvi, band7)
 }
 
 
+
+
+flooded <- function(lswi, ndvi, evi) { 
+#Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
+ #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 
+ #Remote Sensing of Environment 95:480-492.
+ 	return( (lswi+0.05 >= evi) | (lswi+0.05 >= ndvi) )
+}
