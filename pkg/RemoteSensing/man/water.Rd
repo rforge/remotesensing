@@ -3,6 +3,8 @@
 \alias{lswi}
 \alias{water}
 \alias{waterModis}
+\alias{flooded}
+
 
 \title{ Water indices }
 
@@ -14,6 +16,7 @@
 lswi(nir, swir) 
 water(ndvi, albedo) 
 waterModis(ndvi, band7) 
+flooded(lswi, ndvi, evi)  
 }
 
 \arguments{
@@ -22,6 +25,9 @@ waterModis(ndvi, band7)
   \item{ndvi}{ NDVI values }
   \item{band7}{ MODIS \code{Band7} satellite band values}
   \item{albedo}{ albedo layer }
+  \item{lswi}{ LSWI values }
+  \item{evi}{ EVI values }
+  
 }
 
 \value{

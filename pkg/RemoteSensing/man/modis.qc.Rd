@@ -6,6 +6,10 @@
 \alias{modis.qc250d} 
 \alias{modis.qc250e}
 \alias{modis.qc250f}
+\alias{modis.qc500a}
+\alias{modis.qc500c}
+\alias{modis.qc500d} 
+\alias{modis.qc500e}
 
 \title{ MODIS Quality Assessment Extractor }
 
@@ -20,6 +24,11 @@ modis.qc250c(pixel, bandno)
 modis.qc250d(pixel) 
 modis.qc250e(pixel)
 modis.qc250f(pixel)
+modis.qc500a(pixel)
+modis.qc500c(pixel, bandno) 
+modis.qc500d(pixel) 
+modis.qc500e(pixel)
+
 }
 
 
