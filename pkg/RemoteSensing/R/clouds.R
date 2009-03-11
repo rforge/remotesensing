@@ -7,9 +7,9 @@
 #Apply mask to raster
 applyMask2Stack <- function (rstack, mask, outfilename) {
 	
-	}
+	stop('not implemented')
 
- 	return(maskedS)
+ #	return(maskedS)
 }
 
 #Create cloud mask for Landsat 7 (ETM+) image
