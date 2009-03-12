@@ -1,5 +1,5 @@
 \name{removeClouds}
-\alias{applyMask2Stack}
+\alias{applyMask}
 \alias{cloudMask}
 
 \title{Remove clouds}
@@ -8,18 +8,17 @@
 }
 
 \usage{
-cloudMask(reflectance, temperature) 
-applyMask2Stack(rstack, mask, outfilename)
+cloudMask (reflectance, temperature) 
+applyMask2Stack (raster, mask)
+removeClouds(reflectance, temperature)
 }
 
 
 \arguments{
   \item{reflectance}{RasterStack of reflectance values}
   \item{temperature}{Band61 for Landsat ETM+, Band 6 for Landsat TM}
-  \item{rstack}{RasterStack to be masked}
+  \item{raster}{raster layer to be masked}
   \item{mask}{mask}
- \item{outfilename}{---}
-   
 }
 
 \value{
