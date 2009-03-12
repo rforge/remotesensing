@@ -7,6 +7,9 @@
 
 rice <- function(inpath, outpath) {
 
+	inpath <- paste(inpath, "/", sep="")
+	outpath <- paste(outpath, "/", sep="")
+
 	mysum <- function(x){ sum(x, na.rm=T) }
 	sumNotNA <- function(x){ sum(!is.na(x)) }
 	mymean <- function(x) {
@@ -56,7 +59,7 @@ rice <- function(inpath, outpath) {
 			forest <- calc(ndvistk, fun=forest)
 			shrub <- calc(lswistk, fun=shrub)
 			bare <- calc(ndvistk, fun=bare)
-			shrub  <- shrub & (forest[forest==0])
+			shrub  <- shrub & !forest
 			
 			notrice <- max(permanent * forest * shrub)
 			perhapsrice <- flooded[notrice==0]
