@@ -1,7 +1,7 @@
-# Authors: Sonia Asilo, Ritsuko Fuchiyama, Robert J. Hijmans, Yann Chemin
+# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin
 # International Rice Research Institute
 # Date :  Feb 2009
-# Version 0,1
+# Version 0.1
 # Licence GPL v3
 
 
@@ -48,7 +48,6 @@ rice <- function(inpath, outpath) {
 			evistk <- stack( as.vector( mmm$filename[mmm$band=='evi']) )
 			lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi']) )
 			floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
-			
 
 			flooded <- calc(floodstk, fun=mysum,  filename="")
 			permanent <- flooded > 30
@@ -63,13 +62,20 @@ rice <- function(inpath, outpath) {
 			perhapsrice <- flooded[notrice==0]
 			
 			perhapsrice <- setFilename(perhapsrice, paste(outpath, 'perhapsrice.grd', sep=''))
+			perhapsrice <- writeRaster(perhapsrice)
 			
-#			maxevi <- which.max(evi)
-#			d <- (end-5):end
-#			if max(flooded[d]) == 1 then it is rice
-
-
-			xiaorice <- evi
+			xiaorice <- setRaster(evistk)
+			xiaorice <- setDatatype(xiaorice, 'INT1S')
+			for (r in 1:nrow(evistk)) {
+				evistk <- readRow(evistk,r)
+				floodstk <- readRow(floodstk, r)
+				maxevi <- apply(values(evisk), 1, which.max)
+				d <- (maxevi-5):maxevi
+				d[d<1] <- nlayers(evistk) - d[d<1]
+				d[d>(nlayers(evistk))] <- d[d>(nlayers(evistk))] - nlayers(evistk)
+				xiaorice <- setValues(xiaorice, max(flooded[d]) == 1, r ) 
+				xiaorice <- writeRow(xiaorice)
+			}
 		}
 	}
 }
