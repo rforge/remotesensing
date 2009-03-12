@@ -69,12 +69,12 @@ rice <- function(inpath, outpath) {
 			for (r in 1:nrow(evistk)) {
 				evistk <- readRow(evistk,r)
 				floodstk <- readRow(floodstk, r)
-				maxevi <- apply(values(evisk), 1, which.max)
+				maxevi <- apply(values(evistk), 1, which.max)
 				d <- (maxevi-5):maxevi
 				d[d<1] <- nlayers(evistk) - d[d<1]
 				d[d>(nlayers(evistk))] <- d[d>(nlayers(evistk))] - nlayers(evistk)
 				xiaorice <- setValues(xiaorice, max(flooded[d]) == 1, r ) 
-				xiaorice <- writeRow(xiaorice)
+				xiaorice <- writeRaster(xiaorice)
 			}
 		}
 	}
