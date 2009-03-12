@@ -16,8 +16,8 @@
 }
 
 \usage{
-dn2ref (SatImgObject, outfilename)
-dn2temp (SatImgObject, outfilename)
+dn2ref (SatImgObject, filename)
+dn2temp (SatImgObject, filename)
 dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
 rad2ref(radiance, doy, sun_elevation, ESUN ) 
 rad2temp(radiance_thermal, SatImgObject)
@@ -29,7 +29,7 @@ K_landsat(spacecraft, sensor)
 
 \arguments{
   \item{SatImgObject}{Satellite image object}
-  \item{outfilename}{filename to output raster stack of reflectance or temperature values}
+  \item{filename}{filename to output raster stack of reflectance or temperature values}
   \item{DN}{Digital number}
   \item{gain}{band-specific rescaling gain factor, W/(m2 * sr * micrometer)/DN }
   \item{bias}{band-specific rescaling bias factor, W/(m2 * sr * micrometer) }
@@ -40,7 +40,6 @@ K_landsat(spacecraft, sensor)
   \item{sun_elevation}{sun elevation in degrees}
   \item{ESUN}{mean solar exoatmospheric irradiances, W/(m2 * sr * micrometer)}
   \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W/(m2 * sr * micrometer)}
-%-  \item{K}{vector of thermal band calibration constants: K1 is the calibration constant in W/(m2 * sr * micrometer) , K2 in Kelvin}
   \item{spacecraft}{space craft id: Landsat1, Landsat2, Landsat3, Landsat4, Landsat5, Landsat7, Terra}
   \item{sensor}{sensor: MSS, TM, ETM+, Aster}  
   \item{acquisition_date}{image acquisition date}
@@ -56,15 +55,10 @@ K_landsat(spacecraft, sensor)
 \examples{
 
 #read Landsat metadata file and get parameters
-#metafile<-"L71129046_04620080329_MTL.txt"
-#LandsatImg <- landsat(metafile)
-
-#convert Band 1 DN to reflectance
-#ref <- dn2ref (LandsatImg, 1) 
-
-#convert Band61 DN to temperature in kelvin
-#b <- "BAND61"
-#temp <- dn2temp(LandsatImg, b)
+metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
+#img <- landsat(metafile)
+#ref <- dn2ref(img, "ref")
+#temp <- dn2temp(img)
 }
 
 \keyword{spatial}

@@ -4,19 +4,19 @@
 
 # Reference:   Irish, R.R., undated, Landsat 7 automatic cloud cover assessment. URL: http://landsathandbook.gsfc.nasa.gov/handbook/pdfs/ACCA_SPIE_paper.pdf
 
-#remove clouds using Landsat TM/ETM+ reflectance and thermal band
-removeClouds <- function (reflectanceStack, tempband, outfilename) {
+#remove clouds using Landsat TM/ETM+ refstack and thermal band
+removeClouds <- function (refstack, traster, filename) {
 
-	cloudM <- cloudMask(refectanceStack, tempband)
+	cloudM <- cloudMask(refstack, traster)
 	nocloudM <- is.na(cloudM)
 	nocloudM[nocloudM==0] <- NA
-	maskedS <- applyMask2Stack(reflectanceStack, nocloudM, outfilename)
+	maskedS <- applyMask2Stack(refstack, nocloudM, filename)
 
  	return(maskedS)
 }
 
 #Apply mask to raster
-applyMask2Stack <- function (rstack, mask, outfilename) {
+applyMask2Stack <- function (rstack, mask, filename) {
 	if (minValue(mask) != 1 | maxValue(mask) != 1)  {			#mask is not 1 and NA
 		mask <- mask > 0
 	}
@@ -26,14 +26,14 @@ applyMask2Stack <- function (rstack, mask, outfilename) {
 	for (i in 1:nlayers(rstack)) {
 		rs		<- asRasterLayer(rstack, i)
 		masked 	<- rs * mask
-		if (!missing(outfilename)) {
-			masked	<- setFilename(masked, paste(outfilename,"_",i,sep=""))
+		if (!missing(filename)) {
+			masked	<- setFilename(masked, paste(filename,"_",i,sep=""))
 			masked	<- writeRaster(masked, overwrite=TRUE)
 		}	
 		maskedS	<- addRasters(maskedS, masked)
 	}	
-	if (!missing(outfilename)) {
-		maskedS <- setFilename(maskedS, outfilename)
+	if (!missing(filename)) {
+		maskedS <- setFilename(maskedS, filename)
 		maskedS <- stackSave(maskedS)
 	}
 
@@ -42,15 +42,15 @@ applyMask2Stack <- function (rstack, mask, outfilename) {
 
 
 #Create cloud mask for Landsat 7 (ETM+) image
-cloudMask <- function (reflectance, temperature) {
+cloudMask <- function (refstack, traster) {
 
 #Pass 1
-	band2 	<- asRasterLayer(reflectance,2)
-	band3 	<- asRasterLayer(reflectance,3)
-	band4 	<- asRasterLayer(reflectance,4)
-	band5 	<- asRasterLayer(reflectance,5)
+	band2 	<- asRasterLayer(refstack,2)
+	band3 	<- asRasterLayer(refstack,3)
+	band4 	<- asRasterLayer(refstack,4)
+	band5 	<- asRasterLayer(refstack,5)
 	ncellInput<- length(!is.na(band2[]))
-	band6 	<- disaggregate(temperature, fact=2)
+	band6 	<- disaggregate(traster, fact=2)
 	band6	<-setExtent(band6, getBbox(band2), keepres=FALSE, snap=FALSE)
 	band6All 	<- band6
 	
@@ -69,7 +69,7 @@ cloudMask <- function (reflectance, temperature) {
 	cloudFilter<- NDSI  <= 0.7
 	cloudFilter[cloudFilter==0] <- NA
 	
-# Filter 3: temperature threshold
+# Filter 3: traster threshold
 	band6 	<- band6* cloudFilter
 	notCloud 	<- notCloud + (band6 > 300)
 	cloudFilter<- band6  <= 300

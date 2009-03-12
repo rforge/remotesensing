@@ -13,7 +13,7 @@
 #       ASTER:                    ASTER Surface Reflectance/Radiance VNIR/SWIR Product. URL: http://asterweb.jpl.nasa.gov/content/03_data/01_Data_Products/release_aster_surface_reflectance.htm
 
 #Conversion of DN to reflectance
-dn2ref  <- function(SatImgObject, outfilename) {
+dn2ref  <- function(SatImgObject, filename) {
 	lmax 		<- SatImgObject@lmax
 	lmin 	      		<- SatImgObject@lmin
 	qcalmax 		<- SatImgObject@qcalmax
@@ -38,10 +38,10 @@ dn2ref  <- function(SatImgObject, outfilename) {
 		b <- c("BAND1","BAND2","BAND3","BAND4") }
 	else {
 		stop('not done yet')	}
-	if (!is.na(outfilename)) {
+	if (!missing(filename)) {
 		b_filename <- vector(length=length(b))
 		for (i in 1:length(b)) {
-			b_filename[i] <- paste(outfilename,"_",b[i],sep="") }
+			b_filename[i] <- paste(filename,"_",b[i],sep="") }
 		names(b_filename) <- b
 	}
 
@@ -53,15 +53,15 @@ dn2ref  <- function(SatImgObject, outfilename) {
 		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
 		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
-		if (!missing(outfilename)) {
+		if (!missing(filename)) {
 			reflectance	<- setFilename(reflectance, b_filename[i])
 			reflectance	<- writeRaster(reflectance, overwrite=TRUE)
 		}
 		ref_stk		<- addRasters(ref_stk, reflectance)
 
 	} 
-	if (!missing(outfilename)) {
-		ref_stk <- setFilename(ref_stk, outfilename)
+	if (!missing(filename)) {
+		ref_stk <- setFilename(ref_stk, filename)
 		#ref_stk <- writeStack(ref_stk,  overwrite=TRUE)
 		ref_stk <- stackSave(ref_stk)
 	}
@@ -71,7 +71,7 @@ dn2ref  <- function(SatImgObject, outfilename) {
 
 
 #Conversion of DN to temperature
-dn2temp <- function(SatImgObject, outfilename) {
+dn2temp <- function(SatImgObject, filename) {
 	lmax 		<- SatImgObject@lmax
 	lmin 	      		<- SatImgObject@lmin
 	qcalmax 		<- SatImgObject@qcalmax
@@ -91,10 +91,10 @@ dn2temp <- function(SatImgObject, outfilename) {
 		b <- "BAND61" }
 	else  stop('not done yet')
 
-	if (!is.na(outfilename)) {
+	if (!missing(filename)) {
 		b_filename <- vector(length=length(b))
 		for (i in 1:length(b)) {
-			b_filename[i] <- paste(outfilename,"_",b[i],sep="") 
+			b_filename[i] <- paste(filename,"_",b[i],sep="") 
 		}
 	names(b_filename) <- b
 	}
@@ -105,14 +105,14 @@ dn2temp <- function(SatImgObject, outfilename) {
 		DN			<- rasterFromFile(SatImgObject@band_filenames[j])
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
-		if (!missing(outfilename)) {
+		if (!missing(filename)) {
 			temp	<- setFilename(temp, b_filename[j])
 			temp	<- writeRaster(temp, overwrite=TRUE)
 		}
 		temp_stk		<- addRasters(temp_stk, temp)
 	}
-	if (!missing(outfilename)) {
-		temp_stk <- setFilename(temp_stk, outfilename)
+	if (!missing(filename)) {
+		temp_stk <- setFilename(temp_stk, filename)
 		#temp_stk <- writeStack(temp_stk, overwrite=TRUE)
 		temp_stk <- stackSave(temp_stk)
 	}
