@@ -29,6 +29,21 @@ applyMask2Stack (rstack, mask, filename)
 \author{Alice Laborte}
 
 \examples{
+setwd(dirname(system.file("external/.", package="RemoteSensing")))
+metafile <- "L71129046_04620080329_MTL.txt"
+
+#read Landsat metadata file and get parameters
+img <- landsat(metafile)
+
+#calculate reflectance and save output in ref.stk; individual bands are stored as ref_BAND1, ref_BAND2, etc
+ref <- dn2ref(img, "ref")
+
+#calculate temperature from thermal bands; output is saved on disk
+temp <- dn2temp(img)
+temp1 <- asRasterLayer(temp,1)
+
+#mask out clouds
+newref <- removeClouds (ref, temp1, "masked") 
 
 }
 

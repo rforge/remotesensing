@@ -2,7 +2,6 @@
 
 \alias{readMetadata}
 \alias{readLandsatCPF}
-
 \alias{landsat}
 
 \title{Read metadata}
@@ -24,15 +23,19 @@ landsat(filename)
 
 \value{
   readMetadata and readLandsatCPF: matrix of names and values	
-  getLandsatParameters: LandsatImage object
+  landsat: LandsatImage object
 }
 
 \author{Alice Laborte}
 
 \examples{
-#metafilename <- "L71129046_04620080329_MTL.txt"
-#x <- readMetadata(metafilename)
-#LandsatClass <- landsat(metafilename)
+
+setwd(dirname(system.file("external/.", package="RemoteSensing")))
+metafile <- "L71129046_04620080329_MTL.txt"
+
+#read Landsat metadata file and get parameters
+img <- landsat(metafile)
+
 }
 
 \keyword{spatial}
