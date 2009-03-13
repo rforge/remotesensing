@@ -76,16 +76,26 @@ rice <- function(inpath, outpath) {
 			filename(perhapsrice) <- paste(outpath, 'perhapsrice_', y, '.grd', sep='')
 			perhapsrice <- writeRaster(perhapsrice)
 			
+			maxevi <- calc(evistk, fun=mymax, filename="")
+			
 			xiaorice <- setRaster(evistk)
-			xiaorice <- setDatatype(xiaorice, 'INT1S')
+			xiaorice <- setDatatype(xiaorice, 'INT2S')
+			filename(xiaorice) <- 'xiaorice.grd'
 			for (r in 1:nrow(evistk)) {
 				evistk <- readRow(evistk,r)
+				max_per <- apply(values(evistk), 1, which.max)
+				d <- matrix(NA, nrow=length(max_per), ncol=6)
+				d[,6] <- max_per
+				d[,5] <- max_per - 1
+				d[,4] <- max_per - 2
+				d[,3] <- max_per - 3
+				d[,2] <- max_per - 4
+				d[,1] <- max_per - 5
+				d[d<1] <- nlayers(evistk) + d[d<1]
+				index <- cbind(rep(1:length(d[,1]), each=6), as.vector(t(d)))
 				floodstk <- readRow(floodstk, r)
-				maxevi <- apply(values(evistk), 1, which.max)
-				d <- (maxevi-5):maxevi
-				d[d<1] <- nlayers(evistk) - d[d<1]
-				d[d>(nlayers(evistk))] <- d[d>(nlayers(evistk))] - nlayers(evistk)
-				xiaorice <- setValues(xiaorice, max(flooded[d]) == 1, r ) 
+				isrice <- apply(matrix(values(floodstk)[d], ncol=6, byrow=T), 1, max)
+				xiaorice <- setValues(xiaorice, isrice , r ) 
 				xiaorice <- writeRaster(xiaorice)
 			}
 		}
