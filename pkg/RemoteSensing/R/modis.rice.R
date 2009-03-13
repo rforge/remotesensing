@@ -26,9 +26,9 @@ rice <- function(inpath, outpath) {
 		}
 	}
 
-	forest <- function(ndvi){ sum( ndvi > 0.7 , na.rm=T) > 14 }
-	shrub <- function(lswi){ sum(lswi > 0.1, na.rm=T) > 1 }
-	bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 1 }
+	Forest <- function(ndvi){ sum( ndvi > 0.7 , na.rm=T) > 14 }
+	Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) < 3 }
+	Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
 	m <- modisFilesClean(inpath)
 	m$filename <- paste(inpath, m$filename, sep="")
@@ -56,15 +56,24 @@ rice <- function(inpath, outpath) {
 			permanent <- flooded > 30
 			flooded[flooded > 0] <- 1
 			
-			forest <- calc(ndvistk, fun=forest)
-			shrub <- calc(lswistk, fun=shrub)
-			bare <- calc(ndvistk, fun=bare)
+			forest <- calc(ndvistk, fun=Forest)
+			shrub <- calc(lswistk, fun=Shrub)
 			shrub  <- shrub & !forest
+			bare <- calc(ndvistk, fun=Bare)
+
+			filename(bare) <- paste(outpath, 'bare_', y, '.grd', sep='')			
+			filename(shrub) <- paste(outpath, 'shrub_', y, '.grd', sep='')			
+			filename(forest) <- paste(outpath, 'forest_', y, '.grd', sep='')			
+			bare <- writeRaster(bare)
+			shrub <- writeRaster(shrub)
+			forest <- writeRaster(forest)
 			
-			notrice <- max(permanent * forest * shrub)
-			perhapsrice <- flooded[notrice==0]
-			
-			perhapsrice <- setFilename(perhapsrice, paste(outpath, 'perhapsrice.grd', sep=''))
+			notrice <- any(permanent, forest, shrub)
+			perhapsrice <- flooded & !notrice
+
+			filename(notrice) <- paste(outpath, 'notrice_', y, '.grd', sep='')			
+			notrice <- writeRaster(notrice)
+			filename(perhapsrice) <- paste(outpath, 'perhapsrice_', y, '.grd', sep='')
 			perhapsrice <- writeRaster(perhapsrice)
 			
 			xiaorice <- setRaster(evistk)

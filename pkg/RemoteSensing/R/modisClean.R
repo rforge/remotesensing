@@ -55,12 +55,8 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 #				r <- r / 10000  # scaling     why should we scale ?
 	
 # for efficient storage				
-				v <- round(values(r) / 100)
-				r[] <- v
-				if (maxValue(r) > 32767) {
-					stop(paste('maxvalue too high:', maxValue(r)))
-				}
-				r <- setDatatype(r, datatype="INT4S")
+				r[] <- values(r) / 10000
+				r <- setDatatype(r, datatype="FLT4S")
 				r <- setFilename(r,  paste(fname1, b$band[i], '_clean.grd', sep=''))
 				r <- writeRaster(r, overwrite=overwrite)
 			}
