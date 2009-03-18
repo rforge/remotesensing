@@ -48,7 +48,7 @@ dn2ref  <- function(SatImgObject, filename) {
 	ref_stk <- new("RasterStack")
 	
 	for (i in b) {
-		DN			<- rasterFromFile(SatImgObject@band_filenames[i])
+		DN			<- raster(SatImgObject@band_filenames[i])
 		DN			<- setNAvalue(DN, 0)
 		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
@@ -102,7 +102,7 @@ dn2temp <- function(SatImgObject, filename) {
 	temp_stk <- new("RasterStack")
 	
 	for (j in b) {
-		DN			<- rasterFromFile(SatImgObject@band_filenames[j])
+		DN			<- raster(SatImgObject@band_filenames[j])
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
 		if (!missing(filename)) {

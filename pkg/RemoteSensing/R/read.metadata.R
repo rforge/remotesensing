@@ -80,7 +80,7 @@ landsat <- function(filename) {
 		img <- new("LandsatETMp")	
 		img@bands <- stackFromFiles(c(band_filenames["BAND1"], band_filenames["BAND2"], band_filenames["BAND3"], band_filenames["BAND4"], band_filenames["BAND5"], band_filenames["BAND7"]))
 		img@thermal <- stackFromFiles(c(band_filenames["BAND61"], band_filenames["BAND62"]))
-		img@panchromatic <- rasterFromFile(band_filenames["BAND8"])
+		img@panchromatic <- raster(band_filenames["BAND8"])
 	}
 	else {		stop('not done yet')	}			
 	
