@@ -27,13 +27,13 @@ applyMask2Stack <- function (rstack, mask, filename) {
 		rs		<- asRasterLayer(rstack, i)
 		masked 	<- rs * mask
 		if (!missing(filename)) {
-			masked	<- setFilename(masked, paste(filename,"_",i,sep=""))
+			filename(masked) <- paste(filename,"_",i,sep="")
 			masked	<- writeRaster(masked, overwrite=TRUE)
 		}	
 		maskedS	<- addRasters(maskedS, masked)
 	}	
 	if (!missing(filename)) {
-		maskedS <- setFilename(maskedS, filename)
+		filename(maskedS) <- filename
 		maskedS <- stackSave(maskedS)
 	}
 
@@ -51,7 +51,7 @@ cloudMask <- function (refstack, traster) {
 	band5 	<- asRasterLayer(refstack,5)
 	ncellInput<- length(!is.na(band2[]))
 	band6 	<- disaggregate(traster, fact=2)
-	band6	<-setExtent(band6, getBbox(band2), keepres=FALSE, snap=FALSE)
+	band6	<-setExtent(band6, extent(band2), keepres=FALSE, snap=FALSE)
 	band6All 	<- band6
 	
 # Filter 1: brightness threshold

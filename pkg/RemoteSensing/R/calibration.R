@@ -49,20 +49,19 @@ dn2ref  <- function(SatImgObject, filename) {
 	
 	for (i in b) {
 		DN			<- raster(SatImgObject@band_filenames[i])
-		DN			<- setNAvalue(DN, 0)
+		DN[DN==0]		<- NA
 		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
 		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
 		if (!missing(filename)) {
-			reflectance	<- setFilename(reflectance, b_filename[i])
+			filename(reflectance) <- b_filename[i]
 			reflectance	<- writeRaster(reflectance, overwrite=TRUE)
 		}
 		ref_stk		<- addRasters(ref_stk, reflectance)
 
 	} 
 	if (!missing(filename)) {
-		ref_stk <- setFilename(ref_stk, filename)
-		#ref_stk <- writeStack(ref_stk,  overwrite=TRUE)
+		filename(ref_stk) <- filename
 		ref_stk <- stackSave(ref_stk)
 	}
 
@@ -106,14 +105,13 @@ dn2temp <- function(SatImgObject, filename) {
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
 		if (!missing(filename)) {
-			temp	<- setFilename(temp, b_filename[j])
+			filename(temp) <- b_filename[j]
 			temp	<- writeRaster(temp, overwrite=TRUE)
 		}
 		temp_stk		<- addRasters(temp_stk, temp)
 	}
 	if (!missing(filename)) {
-		temp_stk <- setFilename(temp_stk, filename)
-		#temp_stk <- writeStack(temp_stk, overwrite=TRUE)
+		filename(temp_stk) <- filename
 		temp_stk <- stackSave(temp_stk)
 	}
 
