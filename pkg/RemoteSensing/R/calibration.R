@@ -14,12 +14,12 @@
 
 #Conversion of DN to reflectance
 dn2ref  <- function(SatImgObject, filename) {
-	lmax 		<- SatImgObject@lmax
+	lmax 			<- SatImgObject@lmax
 	lmin 	      		<- SatImgObject@lmin
 	qcalmax 		<- SatImgObject@qcalmax
 	qcalmin  		<-SatImgObject@qcalmin
 	sun_elevation	<- SatImgObject@sun_elevation
-	ESUN		<- esun(SatImgObject@spacecraft, SatImgObject@sensor)
+	ESUN			<- esun(SatImgObject@spacecraft, SatImgObject@sensor)
 	doy                 	<- as.integer(format(as.Date(SatImgObject@acquisition_date),"%j"))
 	
 	if (is.na(lmax[1])) {
@@ -49,38 +49,40 @@ dn2ref  <- function(SatImgObject, filename) {
 	
 	for (i in b) {
 		DN			<- raster(SatImgObject@band_filenames[i])
-		DN[DN==0]		<- NA
+		#DN[DN==0]		<- NA
+		NAvalue(DN) 	<-0
 		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
 		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
 		if (!missing(filename)) {
-			filename(reflectance) <- b_filename[i]
-			reflectance	<- writeRaster(reflectance, overwrite=TRUE)
+			if (dataContent(reflectance) == 'all') {
+				filename(reflectance) <- b_filename[i]
+				reflectance <- writeRaster(reflectance, overwrite=TRUE)
+			} 			
+			else {
+				reflectance <- copyRasterFile(reflectance, b_filename[i], overwrite=TRUE)}
 		}
-		ref_stk		<- addRasters(ref_stk, reflectance)
-
+		ref_stk		<- addLayer(ref_stk, reflectance)
 	} 
 	if (!missing(filename)) {
 		filename(ref_stk) <- filename
 		ref_stk <- stackSave(ref_stk)
 	}
-
 	return(ref_stk)
 }
 
 
 #Conversion of DN to temperature
 dn2temp <- function(SatImgObject, filename) {
-	lmax 		<- SatImgObject@lmax
+	lmax 			<- SatImgObject@lmax
 	lmin 	      		<- SatImgObject@lmin
 	qcalmax 		<- SatImgObject@qcalmax
 	qcalmin  		<-SatImgObject@qcalmin
-	
 
 	if (is.na(lmax[1])) {
-		gb <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
-		gain <- gb[,"gain"]
-		bias <- gb[,"bias"]
+		gb	 <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
+		gain 	<- gb[,"gain"]
+		bias 	<- gb[,"bias"]
 	}	
 
 	if (SatImgObject@sensor == "ETM+") {
@@ -102,19 +104,24 @@ dn2temp <- function(SatImgObject, filename) {
 	
 	for (j in b) {
 		DN			<- raster(SatImgObject@band_filenames[j])
+		NAvalue(DN) 	<-0
+		#DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
 		if (!missing(filename)) {
-			filename(temp) <- b_filename[j]
-			temp	<- writeRaster(temp, overwrite=TRUE)
+			if (dataContent(temp) == 'all') {
+				filename(temp) 	<- b_filename[j]
+				temp 		<- writeRaster(temp, overwrite=TRUE)
+			} 			
+			else {
+				temp <- copyRasterFile(temp, b_filename[j], overwrite=TRUE)}
 		}
-		temp_stk		<- addRasters(temp_stk, temp)
+		temp_stk		<- addLayer(temp_stk, temp)
 	}
 	if (!missing(filename)) {
-		filename(temp_stk) <- filename
-		temp_stk <- stackSave(temp_stk)
+		filename(temp_stk) 	<- filename
+		temp_stk 			<- stackSave(temp_stk)
 	}
-
 	return(temp_stk)
 }
 
@@ -134,8 +141,8 @@ dn2rad <- function(DN, gain, bias, lmax, lmin, qcalmax, qcalmin) {
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
  rad2ref <- function(radiance, doy, sun_elevation, ESUN) {
 	ds <- ( 1.0 + 0.01672 * sin( 2 * pi * ( doy - 93.5 ) / 365 ) )
-	#reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
-	reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)
+	reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
+	#reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)
 	return (reflectance)
 }
 
