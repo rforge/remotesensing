@@ -26,17 +26,16 @@ dn2ref  <- function(SatImgObject, filename) {
 		gb <- GainBias(SatImgObject@spacecraft, SatImgObject@sensor, SatImgObject@acquisition_date, SatImgObject@product_creation_date) 
 		gain <- gb[, "gain"]
 		bias <- gb[,"bias"]
-	}
-	else {
+	} else {
 		gain <- NA
 		bias <- NA
 	}
 	
 	if (SatImgObject@sensor %in% c("TM","ETM+")) {
-		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") }
-	else if (SatImgObject@sensor  == "MSS") {
-		b <- c("BAND1","BAND2","BAND3","BAND4") }
-	else {
+		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") 
+	} else if (SatImgObject@sensor  == "MSS") {
+		b <- c("BAND1","BAND2","BAND3","BAND4") 
+	} else {
 		stop('not done yet')	}
 	if (!missing(filename)) {
 		b_filename <- vector(length=length(b))
@@ -49,19 +48,12 @@ dn2ref  <- function(SatImgObject, filename) {
 	
 	for (i in b) {
 		DN			<- raster(SatImgObject@band_filenames[i])
-		#DN[DN==0]		<- NA
 		NAvalue(DN) 	<-0
-		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
+#		DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 		radiance 		<- dn2rad(DN, gain[i], bias[i], lmax[i], lmin[i], qcalmax[i], qcalmin[i])
-		reflectance 	<- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
-		if (!missing(filename)) {
-			if (dataContent(reflectance) == 'all') {
-				filename(reflectance) <- b_filename[i]
-				reflectance <- writeRaster(reflectance, overwrite=TRUE)
-			} 			
-			else {
-				reflectance <- copyRasterFile(reflectance, b_filename[i], overwrite=TRUE)}
-		}
+		
+#		reflectance <- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
+		reflectance <- calc(radiance, fun=function(x){rad2ref(x, doy, sun_elevation, ESUN[i])}, filename= b_filename[i])				
 		ref_stk		<- addLayer(ref_stk, reflectance)
 	} 
 	if (!missing(filename)) {
@@ -109,7 +101,7 @@ dn2temp <- function(SatImgObject, filename) {
 		radiance 		<- dn2rad(DN, gain[j], bias[j], lmax[j], lmin[j], qcalmax[j], qcalmin[j])
 		temp 		<- rad2temp(radiance, SatImgObject)
 		if (!missing(filename)) {
-			if (dataContent(temp) == 'all') {
+			
 				filename(temp) 	<- b_filename[j]
 				temp 		<- writeRaster(temp, overwrite=TRUE)
 			} 			
@@ -126,6 +118,13 @@ dn2temp <- function(SatImgObject, filename) {
 }
 
 #Conversion of DN to radiance 
+
+
+dn2rad2 <- function(DN, gain, bias) {
+	return( gain * DN + bias )
+}
+
+
 dn2rad <- function(DN, gain, bias, lmax, lmin, qcalmax, qcalmin) {
 	if (!is.na(lmax)) {
 		gain <- (lmax - lmin) / (qcalmax - qcalmin)
