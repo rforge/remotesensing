@@ -8,6 +8,8 @@
 \alias{GainBias}
 \alias{esun}
 \alias{K_landsat}
+\alias{getDS}
+\alias{getGainBias}
 
 \title{Radiometric calibration}
 
@@ -18,12 +20,14 @@
 \usage{
 dn2ref (SatImgObject, filename)
 dn2temp (SatImgObject, filename)
-dn2rad(DN, gain, bias, lmax, lmin, qcalmax, qcalmin)
-rad2ref(radiance, doy, sun_elevation, ESUN ) 
-rad2temp(radiance_thermal, SatImgObject)
+dn2rad(DN, gain, bias)
+rad2ref(radiance, ds, sun_elevation, ESUN ) 
+rad2temp(radiance_thermal, K)
 GainBias(spacecraft, sensor, acquisition_date, product_creation_date) 
 esun(spacecraft, sensor) 
 K_landsat(spacecraft, sensor)
+getDS(doy)
+getGainBias(SatImgObject)
 }
 
 
@@ -38,6 +42,7 @@ K_landsat(spacecraft, sensor)
   \item{radiance}{spectral radiance at the sensor's aperture, W/(m2 * sr * micrometer)}
   \item{doy}{day of the year}
   \item{sun_elevation}{sun elevation in degrees}
+  \item{ds}{earth–sun distance in astronomical units}
   \item{ESUN}{mean solar exoatmospheric irradiances, W/(m2 * sr * micrometer)}
   \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W/(m2 * sr * micrometer)}
   \item{spacecraft}{space craft id: Landsat1, Landsat2, Landsat3, Landsat4, Landsat5, Landsat7, Terra}
