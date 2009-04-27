@@ -22,7 +22,7 @@
 }
 
 
-modisClean2 <- function(inpath, outpath, overwrite=TRUE) {
+modisClean <- function(inpath, outpath, overwrite=TRUE) {
 #red = "b01"; nir = "b02"; blue = "b03"; green = "b04"; swir6 = "b06"; swir7 = "b07"; qual = "state"
 
 	m <- modisFiles(inpath)
