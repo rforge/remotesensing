@@ -22,7 +22,7 @@
 }
 
 
-modisClean <- function(inpath, outpath, overwrite=TRUE) {
+modisClean2 <- function(inpath, outpath, overwrite=TRUE) {
 #red = "b01"; nir = "b02"; blue = "b03"; green = "b04"; swir6 = "b06"; swir7 = "b07"; qual = "state"
 
 	m <- modisFiles(inpath)
@@ -38,7 +38,7 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 			qfile <- paste(inpath, as.vector(subset(mm, mm$date == d & mm$band == "sta")$filename), sep='')
 			b <- subset(mm, mm$date == d & mm$band != "sta")
 
-			rq <- rasterFromFile(qfile, TRUE)
+			rq <- raster(qfile, TRUE)
 
 			# changed cloud mask from modis.sqa500a_adj to modis.sqa500f
 			# mask <- coulds | snow | water
@@ -47,8 +47,8 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 			fname1 <- paste(outpath, d, '_', z, '_', sep='')
 			
 			for (i in 1:length(b[,1])) { 
-				r <- rasterFromFile( paste(inpath, b$filename[i], sep='') )
-				r <- setNAvalue(r, -28672)
+				r <- raster( paste(inpath, b$filename[i], sep='') )
+				NAvalue(r) <- -28672
 				r <- readAll(r)
 				r[mask == 0] <- NA  # apply mask 
 				
@@ -56,8 +56,8 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 	
 # for efficient storage				
 				r[] <- values(r) / 10000
-				r <- setDatatype(r, datatype="FLT4S")
-				r <- setFilename(r,  paste(fname1, b$band[i], '_clean.grd', sep=''))
+				dataType(r) <- "FLT4S"
+				filename(r) <- paste(fname1, b$band[i], '_clean.grd', sep='')
 				r <- writeRaster(r, overwrite=overwrite)
 			}
 		}
