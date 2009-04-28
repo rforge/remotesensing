@@ -19,17 +19,17 @@ modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 			fname1 <- paste(outpath, b$date[1], '_', b$zone[1], '_', sep='')
 			for (i in 1:length(b[,1])) { 
 				if (b$band[i] == 'b01') {
-					red <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM )
+					red <- raster(paste(inpath, b$filename[i], sep=''), inRAM )
 				} else if (b$band[i] == 'b02') {
-					nir <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM )
+					nir <- raster(paste(inpath, b$filename[i], sep=''), inRAM )
 				} else if (b$band[i] == 'b03') {
-					blue <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
+					blue <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b04') {
-					green <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
+					green <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b05') {
 					#swir1 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else if (b$band[i] == 'b06') {
-					swir2 <- rasterFromFile(paste(inpath, b$filename[i], sep=''), inRAM)
+					swir2 <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b07') {
 					#swir3<- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else {
