@@ -19,6 +19,7 @@
 \alias{ustar}
 \alias{zom0}
 \alias{sensih}
+\alias{sensih_SEBAL01}
 \alias{evapfr}
 \alias{eta}
 \alias{soilmoisture}
@@ -49,6 +50,7 @@ U0( zom0, u2m)
 ustar( t0_dem, h, ustar, roh_air, zom, u2m)
 zom0( ndvi, ndvi_max)
 sensih( iteration, tempk_water, tempk_desert, t0_dem, tempk, ndvi, ndvi_max, dem, rnet_desert, g0_desert, t0_dem_desert, u2m, dem_desert)
+sensih_SEBAL01( rnet, g0, z0m, t0dem, ustar, ea, row_wet, col_wet, row_dry, col_dry)
 evapfr(rnet,g0,h0)
 soilmoisture(evapfr) 
 eta(rnet_day,evapfr,surface_temperature)
@@ -67,6 +69,7 @@ eta(rnet_day,evapfr,surface_temperature)
   \item{roh_w}{} 
   \item{dtair}{} 
   \item{e0}{}
+  \item{ea}{}
   \item{utc}{} 
   \item{sunzangle}{} 
   \item{rnet}{} 
@@ -101,6 +104,10 @@ eta(rnet_day,evapfr,surface_temperature)
   \item{h0}{} 
   \item{evapfr}{} 
   \item{rnet_day}{}
+  \item{row_dry}{}
+  \item{col_dry}{}
+  \item{row_wet}{}
+  \item{col_wet}{}
 }
 \details{
   ~~ If necessary, more details than the description above ~~
@@ -109,7 +116,8 @@ eta(rnet_day,evapfr,surface_temperature)
   Water Mapping
 }
 \references{ 
-Bastiaanssen, W.G.M. 1995. SEBAL.
+Bastiaanssen, W.G.M. 1995. Regionalization of surface flux densities and moisture indicators in composite terrain. SC-DLO Report 109. Wageningen, The Netherlands.
+Alexandridis T.K., Cherif I., Chemin Y., Silleos N.G., Stavrinos E., Zalidis G.C. Integrated methodology for estimating water use in Mediterranean agricultural areas. Remote Sensing. -(-):,2009. (submitted)
 }
 \author{ Yann Chemin }
 \note{ ~~further notes~~ 
