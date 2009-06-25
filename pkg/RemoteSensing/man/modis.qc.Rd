@@ -45,17 +45,19 @@ modis.qc500e(pixel)
  \item{modis.qc250d}{returns Atmospheric Correction performed}
  \item{modis.qc250e}{returns Adjacency Correction performed}
  \item{modis.qc250f}{returns Different orbit from 500m}
+ \item{modis.qc500a}{returns MODLAND QA bits}
+ \item{modis.qc500c}{returns BAND 1/2/3/4/5/6/7 data quality} 
+ \item{modis.qc500d}{returns Atmospheric Correction performed} 
+ \item{modis.qc500e}{returns Adjacency Correction performed}
  }
 \value{
   
 }
-\references{ ~put references to the literature/web site here ~ }
+\references{ Vermote E.F., Kotchenova S.Y., Ray J.P. MODIS Surface Reflectance User's Guide. Version 1.2. June 2008. MODIS Land Surface Reflectance Science Computing Facility. }
 
 \author{ Yann Chemin }
 
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+\note{ In MOD09A1: It seems that cloud related info is not filled properly in the standard QC (MOD09A1 in this module) since version 3, State-QA 500m images (MOD09A1s in this module) should be used (see Vermote et al., 2008).
 }
 \seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
 
