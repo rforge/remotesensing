@@ -40,19 +40,17 @@ modis.sqa500k(pixel)
 }
 
 \details{
-modis.sqa500a - Cloud State 
-modis.sqa500b - cloud shadow 
-modis.sqa500c - LAND/WATER FLAG 
-modis.sqa500d - AEROSOL QUANTITY 
-modis.sqa500e - CIRRUS DETECTED 
-modis.sqa500f - Internal Cloud Algorithm Flag 
-modis.sqa500g - Internal Fire Algorithm Flag 
-modis.sqa500h - MOD35 snow/ice flag 
-modis.sqa500i - Pixel adjacent to cloud
-modis.sqa500j - BRDF correction performed
-modis.sqa500k - Internal Snow Mask
-
-
+ \item{modis.sqa500a}{Cloud State} 
+ \item{modis.sqa500b}{cloud shadow} 
+ \item{modis.sqa500c}{LAND/WATER FLAG} 
+ \item{modis.sqa500d}{AEROSOL QUANTITY} 
+ \item{modis.sqa500e}{CIRRUS DETECTED} 
+ \item{modis.sqa500f}{Internal Cloud Algorithm Flag} 
+ \item{modis.sqa500g}{Internal Fire Algorithm Flag} 
+ \item{modis.sqa500h}{MOD35 snow/ice flag} 
+ \item{modis.sqa500i}{Pixel adjacent to cloud}
+ \item{modis.sqa500j}{BRDF correction performed}
+ \item{modis.sqa500k}{Internal Snow Mask}
 }
 \value{
   

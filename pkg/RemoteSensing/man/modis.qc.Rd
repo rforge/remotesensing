@@ -14,7 +14,7 @@
 \title{ MODIS Quality Assessment Extractor }
 
 \description{
- Makes Human-readable images of Quality Assessment binary bits from MOD09AQ products.
+ Makes Human-readable images of Quality Assessment binary bits from MOD09A and MOD09Q products.
 }
 
 \usage{
