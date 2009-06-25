@@ -48,6 +48,9 @@ flooded <- function(lswi, ndvi, evi) {
 
 persistentwater <- function(ndvi,lswi)
 { 	
+#Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
+ #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 
+ #Remote Sensing of Environment 95:480-492.
 	result <- (ndvi < 0.10) & (ndvi < lswi)
 	return(result)
 }
