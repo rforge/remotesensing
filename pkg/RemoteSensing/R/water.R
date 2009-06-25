@@ -39,11 +39,15 @@ waterModis<-function(ndvi, band7)
 }
 
 
-
-
 flooded <- function(lswi, ndvi, evi) { 
 #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
  #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 
  #Remote Sensing of Environment 95:480-492.
  	return( (lswi+0.05 >= evi) | (lswi+0.05 >= ndvi) )
+}
+
+persistentwater <- function(ndvi,lswi)
+{ 	
+	result <- (ndvi < 0.10) & (ndvi < lswi)
+	return(result)
 }
