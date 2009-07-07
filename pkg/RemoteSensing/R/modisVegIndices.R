@@ -40,6 +40,7 @@ modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 			LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname1, 'lswi.grd', sep=''), overwrite=overwrite)
 			EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname1, 'evi.grd', sep=''), overwrite=overwrite)
 			flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname1, 'flooded.grd', sep=''), overwrite=overwrite,  datatype='INT2S')
+			permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname1, 'permanent', sep=''), overwrite=overwrite, datatype='INT2S')
 		}
 	}
 }
