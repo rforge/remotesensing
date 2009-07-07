@@ -5,25 +5,40 @@
 # Licence GPL v3
 
 
-
-.modis.sqa500a_adj <- function (pixel) {
-	pixel <- modis.sqa500a(pixel)
+# Internal cloud  algorithm flag
+.internalcloud <- function (pixel) {
+	pixel <- modis.sqa500f(pixel)
 	pixel <- pixel + 1
 	pixel[pixel > 1] <- 0
     return(pixel)
 }
 
+# Cloud shadow mask
+.cloudshadow <- function (pixel) {
+	pixel <- modis.sqa500b(pixel)
+	pixel <- pixel + 1
+	pixel[pixel > 1] <- 0
+    return(pixel)
+}
 
+# Water mask (includes land and inland water)
 .watermask <- function(pixel) {
 	res <- modis.sqa500c(pixel)
-	res[res < 1 | res > 5] <- 0
-	res[res > 0] <- 1
+	res[res < 1 | res == 2 | res > 5 ] <- 0
+	res[res >= 1] <- 1
 	return(res)
 }
 
+# Internal Snow mask
+.snowmask <- function(pixel) {
+	pixel <- modis.sqa500k(pixel)
+	pixel <- pixel + 1
+	pixel[pixel > 1] <- 0
+    return(pixel)
+}
 
 modisClean <- function(inpath, outpath, overwrite=TRUE) {
-#red = "b01"; nir = "b02"; blue = "b03"; green = "b04"; swir6 = "b06"; swir7 = "b07"; qual = "state"
+#red = "b01"; nir = "b02"; blue = "b03"; green = "b04"; nir2 = "b05"; swir6 = "b06"; swir7 = "b07"; qual = "state"
 
 	m <- modisFiles(inpath)
 	dir.create(outpath, showWarnings = FALSE)
@@ -42,9 +57,9 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 
 			# changed cloud mask from modis.sqa500a_adj to modis.sqa500f
 			# mask <- coulds | snow | water
-			mask <- calc(rq, modis.sqa500a) | calc(rq, modis.sqa500h) | calc(rq, .watermask)
+			mask <- calc(rq, .internalcloud) * calc(rq, .cloudshadow) * calc(rq, .watermask) * calc(rq, .snowmask) 
 
-			fname1 <- paste(outpath, d, '_', z, '_', sep='')
+			fname <- paste(outpath, d, '_', z, '_', sep='')
 			
 			for (i in 1:length(b[,1])) { 
 				r <- raster( paste(inpath, b$filename[i], sep='') )
@@ -52,12 +67,10 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 				r <- readAll(r)
 				r[mask == 0] <- NA  # apply mask 
 				
-#				r <- r / 10000  # scaling     why should we scale ?
-	
 # for efficient storage				
 				r[] <- values(r) / 10000
 				dataType(r) <- "FLT4S"
-				filename(r) <- paste(fname1, b$band[i], '_clean.grd', sep='')
+				filename(r) <- paste(fname, b$band[i], '_clean.grd', sep='')
 				r <- writeRaster(r, overwrite=overwrite)
 			}
 		}
