@@ -25,6 +25,7 @@
 .watermask <- function(pixel) {
 	res <- modis.sqa500c(pixel)
 	res[res < 1 | res == 2 | res > 5 ] <- 0
+	res[res >=3] <- 0
 	res[res >= 1] <- 1
 	return(res)
 }
