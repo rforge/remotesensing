@@ -4,7 +4,6 @@
 # Version 0.1
 # Licence GPL v3
 
-
 rice <- function(inpath, outpath) {
 
 	inpath <- paste(inpath, "/", sep="")
@@ -20,15 +19,19 @@ rice <- function(inpath, outpath) {
 	mymax <- function(x) {
 		x <- na.omit(x)
 		if (length(x) > 0) {
+		
 			return(max(x)) 
 		} else { 
 			return( NA ) 
 		}
 	}
-
-	Forest <- function(ndvi){ sum( ndvi > 0.7 , na.rm=T) > 14 }
-	Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) < 3 }
-	Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
+	
+	
+	Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
+	Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
+	Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not forest =0
+	Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
+	# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
 	m <- modisFilesClean(inpath)
 	m$filename <- paste(inpath, m$filename, sep="")
@@ -37,8 +40,9 @@ rice <- function(inpath, outpath) {
 	for (z in zones) {
 		mm <- subset(m, m$zone==z)
 		years <- as.vector(unique(mm$year))
+		print(paste('Zone:', z))
 		for (y in years) {
-			mmm <- subset(mm, mm$year == y)
+			mmm <- subset(mm, mm$year == y, )
 			dates <- as.vector(unique(mmm$date))
 			dates <- sort(dates)
 			if (length(dates) < 46) { 
@@ -47,60 +51,39 @@ rice <- function(inpath, outpath) {
 				}
 				warning(paste('expected 46 files, found:', length(dates))) 
 			}
+						
 			ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi']) )
 			evistk <- stack( as.vector( mmm$filename[mmm$band=='evi']) )
 			lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi']) )
 			floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
+			permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
-			flooded <- calc(floodstk, fun=mysum,  filename="")
-			permanent <- flooded > 30
-			flooded[flooded > 0] <- 1
+			fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
+			flooded <- calc(floodstk, fun=Flooded, filename = fnameflood, overwrite=T)
+						
+			fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
+			permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=T)
+			permanent <- readAll(permanent)
+												
+			fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
+			forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=T)
+			forest <- readAll(forest)
 			
-			forest <- calc(ndvistk, fun=Forest)
-			shrub <- calc(lswistk, fun=Shrub)
+			fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
+			shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=T) 
+			shrub <- readAll(shrub)
 			shrub  <- shrub & !forest
-			bare <- calc(ndvistk, fun=Bare)
-
-			filename(bare) <- paste(outpath, 'bare_', y, '.grd', sep='')			
-			filename(shrub) <- paste(outpath, 'shrub_', y, '.grd', sep='')			
-			filename(forest) <- paste(outpath, 'forest_', y, '.grd', sep='')			
-			bare <- writeRaster(bare)
-			shrub <- writeRaster(shrub)
-			forest <- writeRaster(forest)
-			
-			notrice <- any(permanent, forest, shrub)
-			perhapsrice <- flooded & !notrice
-
-			filename(notrice) <- paste(outpath, 'notrice_', y, '.grd', sep='')			
+										
+			#notrice <- any(permanent, forest, shrub)           # It doesnt work on my computer
+			notrice <- (permanent | forest | shrub)
+			notrice <- readAll(notrice)
+			filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
 			notrice <- writeRaster(notrice)
-			filename(perhapsrice) <- paste(outpath, 'perhapsrice_', y, '.grd', sep='')
+			
+			perhapsrice <- flooded & !notrice
+			filename(perhapsrice) <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
 			perhapsrice <- writeRaster(perhapsrice)
-			
-			maxevi <- calc(evistk, fun=mymax, filename="")
-			
-			xiaorice <- setRaster(evistk)
-			xiaorice <- setDatatype(xiaorice, 'INT2S')
-			filename(xiaorice) <- 'xiaorice.grd'
-			for (r in 1:nrow(evistk)) {
-				evistk <- readRow(evistk,r)
-				max_per <- apply(values(evistk), 1, which.max)
-				d <- matrix(NA, nrow=length(max_per), ncol=6)
-				d[,6] <- max_per
-				d[,5] <- max_per - 1
-				d[,4] <- max_per - 2
-				d[,3] <- max_per - 3
-				d[,2] <- max_per - 4
-				d[,1] <- max_per - 5
-				d[d<1] <- nlayers(evistk) + d[d<1]
-				index <- cbind(rep(1:length(d[,1]), each=6), as.vector(t(d)))
-				floodstk <- readRow(floodstk, r)
-				isrice <- apply(matrix(values(floodstk)[d], ncol=6, byrow=T), 1, max)
-				xiaorice <- setValues(xiaorice, isrice , r ) 
-				xiaorice <- writeRaster(xiaorice)
-			}
-		}
-	}
-}
-			
-
+		}	
+	}		
+}		
 
