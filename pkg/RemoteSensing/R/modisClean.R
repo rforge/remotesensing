@@ -38,6 +38,13 @@
     return(pixel)
 }
 
+.bluemask <- function(pixel) {
+	pixel[pixel >= 0.2] <- NA
+	pixel[pixel < 0.2] <- 1
+	pixel[is.na(pixel)] <- 0
+	return(pixel)
+	}
+
 modisClean <- function(inpath, outpath, overwrite=TRUE) {
 #red = "b01"; nir = "b02"; blue = "b03"; green = "b04"; nir2 = "b05"; swir6 = "b06"; swir7 = "b07"; qual = "state"
 
@@ -73,6 +80,14 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 				dataType(r) <- "FLT4S"
 				filename(r) <- paste(fname, b$band[i], '_clean.grd', sep='')
 				r <- writeRaster(r, overwrite=overwrite)
+			}
+			
+			BLUE <- list.files(outpath, pattern = "b03_clean.grd")
+			
+			for (i in 1:length(BLUE)) {
+					bluefiles <- raster(paste(outpath, BLUE[i], sep=""))
+					fnameblumask <- paste(outpath, d, '_', z, '_',  "b03_mask.grd", sep="")
+					blumask <- calc(bluefiles, fun=.bluemask, filename = fnameblumask)
 			}
 		}
 	}
