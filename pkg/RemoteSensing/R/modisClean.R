@@ -38,6 +38,7 @@
     return(pixel)
 }
 
+# possibly cloudy pixels that were not included in the internal cloud flag
 .bluemask <- function(pixel) {
 	pixel[pixel >= 0.2] <- NA
 	pixel[pixel < 0.2] <- 1
@@ -87,7 +88,7 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 			for (i in 1:length(BLUE)) {
 					bluefiles <- raster(paste(outpath, BLUE[i], sep=""))
 					fnameblumask <- paste(outpath, d, '_', z, '_',  "b03_mask.grd", sep="")
-					blumask <- calc(bluefiles, fun=.bluemask, filename = fnameblumask)
+					blumask <- calc(bluefiles, fun=.bluemask, filename = fnameblumask, datatype='INT2S')
 			}
 		}
 	}
