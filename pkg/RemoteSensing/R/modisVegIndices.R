@@ -6,6 +6,7 @@
 
 
 modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
+#NDVI: normalized difference vegetation index; EVI: enhanced vegetation index; LSWI: land surface water index; NDSI: normalized difference snow index
 	m <- modisFilesClean(inpath)
 	dir.create(outpath, showWarnings = FALSE)
 	zones <- as.vector(unique(m$zone))
