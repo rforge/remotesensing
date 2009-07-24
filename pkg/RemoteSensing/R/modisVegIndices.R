@@ -17,7 +17,7 @@ modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 		for (d in dates) {
 			print(d)
 			b <- subset(mm, mm$date == d)
-			fname1 <- paste(outpath, b$date[1], '_', b$zone[1], '_', sep='')
+			fname <- paste(outpath, b$date[1], '_', b$zone[1], '_', sep='')
 			for (i in 1:length(b[,1])) { 
 				if (b$band[i] == 'b01') {
 					red <- raster(paste(inpath, b$filename[i], sep=''), inRAM )
@@ -37,12 +37,12 @@ modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 					stop(paste('unknown band:', b$band[i]))
 				}
 			}
-			NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname1, 'ndvi.grd', sep=''), overwrite=overwrite)
-			LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname1, 'lswi.grd', sep=''), overwrite=overwrite)
-			EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname1, 'evi.grd', sep=''), overwrite=overwrite)
-			flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname1, 'flooded.grd', sep=''), overwrite=overwrite,  datatype='INT2S')
-			permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname1, 'permanent', sep=''), overwrite=overwrite, datatype='INT2S')
-			NDSI <- overlay(green, nir, fun= ndsi, filename=paste(fname1, 'NDSI', sep=''), overwrite=overwrite)
+			NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname, 'ndvi.grd', sep=''), overwrite=overwrite)
+			LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname, 'lswi.grd', sep=''), overwrite=overwrite)
+			EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname, 'evi.grd', sep=''), overwrite=overwrite)
+			flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=overwrite,  datatype='INT2S')
+			permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, 'permanent', sep=''), overwrite=overwrite, datatype='INT2S')
+			NDSI <- overlay(green, nir, fun= ndsi, filename=paste(fname, 'NDSI', sep=''), overwrite=overwrite)
 		}
 	}
 }
