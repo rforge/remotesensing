@@ -74,7 +74,7 @@ rice <- function(inpath, outpath) {
 			shrub <- readAll(shrub)
 			shrub  <- shrub & !forest
 										
-			#notrice <- any(permanent, forest, shrub)           # It doesnt work on my computer
+			#notrice <- any(permanent, forest, shrub)        
 			notrice <- (permanent | forest | shrub)
 			notrice <- readAll(notrice)
 			filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
