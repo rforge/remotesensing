@@ -28,11 +28,11 @@ modisVeg <- function(inpath, outpath, overwrite=TRUE, inRAM=FALSE) {
 				} else if (b$band[i] == 'b04') {
 					green <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b05') {
-					#swir1 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
+					#nir2 <- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else if (b$band[i] == 'b06') {
-					swir2 <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
+					swir1 <- raster(paste(inpath, b$filename[i], sep=''), inRAM)
 				} else if (b$band[i] == 'b07') {
-					#swir3<- rasterFromFile(paste(inpath, b$filename[i], sep=''))
+					#swir2<- rasterFromFile(paste(inpath, b$filename[i], sep=''))
 				} else {
 					stop(paste('unknown band:', b$band[i]))
 				}
