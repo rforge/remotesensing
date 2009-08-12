@@ -88,7 +88,7 @@ modisClean <- function(inpath, outpath, overwrite=TRUE) {
 			for (i in 1:length(BLUE)) {
 					bluefiles <- raster(paste(outpath, BLUE[i], sep=""))
 					fnameblumask <- paste(outpath, d, '_', z, '_',  "b03_mask.grd", sep="")
-					blumask <- calc(bluefiles, fun=.bluemask, filename = fnameblumask, datatype='INT2S')
+					blumask <- calc(bluefiles, fun=.bluemask, filename = fnameblumask, datatype='INT2S', overwrite=TRUE)
 			}
 		}
 	}
