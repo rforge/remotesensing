@@ -35,20 +35,19 @@ getGainBias(SatImgObject)
   \item{SatImgObject}{Satellite image object}
   \item{filename}{filename to output raster stack of reflectance or temperature values}
   \item{DN}{Digital number}
-  \item{gain}{band-specific rescaling gain factor, W/(m2 * sr * micrometer)/DN }
-  \item{bias}{band-specific rescaling bias factor, W/(m2 * sr * micrometer) }
-  \item{lmin, lmax}{spectral radiance that is scaled to qcalmin/qcalmax, W/(m2 * sr * micrometer) }
-  \item{qcalmin, qcalmax}{minimum/maximum quantized calibrated pixel value corresponding to lmin/lmax}
-  \item{radiance}{spectral radiance at the sensor's aperture, W/(m2 * sr * micrometer)}
-  \item{doy}{day of the year}
   \item{sun_elevation}{sun elevation in degrees}
-  \item{ds}{earth–sun distance in astronomical units}
+  \item{doy}{day of the year}
+  \item{ds}{earth to sun distance in astronomical units}
+  \item{gain}{band-specific rescaling gain factor, W / (m2 * sr * micrometer) /DN }
+  \item{bias}{band-specific rescaling bias factor, W / (m2 * sr * micrometer) }
+  \item{radiance}{spectral radiance at the sensor's aperture, W/(m2 * sr * micrometer)}
   \item{ESUN}{mean solar exoatmospheric irradiances, W/(m2 * sr * micrometer)}
-  \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W/(m2 * sr * micrometer)}
+  \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W / (m2 * sr * micrometer)}
   \item{spacecraft}{space craft id: Landsat1, Landsat2, Landsat3, Landsat4, Landsat5, Landsat7, Terra}
   \item{sensor}{sensor: MSS, TM, ETM+, Aster}  
   \item{acquisition_date}{image acquisition date}
   \item{product_creation_date}{image processing date}
+  \item{K}{  }
 }
 
 \value{

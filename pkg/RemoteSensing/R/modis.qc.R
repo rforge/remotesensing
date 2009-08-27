@@ -15,6 +15,8 @@ modis.qc250a<-function(pixel)
 	#01 -> class 1: Corrected product produced at less than idel quality -- some or all bands
 	#10 -> class 2: Corrected product NOT produced due to cloud effect -- all bands
 	#11 -> class 3: Corrected product NOT produced due to other reasons -- some or all bands maybe fill value (Note that a value of [11] overrides a value of [01])
+	
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
 	pixel <- bitAnd(pixel,3)
 	return(pixel)
 }
@@ -27,6 +29,8 @@ modis.qc250b<-function(pixel)
 	#01 -> class 1: Cloudy
 	#10 -> class 2: Mixed
 	#11 -> class 3: Not Set ; Assumed Clear
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,2)
 	pixel <- bitAnd(pixel,3)
 	return(pixel)
@@ -48,6 +52,8 @@ modis.qc250c<-function(pixel,bandno)
 	#1110 -> class 8: L1B data faulty
 	#1111 -> class 9: not processed due to deep ocean or cloud
 	#Class 10-15: Combination of bits unused
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,(4 + (4*(bandno-1))))
 	pixel <- bitAnd(pixel,15)
 	return(pixel)
@@ -59,6 +65,8 @@ modis.qc250d<-function(pixel)
 	# Atmospheric correction 250m Unsigned Int bit[12]
 	#0 -> class 0: Not Corrected product
 	#1 -> class 1: Corrected product
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,12)
 	pixel <- bitAnd(pixel,1)
 	return(pixel)
@@ -71,6 +79,8 @@ modis.qc250e<-function(pixel)
 	# Adjacency correction 250m Unsigned Int bit[13]
 	#0 -> class 0: Not Corrected product
 	#1 -> class 1: Corrected product
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,13)
 	pixel <- bitAnd(pixel,1)
 	return(pixel)
@@ -82,6 +92,8 @@ modis.qc250f<-function(pixel)
 	# Different orbit from 500m product, 250m Unsigned Int bit[14]
 	#0 -> class 0: same orbit as 500m
 	#1 -> class 1: different orbit from 500m
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,14)
 	pixel <- bitAnd(pixel,1)
 	return(pixel)
@@ -95,6 +107,8 @@ modis.qc500a<-function(pixel)
 	#01 -> class 1: Corrected product produced at less than idel quality -- some or all bands
 	#10 -> class 2: Corrected product NOT produced due to cloud effect -- all bands
 	#11 -> class 3: Corrected product NOT produced due to other reasons -- some or all bands mayb be fill value (Note that a value of [11] overrides a value of [01])
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitAnd(pixel,3)
 	return(pixel)
 }
@@ -115,6 +129,8 @@ modis.qc500c<-function(pixel,bandno)
 	#1110 -> class 8: L1B data faulty
 	#1111 -> class 9: not processed due to deep ocean or cloud
 	#Class 10-15: Combination of bits unused
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,(2 + (4*(bandno-1))))
 	pixel <- bitAnd(pixel,15)
 	return(pixel)
@@ -126,6 +142,8 @@ modis.qc500d<-function(pixel)
 	# Atmospheric correction 500m long Int bit[30]
 	#0 -> class 0: Not Corrected product
 	#1 -> class 1: Corrected product
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,30)
 	pixel <- bitAnd(pixel,1)
 	return(pixel)
@@ -137,6 +155,8 @@ modis.qc500e<-function(pixel)
 	# Adjacency correction 500m long Int bit[31]
 	#0 -> class 0: Not Corrected product
 	#1 -> class 1: Corrected product
+	if (!(require(bitops))) {stop("You need to install the bitops package to use this function")}
+
 	pixel <- bitShiftR(pixel,31)
 	pixel <- bitAnd(pixel,1)
 	return(pixel)
