@@ -28,28 +28,29 @@ modis.qc500a(pixel)
 modis.qc500c(pixel, bandno) 
 modis.qc500d(pixel) 
 modis.qc500e(pixel)
-
 }
-
 
 \arguments{
   \item{pixel}{ --- }
   \item{bandno}{ --- }
-
 }
 
 \details{
- \item{modis.qc250a}{returns MODLAND QA bits}
- \item{modis.qc250b}{returns Cloud State}
- \item{modis.qc250c}{returns BAND 1/2 data quality}
- \item{modis.qc250d}{returns Atmospheric Correction performed}
- \item{modis.qc250e}{returns Adjacency Correction performed}
- \item{modis.qc250f}{returns Different orbit from 500m}
- \item{modis.qc500a}{returns MODLAND QA bits}
- \item{modis.qc500c}{returns BAND 1/2/3/4/5/6/7 data quality} 
- \item{modis.qc500d}{returns Atmospheric Correction performed} 
- \item{modis.qc500e}{returns Adjacency Correction performed}
- }
+
+\tabular{rll}{
+\tab \code{modis.qc250a} \tab returns MODLAND QA bits \cr
+\tab \code{modis.qc250b} \tab returns Cloud State \cr
+\tab \code{modis.qc250c} \tab returns BAND 1/2 data quality \cr
+\tab \code{modis.qc250d} \tab returns Atmospheric Correction performed \cr
+\tab \code{modis.qc250e} \tab returns Adjacency Correction performed \cr
+\tab \code{modis.qc250f} \tab returns Different orbit from 500m \cr
+\tab \code{modis.qc500a} \tab returns MODLAND QA bits \cr
+\tab \code{modis.qc500c} \tab returns BAND 1/2/3/4/5/6/7 data quality \cr
+\tab \code{modis.qc500d} \tab returns Atmospheric Correction performed \cr
+\tab \code{modis.qc500e} \tab returns Adjacency Correction performed \cr
+}
+}
+
 \value{
   
 }
@@ -59,7 +60,7 @@ modis.qc500e(pixel)
 
 \note{ In MOD09A1: It seems that cloud related info is not filled properly in the standard QC (MOD09A1 in this module) since version 3, State-QA 500m images (MOD09A1s in this module) should be used (see Vermote et al., 2008).
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{  }
 
 \examples{
 

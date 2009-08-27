@@ -34,18 +34,20 @@ albedoAvhrr(red, nir)
 }
 
 \details{
-  ~~ If necessary, more details than the description above ~~
-}
+  }
+  
 \value{
   albedo
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ Yann Chemin }
-\note{ ~~further notes~~ 
 
- ~Make other sections like Warning with \section{Warning }{....} ~
+\references{  }
+
+\author{ Yann Chemin }
+
+\note{ 
+ 
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ }
 \examples{
 
 }

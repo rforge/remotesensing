@@ -1,11 +1,12 @@
 Package: RemoteSensing
 Type: Package
 Title: Remote Sensing 
-Version: 0.1.5
-Date: 11-March-2009
-Depends: bitops, raster, methods, 
+Version: 0.1.6
+Date: 25-August-2009
+Depends: raster, methods
+Suggests: bitops
 Author: Yann Chemin, Alice Laborte, Sonia Asilo and Robert J. Hijmans
-Maintainer: <yann.chemin@gmail.com>
+Maintainer: Robert Hijmans <r.hijmans@gmail.com> 
 Description: Sattelite image analysis algorithms
 License: GPLv3
 LazyLoad: yes

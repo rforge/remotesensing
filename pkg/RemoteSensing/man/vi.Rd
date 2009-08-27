@@ -58,12 +58,12 @@ wdvi(red, nir, slslope = 1)
 \examples{
 #MODIS NDVI processing example
 #Create RasterLayer objects
-red <- rasterFromFile( system.file("external/MOD09A1_b1.tif", package="RemoteSensing"))
-nir <- rasterFromFile( system.file("external/MOD09A1_b2.tif", package="RemoteSensing"))
+red <- raster( system.file("external/MOD09A1_b1.tif", package="RemoteSensing"))
+nir <- raster( system.file("external/MOD09A1_b2.tif", package="RemoteSensing"))
 
 #Set NA values before reading
-red <- setNAvalue(red, -28672)
-nir <- setNAvalue(nir, -28672)
+NAvalue(red) <- -28672
+NAvalue(nir) <- -28672
 
 NDVI <- overlay(red, nir, fun=ndvi)
 

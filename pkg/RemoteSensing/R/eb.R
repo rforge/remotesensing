@@ -304,6 +304,8 @@ sensih<-function( iteration, tempk_water, tempk_desert, t0_dem, tempk, ndvi, ndv
 	return(h[iteration])
 }
 
+.powr <- function(x, y) { return (x^y) }
+
 sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row_dry, col_dry)
 {
 # rnet, g0, zom, t0_dem are raster data
@@ -317,7 +319,7 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     h_dry <- Rn_dry - g0_dry
 
     u5 <- (ustar / 0.41) * log(5 / zom)
-    rah1<-(1/(u5*pow(0.41,2)))*log(5/zom)*log(5/(zom*0.1))
+    rah1<-(1/(u5*.powr(0.41,2)))*log(5/zom)*log(5/(zom*0.1))
     roh1<-((998-ea)/(t0_dem*2.87))+(ea/(t0_dem*4.61))
     roh1[roh1 > 5] <- 1.0
     roh1[roh1 <= 5]<-((1000-4.65)/(t0_dem*2.87))+(4.65/(t0_dem*4.61))
@@ -333,9 +335,9 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     b <- ( a * t0dem_wet ) * (-1.0) 
     sumx <- t0dem_wet + t0dem_dry
     sumy <- d_dT_dry + 0.0
-    sumx2 <- pow(t0dem_wet, 2) + pow(t0dem_dry, 2)
+    sumx2 <- .powr(t0dem_wet, 2) + .powr(t0dem_dry, 2)
     sumxy <- (t0dem_wet * 0.0) + (t0dem_dry * d_dT_dry)
-    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (pow(sumx, 2) / 2.0))
+    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (.powr(sumx, 2) / 2.0))
     b <- (sumy - (a * sumx)) / 2.0
 
     #      ITERATION 1 
@@ -343,12 +345,12 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     roh1 <- xyValues(Roh,cbind(row,col))
     d_h1[rah1 < 1.0] <- 0.0
     d_h1[rah1 >= 1.0] <- (1004 * roh1) * (a * t0_dem + b) / rah1
-    d_L <- -1004*roh1*pow(ustar,3)*t0_dem/(d_h1*9.81*0.41)
-    d_x <- pow((1-16*(5/d_L)),0.25)
-    d_psim <-2*log((1+d_x)/2)+log((1+pow(d_x,2))/2)-2*atan(d_x)+0.5*pi()
-    d_psih <-2*log((1+pow(d_x,2))/2)
+    d_L <- -1004*roh1*.powr(ustar,3)*t0_dem/(d_h1*9.81*0.41)
+    d_x <- .powr((1-16*(5/d_L)),0.25)
+    d_psim <-2*log((1+d_x)/2)+log((1+.powr(d_x,2))/2)-2*atan(d_x)+0.5*pi
+    d_psih <-2*log((1+.powr(d_x,2))/2)
     u5 <-(ustar/0.41)*log(5/zom)
-    d_rah2 <- (1/(u5*pow(0.41,2)))*log((5/zom)-d_psim)*log((5/(zom*0.1))-d_psih)
+    d_rah2 <- (1/(u5*.powr(0.41,2)))*log((5/zom)-d_psim)*log((5/(zom*0.1))-d_psih)
     rah_dry <- xyValues(d_rah2,cbind(row_dry,col_dry))
     d_h_dry <- xyValues(d_h1,cbind(row_dry,col_dry))
     Rah <- d_rah2
@@ -360,9 +362,9 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     b <- (-1.0) * ( a * t0dem_wet ) 
     sumx <- t0dem_wet + t0dem_dry
     sumy <- d_dT_dry + 0.0
-    sumx2 <- pow(t0dem_wet, 2) + pow(t0dem_dry, 2)
+    sumx2 <- .powr(t0dem_wet, 2) + .powr(t0dem_dry, 2)
     sumxy <- (t0dem_wet * 0.0) + (t0dem_dry * d_dT_dry)
-    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (pow(sumx, 2) / 2.0))
+    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (.powr(sumx, 2) / 2.0))
     b <- (sumy - (a * sumx)) / 2.0
 
     #      ITERATION 2 
@@ -370,12 +372,12 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     roh1 <- Roh
     d_h2[d_rah2 < 1.0] <- 0.0
     d_h2[d_rah2 < 1.0] <-(1004*roh1)*(a*t0_dem+b)/d_rah2
-    d_L <- -1004*roh1*pow(ustar,3)*t0_dem/(d_h2*9.81*0.41)
-    d_x <- pow((1 - 16 * (5 / d_L)), 0.25)
-    d_psim <-2*log((1+d_x)/2)+log((1+pow(d_x,2))/2)-2*atan(d_x)+0.5*pi()
-    d_psih <-2*log((1+pow(d_x,2))/2)
+    d_L <- -1004*roh1*.powr(ustar,3)*t0_dem/(d_h2*9.81*0.41)
+    d_x <- .powr((1 - 16 * (5 / d_L)), 0.25)
+    d_psim <-2*log((1+d_x)/2)+log((1+.powr(d_x,2))/2)-2*atan(d_x)+0.5*pi
+    d_psih <-2*log((1+.powr(d_x,2))/2)
     u5 <-(ustar/0.41)*log(5/zom)
-    d_rah3<-(1/(u5*pow(0.41,2)))*log((5/zom)-d_psim)*log((5/(zom*0.1))-d_psih)
+    d_rah3<-(1/(u5*.powr(0.41,2)))*log((5/zom)-d_psim)*log((5/(zom*0.1))-d_psih)
     rah_dry <- xyValues(d_rah2,cbind(row_dry,col_dry))
     d_h_dry <- xyValues(d_h2,cbind(row_dry,col_dry))
     Rah <- d_rah2
@@ -387,9 +389,9 @@ sensih_SEBAL01<-function(rnet, g0, zom, t0_dem, ustar, ea, row_wet, col_wet, row
     b <- (-1.0) * ( a * t0dem_wet ) 
     sumx <- t0dem_wet + t0dem_dry
     sumy <- d_dT_dry + 0.0
-    sumx2 <- pow(t0dem_wet, 2) + pow(t0dem_dry, 2)
+    sumx2 <- .powr(t0dem_wet, 2) + .powr(t0dem_dry, 2)
     sumxy <- (t0dem_wet * 0.0) + (t0dem_dry * d_dT_dry)
-    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (pow(sumx, 2) / 2.0))
+    a <- (sumxy - ((sumx * sumy) / 2.0)) / (sumx2 - (.powr(sumx, 2) / 2.0))
     b <- (sumy - (a * sumx)) / 2.0
 
     #      ITERATION 3 

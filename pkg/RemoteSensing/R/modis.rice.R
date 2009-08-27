@@ -59,18 +59,18 @@ rice <- function(inpath, outpath) {
 			permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
 			fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-			flooded <- calc(floodstk, fun=Flooded, filename = fnameflood, overwrite=T)
+			flooded <- calc(floodstk, fun=Flooded, filename = fnameflood, overwrite=TRUE)
 						
 			fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
-			permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=T)
+			permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=TRUE)
 			permanent <- readAll(permanent)
 												
 			fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
-			forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=T)
+			forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=TRUE)
 			forest <- readAll(forest)
 			
 			fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
-			shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=T) 
+			shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=TRUE) 
 			shrub <- readAll(shrub)
 			shrub  <- shrub & !forest
 										

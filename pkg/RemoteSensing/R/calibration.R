@@ -52,9 +52,10 @@ dn2ref  <- function(SatImgObject, filename) {
 		radiance 		<- dn2rad(DN, gain[i], bias[i])
 		fname		<- filename(radiance)
 #		reflectance <- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
-		reflectance 	<- calc(radiance, fun=function(x){rad2ref(x, ds, sun_elevation, ESUN[i])}, filename= b_filename[i])				
+		reflectance 	<- calc(radiance, fun=function(x){rad2ref(x, ds, sun_elevation, ESUN[i])}, filename= b_filename[i], overwrite=TRUE)				
 		ref_stk		<- addLayer(ref_stk, reflectance)
-		removeFile(radiance)
+#  temporary fix, restore this with next version of Raster
+#		removeRasterFile(radiance)
 	} 
 	if (!missing(filename)) {
 		filename(ref_stk) <- filename
@@ -83,30 +84,32 @@ dn2temp <- function(SatImgObject, filename) {
 		names(bias) <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7") } 
 	else  stop('not done yet')
 
+	temp_stk <- new("RasterStack")
+	
 	if (!missing(filename)) {
 		b_filename <- vector(length=length(b))
 		for (i in 1:length(b)) {
 			b_filename[i] <- paste(filename,"_",b[i],sep="") 
 		}
-	names(b_filename) <- b
-	}
+		names(b_filename) <- b
 
-	temp_stk <- new("RasterStack")
 	
-	K <- K_landsat(spacecraft, sensor)
+		K <- K_landsat(spacecraft, sensor)
 	
-	for (j in b) {
-		DN			<- raster(SatImgObject@band_filenames[j])
-		NAvalue(DN) 	<-0
-		#DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
-		radiance 		<- dn2rad(DN, gain[j], bias[j])
-		temp			<- calc(radiance, fun=function(x){rad2temp(x, K)}, filename= b_filename[j])				
-		temp_stk		<- addLayer(temp_stk, temp)
-		removeFile(radiance)		
-	}
-	if (!missing(filename)) {
+		for (j in b) {
+			DN			<- raster(SatImgObject@band_filenames[j])
+			NAvalue(DN) 	<-0
+			#DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
+			radiance 		<- dn2rad(DN, gain[j], bias[j])
+			temp			<- calc(radiance, fun=function(x){rad2temp(x, K)}, filename= b_filename[j], overwrite=TRUE)				
+			temp_stk		<- addLayer(temp_stk, temp)
+#  temporary fix, restore this with next version of Raster
+#		removeRasterFile(radiance)		
+		}
+#	if (!missing(filename)) {
 		filename(temp_stk) 	<- filename
 		temp_stk 			<- stackSave(temp_stk)
+		
 	}
 	return(temp_stk)
 }

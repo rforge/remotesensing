@@ -110,7 +110,7 @@ eta(rnet_day,evapfr,surface_temperature)
   \item{col_wet}{}
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+  
 }
 \value{
   Water Mapping
@@ -120,11 +120,11 @@ Bastiaanssen, W.G.M. 1995. Regionalization of surface flux densities and moistur
 Alexandridis T.K., Cherif I., Chemin Y., Silleos N.G., Stavrinos E., Zalidis G.C. Integrated methodology for estimating water use in Mediterranean agricultural areas. Remote Sensing. -(-):,2009. (submitted)
 }
 \author{ Yann Chemin }
-\note{ ~~further notes~~ 
+\note{ 
 
- ~Make other sections like Warning with \section{Warning }{....} ~
+ 
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ }
 \examples{
 
 }
