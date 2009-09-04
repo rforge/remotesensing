@@ -128,5 +128,5 @@ Alexandridis T.K., Cherif I., Chemin Y., Silleos N.G., Stavrinos E., Zalidis G.C
 \examples{
 
 }
-\keyword{ spatial }
+\keyword{ energy balance, evapotranspiration, raster, spatial }
 
