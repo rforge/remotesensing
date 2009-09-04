@@ -4,9 +4,9 @@
 \alias{readLandsatCPF}
 \alias{landsat}
 
-\title{Read metadata}
+\title{Read Landsat 5/7 metadata text files}
 \description{
-  Read metadata text file and retrieve parameters.
+  Read metadata text file and retrieve sensor related parameters (date/time of satellite overpass, sun elevation angle, sun azimuth angle, etc).
 }
 
 \usage{
