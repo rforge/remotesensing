@@ -7,7 +7,7 @@
 
 Rsky <- function(ta) #ta is near surface airtemperature from meteorological data
 {
-	result <- 1.807 * pow(10,-10) * pow(ta,4) * (1 - 0.26 * exp(-7.77 * pow(10,-4) * pow((273.15 - ta),2)))
+	result <- 1.807 * .powr(10,-10) * .powr(ta,4) * (1 - 0.26 * exp(-7.77 * .powr(10,-4) * .powr((273.15 - ta),2)))
 	return(result)
 }
 
@@ -48,14 +48,14 @@ e_0 <- function(ndvi,lai)
 #Outgoing longwave radiation (Lout)
 Lout <- function(e_0,t0)
 {
-	result <- 5.67 * pow(10,-8) * pow(t0,4)
+	result <- 5.67 * .powr(10,-8) * .powr(t0,4)
 	return(result)
 }
 
 #Incoming longwave radiation (Lin). To be derieved locally at CSU
 Lin <- function(tsw,ta)
 {
-	result <- 0.85 * pow(-log(tsw),0.09) * 5.67 * pow(10,-8) * pow(ta,4)
+	result <- 0.85 * .powr(-log(tsw),0.09) * 5.67 * .powr(10,-8) * .powr(ta,4)
 	return(result)
 }
 
@@ -75,9 +75,9 @@ Rnet <- function(alb,Lnet,Kin)
 }
 
 #calculation of g0
-g0 <- function(Rnet,t0,alb,ndvi)
+g0_2 <- function(Rnet,t0,alb,ndvi)
 {
-	result <- Rnet * (t0 - 273.15) * ( 0.0038 + 0.0074 * alb) * (1 - 0.98 * pow(ndvi,4))
+	result <- Rnet * (t0 - 273.15) * ( 0.0038 + 0.0074 * alb) * (1 - 0.98 * .powr(ndvi,4))
 	return(result)
 }
 
@@ -94,15 +94,15 @@ ustar0 <- function(u,z,h)
       # u is wind speed at z meter, with vegetation height below of h meters
       #u200 calculated from equation 41, page 39
       ustar <- 0.41 * u / (log(z/(0.12*h)))
-      u200 <- ustar * log (200/(0.12*h)) / 0.41
+      u200 <- ustar2 * log (200/(0.12*h)) / 0.41
       result <- 0.41 * u200 / log(200 / (0.12*h))
       return(result)
 }
 
 #Calculation of aerodynamic resistance to heat flux momentum
-rah0 <- function(ustar0) #initialsation of rah calculation
+rah0_2 <- function(ustar0) #initialsation of rah calculation
 {
-      result <- log(2 / 0.1)/(ustar * 0.41)
+      result <- log(2 / 0.1)/(ustar0 * 0.41)
       return(result)
 }
 
@@ -112,14 +112,14 @@ dTair <- function(eto_alf,dem_wet,t0_wet,Rnet_wet,g0_wet,dem_dry,t0_dry,Rnet_dry
 	# Somehow T0_dem is not used in the spreadsheet
 	# a is slope and b is offset
 	eto <- eto_alf
-	LE_wet<-eto*kc*(2.501-0.002361*(t0-273.15))*pow(10,6)/3600
+	LE_wet<-eto*kc*(2.501-0.002361*(t0-273.15))* .powr(10,6)/3600
 	LE_dry<-0.0
 	h_wet<- Rnet_wet-g0_wet-LE_wet
 	h_dry<- Rnet_dry-g0_dry-LE_dry
 	ustar_wet<-ustar0(3.6,200,0.75)#common cereal crops average height
 	ustar_dry<-ustar0(3.6,200,0.017)#standard desert sebal parameters
-	rah_wet<-rah0(ustar_wet)
-	rah_dry<-rah0(ustar_dry)
+	rah_wet<-rah0_2(ustar_wet)
+	rah_dry<-rah0_2(ustar_dry)
 	dT_wet<-h_wet*rah_wet/(rohair_wet*1004)
 	dT_dry<-h_dry*rah_dry/(rohair_dry*1004)
 	a[0]<-(dT_dry-dT_wet)/(t0_dry-t0_wet)
@@ -127,22 +127,24 @@ dTair <- function(eto_alf,dem_wet,t0_wet,Rnet_wet,g0_wet,dem_dry,t0_dry,Rnet_dry
 	#dT1 is here
 	roh_air <- function(dem,t0,dT)
 	{
-		result<-349.467*pow((((t0-dT)-0.0065*dem)/(t0-dT)),5.26)/t0
+		result<-349.467* .powr((((t0-dT)-0.0065*dem)/(t0-dT)),5.26)/t0
 		return(result)
 	}
-	for (i in 8)
+	for (i in 1:8) {
 		airden_wet<-roh_air(dem_wet,t0_wet,dT_wet)
 		airden_dry<-roh_air(dem_dry,t0_dry,dT_dry)
 		h_wet<-h(airden_wet,dT_wet,rah_wet)
 		h_dry<-h(airden_dry,dT_dry,rah_dry)
-		if(h_wet==0)
+		if(h_wet==0) {
 			L_wet<- -1000
-		else
-			L_wet<- -1004*airden_wet*pow(ustar_wet,3)*t0_wet/(0.41*h_wet*9.81)
-		if(h_dry==0)
+		} else {
+			L_wet<- -1004*airden_wet* .powr(ustar_wet,3)*t0_wet/(0.41*h_wet*9.81)
+		}
+		if(h_dry==0) {
 			L_dry<- -1000
-		else
-			L_dry<- -1004*airden_dry*pow(ustar_dry,3)*t0_dry/(0.41*h_dry*9.81)
+		} else {
+			L_dry<- -1004*airden_dry* .powr(ustar_dry,3)*t0_dry/(0.41*h_dry*9.81)
+		}
 		psim200_wet<-psim200(L_wet)
 		psim200_dry<-psim200(L_dry)
 		psih2_wet<-psih2(L_wet)
@@ -151,19 +153,20 @@ dTair <- function(eto_alf,dem_wet,t0_wet,Rnet_wet,g0_wet,dem_dry,t0_dry,Rnet_dry
 		psih01_dry<-psih01(L_dry)
 		z0m_wet<-0.12*0.75
 		z0m_dry<-0.12*0.02
-		ustar_wet<-ustar(3.6,z0m_wet,psim200_wet)
-		ustar_dry<-ustar(3.6,z0m_dry,psim200_dry)
+		ustar_wet<-ustar2(3.6,z0m_wet,psim200_wet)
+		ustar_dry<-ustar2(3.6,z0m_dry,psim200_dry)
 		rah_wet <- rah(ustar_wet,psih2_wet,psih01_wet)
 		rah_dry <- rah(ustar_dry,psih2_dry,psih01_dry)
 		dT_wet<-h_wet*rah_wet/(rohair_wet*1004)
 		dT_dry<-h_dry*rah_dry/(rohair_dry*1004)
 		a[i]<-(dT_dry-dT_wet)/(t0_dry-t0_wet)
 		b[i]<- -a * t0_wet + dT_wet
-	return((a,b))
+	}
+	return(c(a,b))
 }
 
 #calculation for air density
-rohair <- function(Patm,t0,dTair,eact,...)
+rohair2 <- function(Patm,t0,dTair,eact,C1,C2)
 {
 	result <- Patm * eact / (C1 * (t0 - dTair) * C2)
 	return(result)
@@ -172,76 +175,79 @@ rohair <- function(Patm,t0,dTair,eact,...)
 #calculation of sensible heat flux (Single equation)
 h <- function(rohair,dTair,rah)
 {
-	result <- rohair * 1004 * dTair / rah
-	return(result)
+	rohair * 1004 * dTair / rah
 }
 
 #Monin-Obukov Length calculation
 L <- function(rohair,ustar,t0,h)
 {
-	result <- rohair * 1004 * pow(ustar,3) * t0 / (0.41 * 9.807 * h)
-	return(result)
+	rohair * 1004 * .powr(ustar,3) * t0 / (0.41 * 9.807 * h)
 }
 
 # psychrometric momentum constant calculation
 psim200 <- function(L)
 {
-	if (L < 0)
-		x200 <- pow((1 - 16 * 200/L),0.25)
-		result <- 2 * log((1 + x200)/2) + log((1 + pow(x200,2))/2) - 2 * atan(x200 + 0.5 * pi)
-	else result <- -5 * 2 / L
+	if (L < 0) {
+		x200 <- .powr((1 - 16 * 200/L),0.25)
+		result <- 2 * log((1 + x200)/2) + log((1 + .powr(x200,2))/2) - 2 * atan(x200 + 0.5 * pi)
+	} else {
+		result <- -5 * 2 / L
+	}	
 	return(result)
 }
 
 # psychrometric heat constant calculation
 psih2 <- function(L)
 {
-	if (L < 0)
-		x2 <- pow((1 - 16 * 2/L),0.25)
-		result <- 2 * log((1 + pow(x2,2))/2)
-	else result <- -5 * 2 / L
+	if (L < 0) {
+		x2 <- .powr((1 - 16 * 2/L),0.25)
+		result <- 2 * log((1 + .powr(x2,2))/2)
+	} else {
+		result <- -5 * 2 / L
+	}
 	return(result)
 }
 		
 # psychrometric heat constant calculation
 psih01 <- function(L)
 {
-	if (L < 0)
-		x01 <- pow((1 - 16 * 0.1/L),0.25)
-		result <- 2 * log((1 + pow(x01,2))/2)
-	else result <- -5 * 2 / L
+	if (L < 0) {
+		x01 <- .powr((1 - 16 * 0.1/L),0.25)
+		result <- 2 * log((1 + .powr(x01,2))/2)
+	} else {
+		result <- -5 * 2 / L
+	}
 	return(result)
 }
 
 #Calculation of effitive wind speed
-ustar <- function(u200,z0m,psim200)
+ustar2 <- function(u200,z0m,psim200)
 {
       #u200 calculated from equation 41, page 39
-      result <- 0.41 * u200 / (log(200 / z0m) - psim200)
-      return(result)
+    0.41 * u200 / (log(200 / z0m) - psim200)
 }
 
 #Calculation of aerodynamic resistance to heat flux momentum
 rah <- function(ustar,psih2,psih01) #initialsation of rah calculation
 {
-      result <- (log(2 / 0.1) - psih2 + psih01) / (ustar * 0.41)
-      return(result)
+    (log(2 / 0.1) - psih2 + psih01) / (ustar * 0.41)
 }
 
 #Sensible Heat flux Calculations
 metiter <- function(dTab,t0,rah0,z0m,ustar0,Patm,eact,C1,C2)
 {
 	r_ah <- rah0
-	for (i in 6)
+	for (i in 1:6) {
 		dT <- dTa[i - 1] * t0 + dTb[i - 1]
-		airden <- rohair(Patm,eact,t0,dT,C1,C2)
+		airden <- rohair2(Patm,eact,t0,dT,C1,C2)
 		h0 <- h(airden,dT,r_ah)
 		L0 <- L(airden,ustar,t0,h0)
 		psim_200 <- psim200(L)
 		psih_2 <- psih2(L)
 		psih_01 <- psih01(L)
-		u_star <- ustar(u200,z_0m,psim_200)
+		u_star <- ustar2(u200,z_0m,psim_200)
 		r_ah <- rah(psih_2,psih_01,u_star)
+	}
 	return(h0)
 }
 
