@@ -68,7 +68,7 @@ img <- landsat(metafile)
 ref <- dn2ref(img, "ref")
 
 #calculate temperature from thermal bands; output is saved on disk
-temp <- dn2temp(img)
+temp <- dn2temp(img, "temp")
 
 }
 

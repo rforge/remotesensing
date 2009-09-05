@@ -39,12 +39,11 @@ img <- landsat(metafile)
 ref <- dn2ref(img, "ref")
 
 #calculate temperature from thermal bands; output is saved on disk
-temp <- dn2temp(img)
+temp <- dn2temp(img, "temp")
 temp1 <- raster(temp,1)
 
 #mask out clouds
-# THIS PRODUCES AN ERROR
-#newref <- removeClouds (ref, temp1, "masked") 
+newref <- removeClouds (ref, temp1, "masked") 
 
 }
 
