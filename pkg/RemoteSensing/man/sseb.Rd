@@ -1,12 +1,10 @@
 \name{Simple Surface Energy Balance}
 \alias{sseb_eta}
 
-\title{Senay et al., 2007 Simple Surface Energy Balance}
+\title{Simple Surface Energy Balance}
 \description{
-  Computes Energy Balance according to Senay et al., 2007.
-  Input required are daily Penman-Monteith ETo (FAO56), LST, LST_hot and LST_cold.
-  Computes Daily ETa.
-  The paper mentions 0.95+ correlation with METRIC and 0.55-0.79 correlation with SEBAL.
+  Computes Energy Balance according to Senay et al., 2007 (see below). 
+  Input required are daily Penman-Monteith ETo (FAO56), LST, LST_hot and LST_cold. Computes Daily ETa.
 }
 
 \usage{
@@ -25,7 +23,16 @@ sseb_eta(lst_h, lst_c, lst, et0PM)
   Simple Surface Energy Balance
 }
 
+\details{
+Senay et al. found a correlation coefficient of 0.95 with METRIC and correlation coefficients between 0.55-0.79 with SEBAL.
+}
+
+\references{
+Senay, G.B, M. Budde, J.P. Verdin, A.M. Melesse (2007). A Coupled Remote Sensing and Simplified Energy Balance Approach to Estimate Actual Evapotranspiration from Irrigated Fields. Sensors 7: 979-1000.
+}
+
 \author{Yann Chemin, Umair Rabbani}
+
 
 \examples{
 }
