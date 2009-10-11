@@ -49,7 +49,8 @@ cloudMask <- function (refstack, traster) {
 	band3 	<- raster(refstack,3)
 	band4 	<- raster(refstack,4)
 	band5 	<- raster(refstack,5)
-	ncellInput<- length(!is.na(band2[]))
+#	ncellInput<- length(!is.na(band2[]))
+	ncellInput <- ncell(band2) - cellStats(band2, 'countNA')
 	band6 	<- disaggregate(traster, fact=2)
 	band6	<-setExtent(band6, extent(band2), keepres=FALSE, snap=FALSE)
 	band6All 	<- band6
@@ -121,14 +122,15 @@ cloudMask <- function (refstack, traster) {
 	}
 	band6 		<- band6 * cloudFilter
 	if (is.finite(band6@data@min)) {
-		cloudMinTemp 	<- band6@data@min
-		cloudMaxTemp	<- band6@data@max 
+		cloudMinTemp 	<- minValue(band6)
+		cloudMaxTemp	<- maxValue(band6)
 	}
 	else {
-		cloudMinTemp 	<- cellStats(band6, min)
-		cloudMaxTemp	<- cellStats(band6, max) }
-	cloudAvgTemp	<- cellStats(band6, mean)
-	cloudSdTemp	<- cellStats(band6, sd)
+		cloudMinTemp 	<- cellStats(band6, 'min')
+		cloudMaxTemp	<- cellStats(band6, 'max')
+	}
+	cloudAvgTemp	<- cellStats(band6, 'mean')
+	cloudSdTemp	<- cellStats(band6, 'sd')
 	cloudSkewTemp <- 0
 	
 	skew <- function(z, zmean, zsd) {
@@ -141,8 +143,8 @@ cloudMask <- function (refstack, traster) {
 	return(skew)
 	}
 	cloudSkewTemp <- skew(band6[], cloudAvgTemp, cloudSdTemp)
-	desertProp <- ((cellStats(cloudFilter, sum)) / ncellInput ) * 1.0
-	coldCloudProp	<- ((cellStats(coldCloud, sum)) / ncellInput) * 1.0
+	desertProp <- ((cellStats(cloudFilter, 'sum')) / ncellInput ) * 1.0
+	coldCloudProp	<- ((cellStats(coldCloud, 'sum')) / ncellInput) * 1.0
 	
 	if (desertProp > 0.5 & coldCloudProp > 0.004 & cloudAvgTemp < 295) {
 		tmax <- quantile(band6,  na.rm=TRUE, probs=0.9875)
@@ -160,22 +162,22 @@ cloudMask <- function (refstack, traster) {
 		cloudU 		<- band6P2 < tU & band6P2 >= tL
 		cloudU[cloudU==0]	<- NA
 		band6U 		<- band6P2  * cloudU
-		band6UProb 	<- cellStats(band6U, sum) / ncellInput
+		band6UProb 	<- cellStats(band6U, 'sum') / ncellInput
 		
 		cloudL 		<- band6P2 < tL
 		cloudL[cloudL==0] <- NA
 		band6L 		<- band6P2  * cloudL
-		band6LProb 	<- cellStats(band6L, sum)/ncellInput
+		band6LProb 	<- cellStats(band6L, 'sum')/ncellInput
 	
 		if (band6UProb > 0.4 | mean(band6U[]) > 295 |  snowProp > 0.01) {
 			cloudT 		<- band6P2 < tL
 			band6T 		<- band6P2  * cloudT
 			band6T[band6T==0] <- NA
-			band6TProb 	<- cellStats(band6T, sum)/ncellInput
+			band6TProb 	<- cellStats(band6T, 'sum')/ncellInput
 			
-			if (band6UProb > 0.4 | cellStats(band6U, mean) > 295) {
+			if (band6UProb > 0.4 | cellStats(band6U, 'mean') > 295) {
 				cloudMask <- cloudFilter
-				if (band6LProb > 0.4 | cellStats(band6L, mean) > 295) {
+				if (band6LProb > 0.4 | cellStats(band6L, 'mean') > 295) {
 					cloudMask <- cloudFilter
 				}
 				else {
