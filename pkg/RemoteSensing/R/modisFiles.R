@@ -6,7 +6,9 @@
 
 
 modisFiles <- function(path) {
-	f <- list.files(path=path, pattern='.tif')
+	pat <- paste(tileNumber, ".*.tif", sep="")
+	f <- list.files(path=path, pattern=pat)
+	# f <- list.files(path=path, pattern='.tif')
 	x <- strsplit(f, '\\.')
 	m <- matrix(, length(x), length(x[[1]]))
 	for(i in 1:length(x)) { m[i,] <- x[[i]] }
@@ -22,8 +24,11 @@ modisFiles <- function(path) {
 }
 
 
+
 modisFilesClean <- function(path) {
-	f <- list.files(path=path, pattern='.grd')
+	pat <- paste(tileNumber, ".*clean.grd", sep="")
+	f <- list.files(path=path, pattern=pat)
+	# f <- list.files(path=path, pattern='.grd')
 	x <- strsplit(f, '_')
 	m <- matrix(, length(x), length(x[[1]]))
 	for(i in 1:length(x)) { m[i,] <- x[[i]] }
