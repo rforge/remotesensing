@@ -5,7 +5,7 @@
 \title{ Clean Modis files}
 
 \description{
-Remove cloud cover and permanent water and missing values from raw Modis files
+Remove cloud cover, snow and permanent water and missing values from raw Modis files using the MODIS quality control flags 
 }
 
 \usage{
@@ -19,7 +19,7 @@ modisClean(inpath, outpath, overwrite = TRUE)
 }
 
 \details{
-  more details
+  Clouds, snow and permanent water are removed to avoid confusion when classifying rice areas.
 }
 
 \value{
