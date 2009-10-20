@@ -100,7 +100,7 @@ modisClean <- function(inpath, tileNumber="0"){
 				for (i in 1:length(b[,1])) {
 					r <- raster( paste(inpath, b$filename[i], sep='') )
 					NAvalue(r) <- -28672
-					r <- r)
+					r <- readAll(r)
 					r[mask == 0] <- NA  # apply mask 
 					r[] <- values(r) / 10000
 					dataType(r) <- "FLT4S"
@@ -130,7 +130,8 @@ modisClean <- function(inpath, tileNumber="0"){
 				fname2 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowMask.grd", sep="")
 				snowmask <- calc(snow, fun=.snow, filename=fname2, overwite=T)
 			}
-			
+		}
+	}
 
 	# processing of all tiles in a directory
 	if(tileNumber=="0"){
@@ -146,5 +147,4 @@ modisClean <- function(inpath, tileNumber="0"){
 	else{
 		cleanFxn(inpath, tileNumber)
 	}
-	
 }
