@@ -4,7 +4,7 @@
 # Version 0.1
 # Licence GPL v3
 
-rice <- function(inpath, outpath) {
+modisRice <- function(inpath, outpath) {
 
 	inpath <- paste(inpath, "/", sep="")
 	outpath <- paste(outpath, "/", sep="")
@@ -26,64 +26,102 @@ rice <- function(inpath, outpath) {
 		}
 	}
 	
-	
 	Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
 	Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
 	Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not forest =0
 	Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 	# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
-	m <- modisFilesClean(inpath)
-	m$filename <- paste(inpath, m$filename, sep="")
-	dir.create(outpath, showWarnings = FALSE)
-	zones <- as.vector(unique(m$zone))
-	for (z in zones) {
-		mm <- subset(m, m$zone==z)
-		years <- as.vector(unique(mm$year))
-		print(paste('Zone:', z))
-		for (y in years) {
-			mmm <- subset(mm, mm$year == y, )
-			dates <- as.vector(unique(mmm$date))
-			dates <- sort(dates)
-			if (length(dates) < 46) { 
-				if (length(dates) < 43) { 
-					stop(paste('expected 46 files, found:', length(dates))) 
-				}
-				warning(paste('expected 46 files, found:', length(dates))) 
-			}
-						
-			ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi']) )
-			evistk <- stack( as.vector( mmm$filename[mmm$band=='evi']) )
-			lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi']) )
-			floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
-			permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
+	riceFxn <- function(inpath, tileNumber){
+		# file reading
+		pat <- paste(tileNumber, ".*.grd", sep="")
+		m <- modisFilesClean(inpath, pat)
+		m$filename <- paste(inpath, m$filename, sep="")
 
-			fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-			flooded <- calc(floodstk, fun=Flooded, filename = fnameflood, overwrite=TRUE)
-						
-			fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
-			permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=TRUE)
-			permanent <- readAll(permanent)
-												
-			fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
-			forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=TRUE)
-			forest <- readAll(forest)
-			
-			fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
-			shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=TRUE) 
-			shrub <- readAll(shrub)
-			shrub  <- shrub & !forest
-										
-			#notrice <- any(permanent, forest, shrub)        
-			notrice <- (permanent | forest | shrub)
-			notrice <- readAll(notrice)
-			filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
-			notrice <- writeRaster(notrice)
-			
-			perhapsrice <- flooded & !notrice
-			filename(perhapsrice) <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
-			perhapsrice <- writeRaster(perhapsrice)
-		}	
-	}		
-}		
+		# creation of output director "tif" folder
+		outpath <- paste(inpath,"/../rice/",sep="")
+		dir.create(outpath, showWarnings = FALSE)
+
+		# looping
+		zones <- as.vector(unique(m$zone))
+		for (z in zones) {
+			mm <- subset(m, m$zone==z)
+			years <- as.vector(unique(mm$year))
+			print(paste('Zone:', z))
+			for (y in years) {
+				print(paste('Year:', y))
+				mmm <- subset(mm, mm$year == y, )
+				dates <- as.vector(unique(mmm$date))
+				dates <- sort(dates)
+				if (length(dates) < 46) { 
+					if (length(dates) < 43) { 
+						stop(paste('expected 46 files, found:', length(dates))) 
+					}
+					warning(paste('expected 46 files, found:', length(dates))) 
+				}
+
+				ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi_cleaned']) )
+				evistk <- stack( as.vector( mmm$filename[mmm$band=='evi_cleaned']) )
+				lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi_cleaned']) )
+				floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
+				permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
+
+				# str <- list.files(path=inpath, pattern= paste(tileNumber, ".*.grd", sep=""))
+				# ras <- raster(paste(inpath, str[1], sep=""))
+
+				fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
+				flooded <- calc(floodstk, fun=.Flooded, filename= fnameflood, overwrite=T)
+				#filename(flooded) <- fnameflood
+				#flooded <- writeRaster(flooded)
+				flooded <- flooded)
+
+				fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
+				permanent <- calc(permanentstk, fun=.Permanent, filename= fnamepermanent, overwrite=T)
+				#filename(permanent) <- fnamepermanent
+				#permanent <- writeRaster(permanent)
+				permanent <- permanent)
+
+				fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
+				forest <- calc(ndvistk, fun=.Forest, filename=fnameforest, overwrite=T)
+				#filename(forest) <- fnameforest
+				#forest <- writeRaster(forest)
+				forest <- forest)
+
+				fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
+				shrub <- calc(lswistk, fun=.Shrub, filename=fnameshrub, overwrite=T) 
+				#filename(shrub) <- fnameshrub
+				#shrub <- writeRaster(shrub)
+				shrub <- shrub)
+				shrub  <- shrub & !forest
+        
+				notrice <- (permanent | forest | shrub)
+				notrice <- notrice)
+				filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
+				writeRaster(notrice, overwrite=T)
+
+				perhapsrice <- flooded & !notrice
+				filename(perhapsrice) <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
+				perhapsrice <- writeRaster(perhapsrice)
+			}
+		}
+	}
+
+
+	# processing of all tiles in a directory
+	if(tileNumber=="0"){
+		print("You did not indicate a tile number. The script will process all the existing tiles in the inpath...")
+		str <- list.files(inpath, pattern="001.*b01")
+		str2 <- substr(str, 18, 23)
+		for(i in str2){
+			print(paste("Now mapping tile:", i ))
+			riceFxn(inpath, i)
+		}
+	}
+	# Processing of only one tile indicated in the function parameter
+	else{
+		riceFxn(inpath, tileNumber)
+	}
+	
+}
+
 
