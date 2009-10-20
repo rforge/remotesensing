@@ -5,8 +5,7 @@
 # Licence GPL v3
 
 
-modisFiles <- function(path) {
-	pat <- paste(tileNumber, ".*.tif", sep="")
+modisFiles <- function(path, pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.tif')
 	x <- strsplit(f, '\\.')
@@ -25,8 +24,7 @@ modisFiles <- function(path) {
 
 
 
-modisFilesClean <- function(path) {
-	pat <- paste(tileNumber, ".*clean.grd", sep="")
+modisFilesClean <- function(path,pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.grd')
 	x <- strsplit(f, '_')
