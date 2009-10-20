@@ -66,36 +66,25 @@ modisRice <- function(inpath, outpath) {
 				floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
 				permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
-				# str <- list.files(path=inpath, pattern= paste(tileNumber, ".*.grd", sep=""))
-				# ras <- raster(paste(inpath, str[1], sep=""))
-
 				fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
 				flooded <- calc(floodstk, fun=.Flooded, filename= fnameflood, overwrite=T)
-				#filename(flooded) <- fnameflood
-				#flooded <- writeRaster(flooded)
-				flooded <- flooded)
+				flooded <- readAll(flooded)
 
 				fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
 				permanent <- calc(permanentstk, fun=.Permanent, filename= fnamepermanent, overwrite=T)
-				#filename(permanent) <- fnamepermanent
-				#permanent <- writeRaster(permanent)
-				permanent <- permanent)
+				permanent <- readAll(permanent)
 
 				fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
 				forest <- calc(ndvistk, fun=.Forest, filename=fnameforest, overwrite=T)
-				#filename(forest) <- fnameforest
-				#forest <- writeRaster(forest)
-				forest <- forest)
+				forest <- readAll(forest)
 
 				fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
 				shrub <- calc(lswistk, fun=.Shrub, filename=fnameshrub, overwrite=T) 
-				#filename(shrub) <- fnameshrub
-				#shrub <- writeRaster(shrub)
-				shrub <- shrub)
+				shrub <- readAll(shrub)
 				shrub  <- shrub & !forest
         
 				notrice <- (permanent | forest | shrub)
-				notrice <- notrice)
+				notrice <- readAll(notrice)
 				filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
 				writeRaster(notrice, overwrite=T)
 
