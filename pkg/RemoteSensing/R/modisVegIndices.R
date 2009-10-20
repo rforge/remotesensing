@@ -63,7 +63,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 				bluemaskfiles <- list.files(inpath, pattern=pat1)
 				bluemask <- raster(paste(inpath, FILES[1], sep=""))
 				
-				pat2 <- paste((d, "_", z, "_SnowMask.grd", sep="")
+				pat2 <- paste(d, "_", z, "_SnowMask.grd", sep="")
 				FILES <- list.files(inpath, pattern=pat2)
 				snowmask <- raster(paste(inpath, FILES[1], sep=""))
 				
