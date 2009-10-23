@@ -4,7 +4,7 @@
 # Version 0.1
 # Licence GPL v3
 
-modisRice <- function(inpath, outpath) {
+modisRice <- function(inpath, outpath, tileNumber="") {
 
 	inpath <- paste(inpath, "/", sep="")
 	outpath <- paste(outpath, "/", sep="")
@@ -67,37 +67,37 @@ modisRice <- function(inpath, outpath) {
 				permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
 				fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-				flooded <- calc(floodstk, fun=.Flooded, filename= fnameflood, overwrite=T)
+				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, overwrite=TRUE)
 				flooded <- readAll(flooded)
 
 				fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
-				permanent <- calc(permanentstk, fun=.Permanent, filename= fnamepermanent, overwrite=T)
+				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=TRUE)
 				permanent <- readAll(permanent)
 
 				fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
-				forest <- calc(ndvistk, fun=.Forest, filename=fnameforest, overwrite=T)
+				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=TRUE)
 				forest <- readAll(forest)
 
 				fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
-				shrub <- calc(lswistk, fun=.Shrub, filename=fnameshrub, overwrite=T) 
+				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=TRUE) 
 				shrub <- readAll(shrub)
 				shrub  <- shrub & !forest
         
 				notrice <- (permanent | forest | shrub)
 				notrice <- readAll(notrice)
-				filename(notrice) <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
-				writeRaster(notrice, overwrite=T)
+				filenamenr <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
+				writeRaster(notrice, filename=filenamenr, , filetype='raster', overwrite=TRUE)
 
 				perhapsrice <- flooded & !notrice
-				filename(perhapsrice) <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
-				perhapsrice <- writeRaster(perhapsrice)
+				filenamephr <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
+				perhapsrice <- writeRaster(perhapsrice, filename=filenamephr, filetype='raster', overwrite=TRUE)
 			}
 		}
 	}
 
 
 	# processing of all tiles in a directory
-	if(tileNumber=="0"){
+	if(tileNumber==""){
 		print("You did not indicate a tile number. The script will process all the existing tiles in the inpath...")
 		str <- list.files(inpath, pattern="001.*b01")
 		str2 <- substr(str, 18, 23)

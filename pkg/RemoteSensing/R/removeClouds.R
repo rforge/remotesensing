@@ -27,8 +27,8 @@ applyMask2Stack <- function (rstack, mask, filename) {
 		rs		<- raster(rstack, i)
 		masked 	<- rs * mask
 		if (!missing(filename)) {
-			filename(masked) <- paste(filename,"_",i,sep="")
-			masked	<- writeRaster(masked, overwrite=TRUE)
+			fname <- paste(filename,"_",i,sep="")
+			masked	<- writeRaster(masked, filename=fname, overwrite=TRUE)
 		}	
 		maskedS	<- addLayer(maskedS, masked)
 	}	

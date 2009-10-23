@@ -54,9 +54,9 @@ modisVeg <- function(inpath, tileNumber="0"){
 					} 
 				}
 				# making of VIs
-				NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname, 'ndvi.grd', sep=''), overwrite=T)
-				LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname, 'lswi.grd', sep=''), overwrite=T)
-				EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname, 'evi.grd', sep=''), overwrite=T)
+				NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname, 'ndvi.grd', sep=''), overwrite=TRUE)
+				LSWI <- overlay(nir, swir2, fun=lswi,  filename=paste(fname, 'lswi.grd', sep=''), overwrite=TRUE)
+				EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname, 'evi.grd', sep=''), overwrite=TRUE)
 
 				# masking of VIs
 				pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="")
@@ -67,13 +67,13 @@ modisVeg <- function(inpath, tileNumber="0"){
 				FILES <- list.files(inpath, pattern=pat2)
 				snowmask <- raster(paste(inpath, FILES[1], sep=""))
 				
-				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndvi_cleaned.grd', sep=''), overwrite=T)
-				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi_cleaned.grd', sep=''), overwrite=T)
-				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'evi_cleaned.grd', sep=''), overwrite=T)
+				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndvi_cleaned.grd', sep=''), overwrite=TRUE)
+				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi_cleaned.grd', sep=''), overwrite=TRUE)
+				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'evi_cleaned.grd', sep=''), overwrite=TRUE)
 
 				# writing of flooded and permanent water
-				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=T,  datatype='INT2S')
-				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, 'permanent.grd', sep=''), overwrite=T, datatype='INT2S')
+				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=TRUE,  datatype='INT2S')
+				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, 'permanent.grd', sep=''), overwrite=TRUE, datatype='INT2S')
 			}
 		}
 	}

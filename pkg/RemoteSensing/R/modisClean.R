@@ -103,16 +103,15 @@ modisClean <- function(inpath, tileNumber="0"){
 					r <- readAll(r)
 					r[mask == 0] <- NA  # apply mask 
 					r[] <- values(r) / 10000
-					dataType(r) <- "FLT4S"
-					filename(r) <- paste(fname, b$band[i], '_clean.grd', sep='')
-					r <- writeRaster(r, overwrite=T)
+					filenamec <- paste(fname, b$band[i], '_clean.grd', sep='')
+					r <- writeRaster(r, filename=filenamec, datatype="FLT4S", fileformat='raster', overwrite=TRUE)
 				}
 
 				# needs b03 (rasterization)
 				BLUE <- list.files(outpath, pattern=paste(d,"_",z, "_b03_clean.grd", sep=""))
 				bluefiles <- raster(paste(outpath, BLUE[1], sep=""))
 				fnameblumask <- paste(outpath, substr(BLUE[1], 1,16), "b03_mask.grd", sep="")
-				blumask <- calc(bluefiles, fun= .bluemask, filename = fnameblumask, datatype='INT2S', overwrite=T)
+				blumask <- calc(bluefiles, fun= .bluemask, filename = fnameblumask, datatype='INT2S', overwrite=TRUE)
 
 				# needs b02 and b04 (rasterization)
 				NIRfile <- list.files(outpath, paste(d,"_",z, "_b02_clean.grd", sep=""))
@@ -122,11 +121,11 @@ modisClean <- function(inpath, tileNumber="0"){
 
 				# create ndsi
 				fname <- paste(outpath, substr(NIRfile[1], 1,16), "ndsi.grd", sep="")
-				NDSI <- overlay(green, nir, fun= ndsi, filename=fname, datatype='INT2S', overwrite=T)
+				NDSI <- overlay(green, nir, fun= ndsi, filename=fname, datatype='INT2S', overwrite=TRUE)
 
 				# create second snow mask
 				fname1 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowPixels.grd", sep="")
-				snow <- overlay(nir, NDSI, fun=.snowmask2, filename=fname1, overwrite=T)
+				snow <- overlay(nir, NDSI, fun=.snowmask2, filename=fname1, overwrite=TRUE)
 				fname2 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowMask.grd", sep="")
 				snowmask <- calc(snow, fun=.snow, filename=fname2, overwite=T)
 			}
