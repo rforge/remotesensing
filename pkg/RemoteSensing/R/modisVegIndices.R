@@ -61,11 +61,11 @@ modisVeg <- function(inpath, tileNumber="0"){
 				# masking of VIs
 				pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="")
 				bluemaskfiles <- list.files(inpath, pattern=pat1)
-				bluemask <- raster(paste(inpath, FILES[1], sep=""))
+				bluemask <- raster(paste(inpath, bluemaskfiles[1], sep=""))
 				
 				pat2 <- paste(d, "_", z, "_SnowMask.grd", sep="")
-				FILES <- list.files(inpath, pattern=pat2)
-				snowmask <- raster(paste(inpath, FILES[1], sep=""))
+				snowmaskfiles <- list.files(inpath, pattern=pat2)
+				snowmask <- raster(paste(inpath, snowmaskfiles[1], sep=""))
 				
 				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndvi_cleaned.grd', sep=''), overwrite=TRUE)
 				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi_cleaned.grd', sep=''), overwrite=TRUE)
