@@ -1,13 +1,10 @@
-# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin
+# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin, Angelo Carlo Pacheco
 # International Rice Research Institute
 # Date :  Feb 2009
 # Version 0.1
 # Licence GPL v3
 
-modisRice <- function(inpath, outpath, tileNumber="") {
-
-	inpath <- paste(inpath, "/", sep="")
-	outpath <- paste(outpath, "/", sep="")
+modisRice <- function(inpath,tileNumber="") {
 
 	mysum <- function(x){ sum(x, na.rm=T) }
 	sumNotNA <- function(x){ sum(!is.na(x)) }
@@ -60,9 +57,9 @@ modisRice <- function(inpath, outpath, tileNumber="") {
 					warning(paste('expected 46 files, found:', length(dates))) 
 				}
 
-				ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi_cleaned']) )
-				evistk <- stack( as.vector( mmm$filename[mmm$band=='evi_cleaned']) )
-				lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi_cleaned']) )
+				ndvistk <- stack( as.vector( mmm$filename[mmm$band=='ndvi-cleaned']) )
+				evistk <- stack( as.vector( mmm$filename[mmm$band=='evi-cleaned']) )
+				lswistk <- stack( as.vector( mmm$filename[mmm$band=='lswi-cleaned']) )
 				floodstk <- stack( as.vector( mmm$filename[mmm$band=='flooded']) )
 				permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
@@ -112,5 +109,4 @@ modisRice <- function(inpath, outpath, tileNumber="") {
 	}
 	
 }
-
 
