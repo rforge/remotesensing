@@ -5,20 +5,16 @@
 # Licence GPL v3
 
 
-# water masking
-persistentwater <- function(ndvi,lswi){ 	
-	result <- (ndvi < 0.10) & (ndvi < lswi)
-	return(result)
-}
-
-# multiply function used in masking snow, blue
-multiply <- function(x,y,z) {
-	result <- x*y*z
-	return(result)
-}
 
 
 modisVeg <- function(inpath, tileNumber="0"){
+
+	# multiply function used in masking snow, blue band values >=0.20
+	multiply <- function(x,y,z) {
+		result <- x*y*z
+		return(result)
+	}
+
 
 	vegFxn <- function(inpath, tileNumber){
 		# file reading
@@ -67,9 +63,9 @@ modisVeg <- function(inpath, tileNumber="0"){
 				snowmaskfiles <- list.files(inpath, pattern=pat2)
 				snowmask <- raster(paste(inpath, snowmaskfiles[1], sep=""))
 				
-				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndvi_cleaned.grd', sep=''), overwrite=TRUE)
-				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi_cleaned.grd', sep=''), overwrite=TRUE)
-				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'evi_cleaned.grd', sep=''), overwrite=TRUE)
+				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndvi-cleaned.grd', sep=''), overwrite=TRUE)
+				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi-cleaned.grd', sep=''), overwrite=TRUE)
+				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'evi-cleaned.grd', sep=''), overwrite=TRUE)
 
 				# writing of flooded and permanent water
 				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=TRUE,  datatype='INT2S')
