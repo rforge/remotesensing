@@ -25,6 +25,7 @@ applyMask2Stack (rstack, mask, filename)
 
 \value{
 }
+\references{Irish, R.R., undated, Landsat 7 automatic cloud cover assessment. URL: http://landsathandbook.gsfc.nasa.gov/handbook/pdfs/ACCA_SPIE_paper.pdf}
 
 \author{Alice Laborte}
 
