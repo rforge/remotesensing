@@ -9,9 +9,13 @@ removeClouds <- function (refstack, traster, filename) {
 
 	cloudM <- cloudMask(refstack, traster)
 	nocloudM <- is.na(cloudM)
-	nocloudM[nocloudM==0] <- NA
+	NAvalue(nocloudM) <- 0
+	if (dataContent(nocloudM) == 'all') {
+		nocloudM[nocloudM==0] <- NA
+	} 
+	#nocloudM[nocloudM==0] <- NA
 	maskedS <- applyMask2Stack(refstack, nocloudM, filename)
-
+	
  	return(maskedS)
 }
 
@@ -19,17 +23,23 @@ removeClouds <- function (refstack, traster, filename) {
 applyMask2Stack <- function (rstack, mask, filename) {
 	if (minValue(mask) != 1 | maxValue(mask) != 1)  {			#mask is not 1 and NA
 		mask <- mask > 0
+		#mask <- mask / mask
 	}
-	mask[mask==0] <- NA
+	NAvalue(mask) <- 0
+	if (dataContent(mask) == 'all') {
+		mask[mask==0] <- NA
+	} 
+	#mask[mask==0] <- NA
 	maskedS <- new("RasterStack")
 	
 	for (i in 1:nlayers(rstack)) {
 		rs		<- raster(rstack, i)
 		masked 	<- rs * mask
 		if (!missing(filename)) {
-			fname <- paste(filename,"_",i,sep="")
-			masked	<- writeRaster(masked, filename=fname, overwrite=TRUE)
-		}	
+			fname <- paste(filename,"_",i,sep="") 
+            masked  <- writeRaster(masked, filename=fname, overwrite=TRUE) 
+
+			}	
 		maskedS	<- addLayer(maskedS, masked)
 	}	
 	if (!missing(filename)) {
@@ -50,14 +60,18 @@ cloudMask <- function (refstack, traster) {
 	band4 	<- raster(refstack,4)
 	band5 	<- raster(refstack,5)
 #	ncellInput<- length(!is.na(band2[]))
-	ncellInput <- ncell(band2) - cellStats(band2, 'countNA')
 	band6 	<- disaggregate(traster, fact=2)
-	band6	<-setExtent(band6, extent(band2), keepres=FALSE, snap=FALSE)
+	band6	<-setExtent(band6, extent(band2), keepres=TRUE, snap=TRUE)
 	band6All 	<- band6
+	ncellInput <- ncell(band6) - cellStats(band6, 'countNA')
 	
 # Filter 1: brightness threshold
 	cloudFilter <- band3 >= 0.08
-	cloudFilter[cloudFilter==0] <- NA
+	NAvalue(cloudFilter) <- 0
+	if (dataContent(cloudFilter) == 'all') {
+		cloudFilter[cloudFilter==0] <- NA
+	} 	
+	#cloudFilter[cloudFilter==0] <- NA
 	notCloud 	<- band3 < 0.08
 	
 # Filter 2: ndsi
@@ -66,15 +80,14 @@ cloudMask <- function (refstack, traster) {
 	NDSI 	<- ndsi(band2, band5)
 	snow 	<- NDSI > 0.7
 	notCloud 	<- notCloud + snow
-	snow[snow==0] <- NA
 	cloudFilter<- NDSI  <= 0.7
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 3: traster threshold
-	band6 	<- band6* cloudFilter
+	band6 	<- band6 * cloudFilter
 	notCloud 	<- notCloud + (band6 > 300)
 	cloudFilter<- band6  <= 300
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 4: band 5/6 composite
 	band5	<- band5 * cloudFilter
@@ -82,23 +95,23 @@ cloudMask <- function (refstack, traster) {
 	band56c	<- (1 - band5) * band6
 	cloudAmb <- band56c > 225
 	cloudFilter<- band56c <= 225
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 5: band 4/3 ratio
 	band3	<- band3 * cloudFilter
 	band4	<- band4 * cloudFilter
-	chk		<- band4 / band3
+	chk		<- band4 / band3 
 	cloudAmb	<- cloudAmb + (chk > 2.0)
 	cloudFilter	<- chk <= 2.0
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 6: band 4/2 ratio
 	band2	<- band2 * cloudFilter
 	band4	<- band4 * cloudFilter
-	chk		<- band4 / band2
+	chk		<- (band4 / band2) 
 	cloudAmb	<- cloudAmb + (chk > 2.0)
 	cloudFilter<- chk <= 2.0
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 7: band 4/5 ratio
 	band4	<- band4 * cloudFilter
@@ -106,7 +119,7 @@ cloudMask <- function (refstack, traster) {
 	chk		<- band4 / band5
 	cloudAmb	<- cloudAmb + (chk > 1.0)
 	cloudFilter<- chk > 1.0
-	cloudFilter[cloudFilter==0] <- NA
+	#cloudFilter[cloudFilter==0] <- NA
 	
 # Filter 8: band 5/6 composite
 	band56c		<- band56c * cloudFilter
@@ -114,11 +127,11 @@ cloudMask <- function (refstack, traster) {
 	coldCloud 	<- band56c < 210
 
 # Pass 2
-	snowProp <- cellStats(snow, sum) / ncellInput
+	snowProp <- cellStats(snow, 'sum') / ncellInput
 	if (snowProp > 0.01) {
 		cloudAmb <- cloudAmb + warmCloud
 		cloudFilter <- coldCloud
-		cloudFilter[cloudFilter == 0] <- NA
+		#cloudFilter[cloudFilter == 0] <- NA
 	}
 	band6 		<- band6 * cloudFilter
 	if (is.finite(band6@data@min)) {
@@ -131,18 +144,18 @@ cloudMask <- function (refstack, traster) {
 	}
 	cloudAvgTemp	<- cellStats(band6, 'mean')
 	cloudSdTemp	<- cellStats(band6, 'sd')
-	cloudSkewTemp <- 0
+	#cloudSkewTemp <- 0
 	
-	skew <- function(z, zmean, zsd) {
-		z <- z[!is.na(z)]
-		skew <- 0
-		for (i in 1:length(z)) {
-			skew <- skew + ((z[i] - zmean) ^3)
-		}
-		skew <- ((skew / zsd)^3)/ length(z)
-	return(skew)
-	}
-	cloudSkewTemp <- skew(band6[], cloudAvgTemp, cloudSdTemp)
+	#skew <- function(z, zmean, zsd) {
+	#	z <- z[!is.na(z)]
+	#	skew <- sum((z - zmean) ^3)
+	#	skew <- ((skew / zsd)^3)/ length(z)
+	#	return(skew)
+	#}
+
+	cloudSkewTemp <- cellStats(band6, 'skew', zmean=cloudAvgTemp, zsd=cloudSdTemp)
+
+	#cloudSkewTemp <- skew(band6[], cloudAvgTemp, cloudSdTemp)
 	desertProp <- ((cellStats(cloudFilter, 'sum')) / ncellInput ) * 1.0
 	coldCloudProp	<- ((cellStats(coldCloud, 'sum')) / ncellInput) * 1.0
 	
@@ -157,25 +170,41 @@ cloudMask <- function (refstack, traster) {
 		}
 		
 		ct			<- cloudAmb
-		ct[ct==0]		<- NA
+		NAvalue(ct) <- 0
+		if (dataContent(ct) == 'all') {
+			ct[ct==0] <- NA
+		} 
+		#ct[ct==0]		<- NA
 		band6P2		<- band6All * ct
 		cloudU 		<- band6P2 < tU & band6P2 >= tL
-		cloudU[cloudU==0]	<- NA
+		NAvalue(cloudU) <- 0
+		if (dataContent(cloudU) == 'all') {
+			cloudU[cloudU==0] <- NA
+		}
+		#cloudU[cloudU==0]	<- NA
 		band6U 		<- band6P2  * cloudU
 		band6UProb 	<- cellStats(band6U, 'sum') / ncellInput
 		
 		cloudL 		<- band6P2 < tL
-		cloudL[cloudL==0] <- NA
+		NAvalue(cloudL) <- 0
+		if (dataContent(cloudL) == 'all') {
+			cloudL[cloudL==0] <- NA
+		}
+		#cloudL[cloudL==0] <- NA
 		band6L 		<- band6P2  * cloudL
 		band6LProb 	<- cellStats(band6L, 'sum')/ncellInput
-	
-		if (band6UProb > 0.4 | mean(band6U[]) > 295 |  snowProp > 0.01) {
+		mband6U 	<- cellStats(band6U, 'mean')
+		if (band6UProb > 0.4 | mband6U > 295 |  snowProp > 0.01) {
 			cloudT 		<- band6P2 < tL
 			band6T 		<- band6P2  * cloudT
-			band6T[band6T==0] <- NA
+			NAvalue(band6T) <- 0
+			if (dataContent(band6T) == 'all') {
+				band6T[band6T==0] <- NA
+			}
+			#band6T[band6T==0] <- NA
 			band6TProb 	<- cellStats(band6T, 'sum')/ncellInput
 			
-			if (band6UProb > 0.4 | cellStats(band6U, 'mean') > 295) {
+			if (band6UProb > 0.4 | mband6U > 295) {
 				cloudMask <- cloudFilter
 				if (band6LProb > 0.4 | cellStats(band6L, 'mean') > 295) {
 					cloudMask <- cloudFilter
@@ -186,8 +215,8 @@ cloudMask <- function (refstack, traster) {
 				}
 			}	
 			else {
-			cloudMask <- (cloudFilter == 1) + (cloudL == 1) + (cloudU == 1)
-			cloudMask <- cloudMask > 0
+				cloudMask <- (cloudFilter == 1) + (cloudL == 1) + (cloudU == 1)
+				cloudMask <- cloudMask > 0
 			}
 		}
 		
@@ -202,6 +231,6 @@ cloudMask <- function (refstack, traster) {
 	
 	cloudMask <- (cloudMask + maj) > 0
 	
-	cloudMask[cloudMask==0] <- NA
+	#cloudMask[cloudMask==0] <- NA
 	return(cloudMask)
 }
