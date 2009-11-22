@@ -52,7 +52,8 @@ dn2ref  <- function(SatImgObject, filename) {
 		radiance 		<- dn2rad(DN, gain[i], bias[i])
 		fname		<- filename(radiance)
 #		reflectance <- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
-		reflectance 	<- calc(radiance, fun=function(x){rad2ref(x, ds, sun_elevation, ESUN[i])}, filename= b_filename[i], overwrite=TRUE)				
+		xfac <- (pi * ds * ds) / (ESUN[i] * cos ((90 - sun_elevation)* pi/180))
+		reflectance 	<- calc(radiance, fun=function(x){x*xfac}, filename= b_filename[i], overwrite=TRUE)				
 		ref_stk		<- addLayer(ref_stk, reflectance)
 #  temporary fix, restore this with next version of Raster
 #		removeRasterFile(radiance)
@@ -121,7 +122,9 @@ dn2rad <- function(DN, gain, bias) {
 
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
  rad2ref <- function(radiance, ds, sun_elevation, ESUN) {
-	reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
+	xfac <- (pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
+	#reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
+	reflectance <- calc(radiance, fun = function(x) {x*xfac})
 	#reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)
 	return (reflectance)
 }
