@@ -1,8 +1,8 @@
 Package: RemoteSensing
 Type: Package
 Title: Remote Sensing 
-Version: 0.2-3
-Date: 22-October-2009
+Version: 0.2-4
+Date: 22-November-2009
 Depends: raster, methods
 Suggests: bitops
 Author: Yann Chemin, Alice Laborte, Sonia Asilo and Robert J. Hijmans
