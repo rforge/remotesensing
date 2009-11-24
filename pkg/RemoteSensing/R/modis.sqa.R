@@ -10,6 +10,7 @@
 modis.sqa500a<-function(pixel) 
 #Cloud State unsigned int bits[0-1]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#Cloud State unsigned int bits[0-1]
 	#00 -> class 0: clear
 	#01 -> class 1: cloudy
@@ -22,6 +23,7 @@ modis.sqa500a<-function(pixel)
 modis.sqa500b<-function(pixel) 
 #cloud shadow unsigned int bits[2]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#cloud shadow unsigned int bits[2]
 	#0 -> class 0: yes
 	#1 -> class 1: no
@@ -33,6 +35,7 @@ modis.sqa500b<-function(pixel)
 modis.sqa500c<-function(pixel)
  #LAND/WATER FLAG unsigned int bits[3-5]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#LAND/WATER FLAG unsigned int bits[3-5]
 	#000 -> class 0: Shallow ocean
 	#001 -> class 1: Land
@@ -50,6 +53,7 @@ modis.sqa500c<-function(pixel)
 modis.sqa500d<-function(pixel)
  #AEROSOL QUANTITY unsigned int bits[6-7]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#AEROSOL QUANTITY unsigned int bits[6-7]
 	#00 -> class 0: Climatology
 	#01 -> class 1: Low
@@ -63,6 +67,7 @@ modis.sqa500d<-function(pixel)
 modis.sqa500e<-function(pixel)
  #CIRRUS DETECTED unsigned int bits[8-9]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#CIRRUS DETECTED unsigned int bits[8-9]
 	#00 -> class 0: None
 	#01 -> class 1: Small
@@ -76,6 +81,7 @@ modis.sqa500e<-function(pixel)
 modis.sqa500f<-function(pixel)
  #Internal Cloud Algorithm Flag unsigned int bits[10]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#Internal Cloud Algorithm Flag unsigned int bits[10]
 	#0 -> class 0: Cloud
 	#1 -> class 1: No cloud
@@ -87,6 +93,7 @@ modis.sqa500f<-function(pixel)
 modis.sqa500g<-function(pixel)
  #Internal Fire Algorithm Flag unsigned int bits[11]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#Internal Fire Algorithm Flag unsigned int bits[11]
 	#0 -> class 0: Fire 
 	#1 -> class 1: No fire
@@ -98,6 +105,7 @@ modis.sqa500g<-function(pixel)
 modis.sqa500h<-function(pixel,bandno)
  #MOD35 snow/ice flag unsigned int bits [12]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#MOD35 snow/ice flag unsigned int bits [12]
 	#0 -> class 0: Yes (snow)
 	#1 -> class 1: No
@@ -109,6 +117,7 @@ modis.sqa500h<-function(pixel,bandno)
 modis.sqa500i<-function(pixel)
  #Pixel adjacent to cloud unsigned int bits[13]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#Pixel adjacent to cloud unsigned int bits[13]
 	#0 -> class 0: Yes
 	#1 -> class 1: No
@@ -121,6 +130,7 @@ modis.sqa500i<-function(pixel)
 modis.sqa500j<-function(pixel)
  #BRDF correction performed unsigned int bits[14]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#BRDF correction performed unsigned int bits[14]
 	#0 -> class 0: Yes
 	#1 -> class 1: No
@@ -133,6 +143,7 @@ modis.sqa500j<-function(pixel)
 modis.sqa500k<-function(pixel) 
 #Internal Snow Mask unsigned int bits[15]
 {
+	if (!(require(bitops))) { stop('this function needs the bitops package to be installed') }
 	#Internal Snow Mask unsigned int bits[15]
 	#0 -> class 0: Snow
 	#1 -> class 1: No snow
