@@ -53,6 +53,7 @@ dn2ref  <- function(SatImgObject, filename) {
 		fname		<- filename(radiance)
 #		reflectance <- rad2ref(radiance, doy, sun_elevation, ESUN[i]) 
 		xfac <- (pi * ds * ds) / (ESUN[i] * cos ((90 - sun_elevation)* pi/180))
+		setOptions(todisk=TRUE)
 		reflectance 	<- calc(radiance, fun=function(x){x*xfac}, filename= b_filename[i], overwrite=TRUE)				
 		ref_stk		<- addLayer(ref_stk, reflectance)
 #  temporary fix, restore this with next version of Raster
@@ -102,7 +103,8 @@ dn2temp <- function(SatImgObject, filename) {
 			NAvalue(DN) 	<-0
 			#DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
 			radiance 		<- dn2rad(DN, gain[j], bias[j])
-			temp			<- calc(radiance, fun=function(x){rad2temp(x, K)}, filename= b_filename[j], overwrite=TRUE)				
+			setOptions(todisk=TRUE)
+			temp			<- calc(radiance, fun=function(x){K[2] / (log ((K[1] / x) + 1.0))}, filename= b_filename[j], overwrite=TRUE)				
 			temp_stk		<- addLayer(temp_stk, temp)
 #  temporary fix, restore this with next version of Raster
 #		removeRasterFile(radiance)		
