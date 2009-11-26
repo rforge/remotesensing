@@ -30,8 +30,7 @@ landsat(filename)
 
 \examples{
 
-setwd(dirname(system.file("external/.", package="RemoteSensing")))
-metafile <- "L71129046_04620080329_MTL.txt"
+metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
 
 #read Landsat metadata file and get parameters
 img <- landsat(metafile)
