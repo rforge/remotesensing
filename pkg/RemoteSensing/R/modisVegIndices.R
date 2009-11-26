@@ -77,7 +77,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 	if(tileNumber=="0"){
 		print("You did not indicate a tile number. The script will process all the existing tiles in the inpath...")
 		str <- list.files(inpath, pattern="001.*b01")
-		str2 <- substr(str, 18, 23)
+		str2 <- substr(str, 10, 15)
 		for(i in str2){
 			print(paste("Now mapping tile:", i ))
 			vegFxn(inpath, i)
