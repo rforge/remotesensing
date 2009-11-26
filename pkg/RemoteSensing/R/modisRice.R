@@ -97,7 +97,7 @@ modisRice <- function(inpath,tileNumber="") {
 	if(tileNumber==""){
 		print("You did not indicate a tile number. The script will process all the existing tiles in the inpath...")
 		str <- list.files(inpath, pattern="001.*b01")
-		str2 <- substr(str, 18, 23)
+		str2 <- substr(str, 10, 15)
 		for(i in str2){
 			print(paste("Now mapping tile:", i ))
 			riceFxn(inpath, i)
