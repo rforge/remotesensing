@@ -30,21 +30,17 @@ modisVeg(inpath, tileNumber)
 \examples{ 
   setwd(dirname(system.file("external/.", package="RemoteSensing")))
   ## RED band
-  b1 <- "MOD09A1_b1.tif"
-  red <- raster(b1) 
-  
+  red <- raster("MOD09A1_b1.tif")
+    
   ## NIR band
-  b2 <- "MOD09A1_b2.tif"
-  nir <- raster(b2)
-
+  nir <- raster("MOD09A1_b2.tif")
+  
   ## BLUE band
-  b3 <- "MOD09A1_b3.tif" 	
-  blue <- raster(b3)
-  
+  blue <- raster("MOD09A1_b3.tif")
+    
   ## SWIR band
-  b6 <- "MOD09A1_b6.tif" 	
-  swir <- raster(b6)
-  
+  swir <- raster("MOD09A1_b6.tif")
+    
   ## Calculate NDVI, EVI, LSWI, flooded and persistent water
   NDVI <- overlay(red, nir, fun= ndvi)
   EVI <- overlay(blue, red, nir, fun= evi)
