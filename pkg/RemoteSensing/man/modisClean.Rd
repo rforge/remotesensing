@@ -37,26 +37,26 @@ modisClean(inpath, tileNumber)
   require(bitops) 	
   setwd(dirname(system.file("external/.", package="RemoteSensing")))
   ## NIR band
-  nir <- "MOD09A1_b2.tif"
-  NIR <- raster(nir)
-  
+  NIR <- raster("MOD09A1_b2.tif")
+    
   ## Scaling
   NIRscaled <- NIR/10000
   plot(NIR, col=grey(0:255/255))
   
   ## quality control flags
-  sqa <- "MOD09A1_sqa.tif"
-  QCF <- raster(sqa)
-    
+  sqa <- raster("MOD09A1_sqa.tif")
+      
  ## Extract cloudy and water pixels using the modis.sqa500f(internal cloud flag) 
  ## and modis.sqa500c(land/water flag)
- cloudmask <- calc(QCF, fun= modis.sqa500f) # where pixel values: 0 = no clouds, and 1 = with clouds
+ cloudmask <- calc(sqa, fun= modis.sqa500f) # where pixel values: 0 = no clouds, and 1 = with clouds
  cloudmask <- cloudmask==0      
- watermask <- calc(QCF, fun= modis.sqa500c) # where pixel values: 1 = land, and other values = water
+ watermask <- calc(sqa, fun= modis.sqa500c) # where pixel values: 1 = land, and other values = water
  watermask <- watermask==1
  
  ## Water and clouds removed
  cleaned <- NIRscaled*cloudmask*watermask
+ x11()
+ plot(cleaned, col=grey(0:255/255))
  }
 
 
