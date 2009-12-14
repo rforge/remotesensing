@@ -32,7 +32,8 @@ modisClean(inpath, tileNumber)
 
 \author{ Sonia Asilo }
 
-
+\references{Xiao, X., Boles, S., Frolking, S. et.al. 2006. Mapping paddy rice agriculture in Southeast Asia using multi-temporal MODIS images.  Remote Sensing of Environment 100, pages, 95-113. }
+    
 \examples{ 
   require(bitops) 	
   setwd(dirname(system.file("external/.", package="RemoteSensing")))
@@ -41,7 +42,6 @@ modisClean(inpath, tileNumber)
     
   ## Scaling
   NIRscaled <- NIR/10000
-  plot(NIR, col=grey(0:255/255))
   
   ## quality control flags
   sqa <- raster("MOD09A1_sqa.tif")
@@ -55,9 +55,7 @@ modisClean(inpath, tileNumber)
  
  ## Water and clouds removed
  cleaned <- NIRscaled*cloudmask*watermask
- x11()
- plot(cleaned, col=grey(0:255/255))
  }
 
-
+ 
 
