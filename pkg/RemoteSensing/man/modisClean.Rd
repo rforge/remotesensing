@@ -30,9 +30,9 @@ modisClean(inpath, tileNumber)
   
 }
 
-\author{ Sonia Asilo }
-
 \references{Xiao, X., Boles, S., Frolking, S. et.al. 2006. Mapping paddy rice agriculture in Southeast Asia using multi-temporal MODIS images.  Remote Sensing of Environment 100, pages, 95-113. }
+
+\author{ Sonia Asilo }
     
 \examples{ 
   require(bitops) 	
