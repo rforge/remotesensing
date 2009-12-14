@@ -23,11 +23,11 @@ modisVeg(inpath, tileNumber)
   Uses NIR, RED, BLUE, SWIR bands that has been cleaned using modisClean as input in calculating the indices. 
   }
 
-\author{ Sonia Asilo }
-
 \seealso{ \code{\link{modisClean}}, \link{vi}, \link{water} }
 
 \references{Xiao, X., Boles, S., Frolking, S. et.al. 2006. Mapping paddy rice agriculture in Southeast Asia using multi-temporal MODIS images.  Remote Sensing of Environment 100, pages, 95-113. }
+
+\author{ Sonia Asilo }
 
 \examples{ 
   setwd(dirname(system.file("external/.", package="RemoteSensing")))
