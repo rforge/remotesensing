@@ -58,7 +58,11 @@ cloudMask <- function (refstack, traster) {
 	band4 	   <- raster(refstack,4)
 	band5 	   <- raster(refstack,5)
 	band6      <- disaggregate(traster, fact=2)
-	band6	   <- setExtent(band6, extent(band2), keepres=TRUE, snap=TRUE)
+	
+# change made based on suggestion by Matteo Mattiuzzi	
+#	was: band6	   <- setExtent(band6, extent(band2), keepres=TRUE, snap=TRUE)
+	band6 <- crop(band6, extent(band5))
+
 	band6All   <- band6
 	ncellInput <- ncell(band6) - cellStats(band6, 'countNA')
 	
