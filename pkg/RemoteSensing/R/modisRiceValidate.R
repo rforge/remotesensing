@@ -32,11 +32,11 @@ x11()
 	riceRast2 <- 1:length(riceRast[])
 	riceRast2[] <- 0
 
-	pat <- paste(tileNumber, "_evi.grd", sep="")
+	pat <- paste(tileNumber, "_evi-cleaned.grd", sep="")
 	files <- list.files(path=prevPath, pattern=pat)
 	files <- paste(prevPath, files, sep="")
 	
-	pat <- paste(tileNumber, "_evi.grd", sep="")
+	pat <- paste(tileNumber, "_evi-cleaned.grd", sep="")
 	files2 <- list.files(path=vegpath, pattern=pat)
 	files2 <- paste(vegpath, files2, sep="")
 	
@@ -103,7 +103,7 @@ x11()
 
 	plot(riceRast)
 	
-	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, substr(perhapsRice, 20,23), ".tif", sep="")
+	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
 	writeRaster(riceRast, filename=fnameRast, filetype="GTiff", datatype= "INT1U", overwrite=T)
 
 }
