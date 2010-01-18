@@ -93,7 +93,10 @@ modisClean <- function(inpath, tileNumber="0"){
 				qfile <- paste(inpath, as.vector(subset(mm, mm$date == d & mm$band == "sta")$filename), sep='')
 				b <- subset(mm, mm$date == d & mm$band != "sta")
 				rq <- raster(qfile, TRUE)
-				mask <- calc(rq, .internalcloud) * calc(rq, .cloudshadow) * calc(rq, .watermask) * calc(rq, .snowmask)
+				cloudmask <- calc(rq, .internalcloud, filename=paste(outpath, d, '_', z, '_', 'CloudMask.grd', sep=''),format='raster',datatype='INT2S', overwrite=TRUE)
+				shadowmask <- calc(rq, .cloudshadow, filename= paste(outpath, d, '_', z, '_', 'ShadowMask.grd', sep=''),format='raster',datatype='INT2S', overwrite=TRUE)
+				watermask <- calc(rq, .watermask, filename= paste(outpath, d, '_', z, '_', 'WaterMask.grd', sep=''),format='raster',datatype='INT2S', overwrite=TRUE)
+				snowmask <-  calc(rq, .snowmask, filename= paste(outpath, d, '_', z, '_', 'Snowmask1.grd', sep=''),format='raster',datatype='INT2S', overwrite=TRUE)
 				fname <- paste(outpath, d, '_', z, '_', sep='')
 
 				#looping for each of the 6 bands
@@ -101,7 +104,7 @@ modisClean <- function(inpath, tileNumber="0"){
 					r <- raster( paste(inpath, b$filename[i], sep='') )
 					NAvalue(r) <- -28672
 					r <- readAll(r)
-					r[mask == 0] <- NA  # apply mask 
+					r[cloudmask==0 | shadowmask==0 | watermask ==0 | snowmask==0] <- NA  # apply mask 
 					r[] <- values(r) / 10000
 					filenamec <- paste(fname, b$band[i], '_clean.grd', sep='')
 					r <- writeRaster(r, filename=filenamec, datatype="FLT4S", fileformat='raster', overwrite=TRUE)
@@ -126,7 +129,7 @@ modisClean <- function(inpath, tileNumber="0"){
 				# create second snow mask
 				fname1 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowPixels.grd", sep="")
 				snow <- overlay(nir, NDSI, fun=.snowmask2, filename=fname1, overwrite=TRUE)
-				fname2 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowMask.grd", sep="")
+				fname2 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowMask2.grd", sep="")
 				snowmask <- calc(snow, fun=.snow, filename=fname2, overwite=T)
 			}
 		}
