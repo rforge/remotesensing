@@ -55,7 +55,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 				NDVI <- overlay(red, nir, fun=ndvi, filename=paste(fname, 'ndvi.grd', sep=''), overwrite=TRUE)
 				LSWI <- overlay(nir, swir1, fun=lswi,  filename=paste(fname, 'lswi.grd', sep=''), overwrite=TRUE)
 				EVI <- overlay(blue, red, nir, fun=evi, filename=paste(fname, 'evi.grd', sep=''), overwrite=TRUE)
-				NDWI <- overlay(nir, swir2, fun=ndwi, filename==paste(fname, 'ndwi.grd', sep=''), overwrite=TRUE)
+				NDWI <- overlay(nir, swir2, fun=ndwi, filename=paste(fname, 'ndwi.grd', sep=''), overwrite=TRUE)
 				
 				# masking of VIs
 				pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="")
@@ -70,7 +70,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, 'lswi-cleaned.grd', sep=''), overwrite=TRUE)
 				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'evi-cleaned.grd', sep=''), overwrite=TRUE)
 				NDWI <- overlay(NDWI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndwi-cleaned.grd', sep=''), overwrite=TRUE)
-				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename==paste(fname, 'nddi-cleaned.grd', sep=''), overwrite=TRUE)
+				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename=paste(fname, 'nddi-cleaned.grd', sep=''), overwrite=TRUE)
 								
 				# writing of flooded and permanent water
 				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=TRUE,  datatype='INT2S')
