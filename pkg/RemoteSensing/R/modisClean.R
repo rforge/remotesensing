@@ -124,7 +124,7 @@ modisClean <- function(inpath, tileNumber="0"){
 
 				# create ndsi
 				fname <- paste(outpath, substr(NIRfile[1], 1,16), "ndsi.grd", sep="")
-				NDSI <- overlay(green, nir, fun= ndsi, filename=fname, datatype='INT2S', overwrite=TRUE)
+				NDSI <- overlay(green, nir, fun= ndsi, filename=fname, datatype='FLT4S', overwrite=TRUE)
 
 				# create second snow mask
 				fname1 <- paste(outpath, substr(NIRfile[1], 1,16), "SnowPixels.grd", sep="")
