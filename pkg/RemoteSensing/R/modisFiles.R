@@ -8,16 +8,13 @@
 modisFiles <- function(path, pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.tif')
-	x <- strsplit(f, '\\.')
-	m <- matrix(, length(x), length(x[[1]]))
-	for(i in 1:length(x)) { m[i,] <- x[[i]] }
-	m <- cbind(m, f)
-	if (dim(m)[2] != 9) { stop('oops, non standard filenames found') }
-	m <- m[,-8]
-	m <- m[,-6]
-	m <- m[,-4]
+	try(m <- cbind(t(matrix(unlist(t(strsplit(f, '\\.')), recursive=FALSE), nrow=8, ncol=length(f))),f))
+	if (ncol(m) != 9) { 
+        return(FALSE)
+        stop('oops, non standard filenames found') 
+    }
+	m <- as.data.frame(m[,-c(4,6,8)])
 	colnames(m) <- c('prod1', 'date', 'zone', 'prod2', 'band', 'filename')
-	m <- as.data.frame(m)
 	m$band <- substr(m$band, 10, 12)
 	return(m)
 }
@@ -30,6 +27,7 @@ modisFilesClean <- function(path,pat) {
 	x <- strsplit(f, '_')
 	m <- matrix(, length(x), length(x[[1]]))
 	for(i in 1:length(x)) { m[i,] <- x[[i]] }
+    #try(m <- cbind(t(matrix(unlist(t(strsplit(f, '_')), recursive=FALSE), nrow=8, ncol=length(f))),f))
 	m <- m[,-4] 
 	m <- cbind(m, f)
 	colnames(m) <- c('date', 'zone', 'band', 'filename')
