@@ -79,7 +79,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 				# writing of flooded,permanent water and drought
 				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=TRUE,  datatype='INT2S')
 				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, 'permanent.grd', sep=''), overwrite=TRUE, datatype='INT2S')
-				drought <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.grd', sep=''), overwrite=TRUE, datatype='INT2S')
+				droughtpix <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.grd', sep=''), overwrite=TRUE, datatype='INT2S')
 			}
 		}
 	}
