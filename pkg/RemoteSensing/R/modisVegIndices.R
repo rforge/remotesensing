@@ -5,7 +5,11 @@
 # Licence GPL v3
 
 
-
+# DROUGHT where drought = 2, non- drought=1
+.drought <- function(NDVI, NDWI) {
+	res <- ((NDVI < 0.5 & NDWI < 0.3)*2) + ((NDVI > 0.6 & NDWI > 0.4)*1)
+	return(res)
+	}
 
 modisVeg <- function(inpath, tileNumber="0"){
 
@@ -72,9 +76,10 @@ modisVeg <- function(inpath, tileNumber="0"){
 				NDWI <- overlay(NDWI, bluemask, snowmask, fun=multiply, filename=paste(fname, 'ndwi-cleaned.grd', sep=''), overwrite=TRUE)
 				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename=paste(fname, 'nddi-cleaned.grd', sep=''), overwrite=TRUE)
 								
-				# writing of flooded and permanent water
+				# writing of flooded,permanent water and drought
 				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, 'flooded.grd', sep=''), overwrite=TRUE,  datatype='INT2S')
 				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, 'permanent.grd', sep=''), overwrite=TRUE, datatype='INT2S')
+				drought <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.grd', sep=''), overwrite=TRUE, datatype='INT2S')
 			}
 		}
 	}
