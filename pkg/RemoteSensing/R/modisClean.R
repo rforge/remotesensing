@@ -116,7 +116,7 @@ modisClean <- function(inpath, tileNumber="0"){
 					
 					if (b$band[i]=="b03"){
 					   # BLUE
-                        fnameblumask <- paste(fname, "b03_mask2.grd", sep="")
+                        fnameblumask <- paste(fname, "b03_mask.grd", sep="")
                         blumask <- calc(r, fun= .blueMask, filename = fnameblumask, datatype='INT1S', overwrite=TRUE)    
                     } else if (b$band[i]=="b02"){
                         # NIR
