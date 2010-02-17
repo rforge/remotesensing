@@ -64,30 +64,30 @@ modisRice <- function(inpath,tileNumber="") {
 				permanentstk <- stack(as.vector( mmm$filename[mmm$band=='permanent']) )
 
 				fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, overwrite=TRUE)
+				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype='INT1S', overwrite=TRUE)
 				flooded <- readAll(flooded)
 
 				fnamepermanent <- paste(outpath, 'permanent_', z, '_', y, '.grd', sep='')
-				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, overwrite=TRUE)
+				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, datatype='INT1S', overwrite=TRUE)
 				permanent <- readAll(permanent)
 
 				fnameforest <- paste(outpath, 'forest_', z, '_', y, '.grd', sep='') 
-				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, overwrite=TRUE)
+				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, datatype='INT1S', overwrite=TRUE)
 				forest <- readAll(forest)
 
 				fnameshrub <- paste(outpath, 'shrub_', z, '_', y, '.grd', sep='') 
-				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, overwrite=TRUE) 
+				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, datatype='INT1S', overwrite=TRUE) 
 				shrub <- readAll(shrub)
 				shrub  <- shrub & !forest
         
 				notrice <- (permanent | forest | shrub)
-				notrice <- readAll(notrice)
-				filenamenr <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
-				writeRaster(notrice, filename=filenamenr, , filetype='raster', overwrite=TRUE)
+				#notrice <- readAll(notrice)
+				#filenamenr <- paste(outpath, 'notrice_', z, '_', y, '.grd', sep='')
+				notrice <- writeRaster(notrice, filename=paste(outpath, 'notrice_', z, '_', y, '.grd', sep=''), filetype='raster', datatype='INT1S',overwrite=TRUE)
 
 				perhapsrice <- flooded & !notrice
-				filenamephr <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
-				perhapsrice <- writeRaster(perhapsrice, filename=filenamephr, filetype='raster', overwrite=TRUE)
+				#filenamephr <- paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep='')
+				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, 'perhapsrice_', z, '_', y, '.grd', sep=''), filetype='raster', datatype='INT1S',overwrite=TRUE)
 			}
 		}
 	}
