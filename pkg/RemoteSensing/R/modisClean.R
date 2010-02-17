@@ -133,7 +133,7 @@ modisClean <- function(inpath, tileNumber="0"){
 
 				# create second snow mask
 				snowpix <- overlay(nir, NDSI, fun=.snowMask2, filename=paste(fname, "SnowPixels.grd", sep=""), datatype='INT1S', overwrite=TRUE)
-				snowmask <- calc(snowpix, fun=.snow, filename=paste(fname, "SnowMask2.grd", sep=""), datatype='INT1S', overwite=T)
+				snowmask <- calc(snowpix, fun=.snow, filename=paste(fname, "SnowMask2.grd", sep=""), datatype='INT1S', overwrite=TRUE)
 			}
 		}
 	}
