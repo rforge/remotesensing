@@ -1,4 +1,4 @@
-# Authors: Sonia Asilo, Ritsuko Fuchiyama, Robert J. Hijmans, Yann Chemin and Angelo Carlo Pacheco
+# Authors: Sonia Asilo, Ritsuko Fuchiyama, Robert J. Hijmans, Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil S. Aunario
 # International Rice Research Institute
 # Date :  Feb 2009
 # Version 0,1
@@ -48,7 +48,10 @@
 
 # second snow mask
 .snowMask2 <- function(nir, ndsi) {
-	res <- (nir > 0.11) & (ndsi > 0.40)
+	res <- rep(NA, length(nir))
+	res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
+	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
+	res[is.na(res)] <- 0
 	return(res)
 }
 
@@ -71,7 +74,7 @@ modisClean <- function(inpath, tileNumber="0"){
 	cleanFxn <- function(inpath, tileNumber){
 		#reading of files
 		pat <- paste(tileNumber, ".*.tif", sep="")
-		print(pat)
+		#print(pat)
 		m <- modisFiles(inpath, pat)
 
 		#creation of output director "tif" folder
@@ -81,17 +84,18 @@ modisClean <- function(inpath, tileNumber="0"){
 		#looping
 		zones <- as.vector(unique(m$zone))
 		for (z in zones) {
-
-			mm <- subset(m, m$zone==z)
-			dates <- as.vector(unique(mm$date))
-			cat(paste('Zone:', z, "\n"))
+            cat("Processing Zone", z, "\n")
 			flush.console()
 
+			mm <- subset(m, m$zone==z)
+			dates <- as.vector(unique(mm$date))			
 			
 			for (d in dates) {
-				cat(d, "\r")
+			    dlab <- paste("Date ", d, ":", sep ="")
+				cat(dlab, "Calculating masks. \r")
 				flush.console()
-				qfile <- paste(inpath,m$filename[which(mm$date==d & mm$band=="sta")], sep="/")
+
+				qfile <- paste(inpath,m$filename[which(mm$date==d & mm$band=="sta")], sep="/")			    
 				b <- subset(mm, mm$date == d & mm$band != "sta")
 				rq <- raster(qfile, TRUE)
 				cloudmask <- calc(rq, .internalCloud, filename=paste(outpath, '/', d, '_', z, '_', 'CloudMask.grd', sep=''),format='raster',datatype='INT1S', overwrite=TRUE)
@@ -107,6 +111,9 @@ modisClean <- function(inpath, tileNumber="0"){
 
 				#looping for each of the 6 bands
 				for (i in 1:nrow(b)) {
+				    cat(dlab, " Applying masks to ",b$band[i],".\r", sep="")
+    				flush.console()
+
 					r <- raster( paste(inpath, '/', b$filename[i], sep='') )
 					NAvalue(r) <- -28672
 					r <-  r*cloudmask*shadowmask*watermask*snowmask/10000
@@ -117,7 +124,7 @@ modisClean <- function(inpath, tileNumber="0"){
 					if (b$band[i]=="b03"){
 					   # BLUE
                         fnameblumask <- paste(fname, "b03_mask.grd", sep="")
-                        blumask <- calc(r, fun= .blueMask, filename = fnameblumask, datatype='INT1S', overwrite=TRUE)    
+                        blumask <- calc(r, fun= .blueMask, filename = fnameblumask, datatype='INT1S', overwrite=TRUE)
                     } else if (b$band[i]=="b02"){
                         # NIR
                         nir <- r
@@ -129,11 +136,17 @@ modisClean <- function(inpath, tileNumber="0"){
 				}
 
 				# create ndsi
+				cat(dlab, "Computing NDSI and secondary snow mask. \r")
+				flush.console()
+
 				NDSI <- overlay(green, nir, fun= ndsi, filename=paste(fname, "ndsi.grd", sep=""), datatype='FLT4S', overwrite=TRUE)
 
 				# create second snow mask
-				snowpix <- overlay(nir, NDSI, fun=.snowMask2, filename=paste(fname, "SnowPixels.grd", sep=""), datatype='INT1S', overwrite=TRUE)
-				snowmask <- calc(snowpix, fun=.snow, filename=paste(fname, "SnowMask2.grd", sep=""), datatype='INT1S', overwrite=TRUE)
+				#snowpix <- overlay(nir, NDSI, fun=.snowMask2, filename=paste(fname, "SnowPixels.grd", sep=""), datatype='INT1S', overwrite=TRUE)
+				snowmask <-  overlay(nir, NDSI, fun=.snowMask2, filename=paste(fname, "SnowMask2.grd", sep=""), datatype='INT1S', overwrite=TRUE)
+                cat (dlab, " -------------------- DONE -------------------- \n")
+                flush.console()
+
 			}
 		}
 	}
@@ -146,8 +159,6 @@ modisClean <- function(inpath, tileNumber="0"){
 		str <- list.files(inpath, pattern="001.*b01")
 		str2 <- substr(str, 18, 23)
 		for(i in str2){
-			cat(paste("Now mapping tile:", i ), "\r")
-			flush.console()
 			cleanFxn(inpath, i)
 		}
 	}
