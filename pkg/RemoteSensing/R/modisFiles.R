@@ -8,7 +8,7 @@
 modisFiles <- function(path, pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.tif')
-	x <- strsplit(f, '_')
+	x <- strsplit(f, "\\.")
 	try(m <- cbind((matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f), byrow=TRUE)),f))
 	if (ncol(m) != 9) { 
         return(FALSE)
