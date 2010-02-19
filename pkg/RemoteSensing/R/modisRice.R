@@ -33,11 +33,11 @@ modisRice <- function(inpath,tileNumber="") {
 		# file reading
 		pat <- paste(tileNumber, ".*.grd", sep="")
 		m <- modisFilesClean(inpath, pat)
-		m$filename <- paste(inpath, m$filename, sep="")
+		m$filename <- paste(inpath, m$filename, sep="/")
 
 		# creation of output director "tif" folder
 		outpath <- paste(inpath,"/../rice",sep="")
-		if(!files.exists(outpath)) dir.create(outpath, recursive=TRUE)
+		if(!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
 
 		# looping
 		zones <- unique(m$zone)
@@ -59,30 +59,30 @@ modisRice <- function(inpath,tileNumber="") {
 					warning(paste("expected 46 files, found:", length(dates))) 
 				}
 
-				ndvistk <- stack( as.vector( mmm$filename[grep('ndvi-cleaned',mmm$band)]) )
+				ndvistk <- stack(mmm$filename[grep('ndvi-cleaned',mmm$band)])
 				evistk <- stack( as.vector( mmm$filename[grep('evi-cleaned',mmm$band)]) )
 				lswistk <- stack( as.vector( mmm$filename[grep('lswi-cleaned',mmm$band)]) )
 				floodstk <- stack( as.vector( mmm$filename[grep('flooded',mmm$band)]) )
 				permanentstk <- stack(as.vector( mmm$filename[grep('permanent',mmm$band)]) )
 
-				fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype='INT1S', overwrite=TRUE)
-				flooded <- readAll(flooded)
+				#fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
+				#flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype='INT1S', overwrite=TRUE)
+				#flooded <- readAll(flooded)
 
 
-				fnameflood <- paste(outpath, "flooded_", z, "_", y, ".grd", sep="")
+				fnameflood <- paste(outpath, "/flooded_", z, "_", y, ".grd", sep="")
 				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype="INT1S", overwrite=TRUE)
 				flooded <- readAll(flooded)
 
-				fnamepermanent <- paste(outpath, "permanent_", z, "_", y, ".grd", sep="")
+				fnamepermanent <- paste(outpath, "/permanent_", z, "_", y, ".grd", sep="")
 				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, datatype="INT1S", overwrite=TRUE)
 				permanent <- readAll(permanent)
 
-				fnameforest <- paste(outpath, "forest_", z, "_", y, ".grd", sep="") 
+				fnameforest <- paste(outpath, "/forest_", z, "_", y, ".grd", sep="") 
 				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, datatype="INT1S", overwrite=TRUE)
 				forest <- readAll(forest)
 
-				fnameshrub <- paste(outpath, "shrub_", z, "_", y, ".grd", sep="") 
+				fnameshrub <- paste(outpath, "/shrub_", z, "_", y, ".grd", sep="") 
 				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, datatype="INT1S", overwrite=TRUE) 
 				shrub <- readAll(shrub)
 				shrub  <- shrub & !forest
@@ -90,11 +90,11 @@ modisRice <- function(inpath,tileNumber="") {
 				notrice <- (permanent | forest | shrub)
 				#notrice <- readAll(notrice)
 				#filenamenr <- paste(outpath, "notrice_", z, "_", y, ".grd", sep="")
-				notrice <- writeRaster(notrice, filename=paste(outpath, "notrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
+				notrice <- writeRaster(notrice, filename=paste(outpath, "/notrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
 
 				perhapsrice <- flooded & !notrice
 				#filenamephr <- paste(outpath, "perhapsrice_", z, "_", y, ".grd", sep="")
-				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, "perhapsrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
+				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, "/perhapsrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
 			}
 		}
 	}
@@ -104,7 +104,7 @@ modisRice <- function(inpath,tileNumber="") {
 	if(tileNumber==""){
 		cat("You did not indicate a tile number. The script will process all the existing tiles in the inpath...\n")
 		flush.console()
-		tiles <- substr(list.files(inpath, pattern="001.*ndvi-cleaned"), 10, 15)
+		tiles <- substr(list.files(inpath, pattern="001.*ndvi-cleaned.grd"), 10, 15)
 		for(i in tiles){
 			#print(paste("Now mapping tile:", i ))
 			riceFxn(inpath, i)
