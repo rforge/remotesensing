@@ -8,7 +8,8 @@
 modisFiles <- function(path, pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.tif')
-	try(m <- cbind(t(matrix(unlist(t(strsplit(f, '\\.')), recursive=FALSE), nrow=8, ncol=length(f))),f))
+	x <- strsplit(f, '_')
+	try(m <- cbind((matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f), byrow=TRUE)),f))
 	if (ncol(m) != 9) { 
         return(FALSE)
         stop('oops, non standard filenames found') 
@@ -24,10 +25,12 @@ modisFiles <- function(path, pat) {
 modisFilesClean <- function(path,pat) {
 	f <- list.files(path=path, pattern=pat)
 	# f <- list.files(path=path, pattern='.grd')
-	#x <- strsplit(f, '_')
+	x <- strsplit(f, '_')
 	#m <- matrix(, length(x), length(x[[1]]))
-    try(m <- cbind(t(matrix(unlist(t(strsplit(f, '_')), recursive=FALSE), nrow=4, ncol=length(f))),f))
-	m <- as.data.frame(m[,-4], stringsAsFactors=FALSE) 
+	#m <- matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f))
+    try(m <- (matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f), byrow=TRUE)))
+	m <- as.data.frame(m[,-4],stringsAsFactors=FALSE)
+	m <- cbind(m,f)
 	colnames(m) <- c('date', 'zone', 'band', 'filename')	
 	#m$band <- strsplit(as.vector(m$band), '\\.grd' )
 	
