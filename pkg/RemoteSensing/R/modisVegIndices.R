@@ -78,15 +78,15 @@ modisVeg <- function(inpath, tileNumber="0"){
 				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndvi-cleaned.grd", sep=""), overwrite=TRUE)
 				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, "lswi-cleaned.grd", sep=""), overwrite=TRUE)
 				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, "evi-cleaned.grd", sep=""), overwrite=TRUE)
-				NDWI <- overlay(NDWI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndwi-cleaned.grd", sep=""), overwrite=TRUE)
-				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename=paste(fname, "nddi-cleaned.grd", sep=""), overwrite=TRUE)
+				NDWI <- overlay(NDWI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndwi-cleaned.tif", sep=""), format='GTiff', overwrite=TRUE)
+				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename=paste(fname, "nddi-cleaned.tif", sep=""), format='GTiff', overwrite=TRUE)
 								
 				# writing of flooded,permanent water and drought
 				cat (dlab, "Computing drought, flooded, and permanent water \r")
                 flush.console()				
-				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, "flooded.grd", sep=""), overwrite=TRUE,  datatype="INT1S")
-				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, "permanent.grd", sep=""), overwrite=TRUE, datatype="INT1S")
-				droughtpix <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.grd', sep=''), overwrite=TRUE, datatype='INT1S')
+				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, "flooded.grd", sep=""), datatype="INT1S", overwrite=TRUE)
+				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, "permanent.grd", sep=""), datatype="INT1S", overwrite=TRUE)
+				droughtpix <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.tif', sep=''), format='GTiff', datatype='INT1S', overwrite=TRUE)
                 cat (dlab, " -------------------- DONE -------------------- \n")
                 flush.console()
 				
