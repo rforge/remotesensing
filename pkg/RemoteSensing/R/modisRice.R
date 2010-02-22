@@ -70,31 +70,31 @@ modisRice <- function(inpath,tileNumber="") {
 				#flooded <- readAll(flooded)
 
 
-				fnameflood <- paste(outpath, "/flooded_", z, "_", y, ".grd", sep="")
-				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype="INT1S", overwrite=TRUE)
+				fnameflood <- paste(outpath, "/flooded_", z, "_", y, ".tif", sep="")
+				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, format='GTiff', datatype="INT1S", overwrite=TRUE)
 				flooded <- readAll(flooded)
 
-				fnamepermanent <- paste(outpath, "/permanent_", z, "_", y, ".grd", sep="")
-				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, datatype="INT1S", overwrite=TRUE)
+				fnamepermanent <- paste(outpath, "/permanent_", z, "_", y, ".tif", sep="")
+				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, format='GTiff', datatype="INT1S", overwrite=TRUE)
 				permanent <- readAll(permanent)
 
-				fnameforest <- paste(outpath, "/forest_", z, "_", y, ".grd", sep="") 
-				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, datatype="INT1S", overwrite=TRUE)
+				fnameforest <- paste(outpath, "/forest_", z, "_", y, ".tif", sep="") 
+				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, format='GTiff', datatype="INT1S", overwrite=TRUE)
 				forest <- readAll(forest)
 
-				fnameshrub <- paste(outpath, "/shrub_", z, "_", y, ".grd", sep="") 
-				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, datatype="INT1S", overwrite=TRUE) 
+				fnameshrub <- paste(outpath, "/shrub_", z, "_", y, ".tif", sep="") 
+				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, format='GTiff', datatype="INT1S", overwrite=TRUE) 
 				shrub <- readAll(shrub)
 				shrub  <- shrub & !forest
         
 				notrice <- (permanent | forest | shrub)
 				#notrice <- readAll(notrice)
 				#filenamenr <- paste(outpath, "notrice_", z, "_", y, ".grd", sep="")
-				notrice <- writeRaster(notrice, filename=paste(outpath, "/notrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
+				notrice <- writeRaster(notrice, filename=paste(outpath, "/notrice_", z, "_", y, ".tif", sep=""), format="GTiff", datatype="INT1S",overwrite=TRUE)
 
 				perhapsrice <- flooded & !notrice
 				#filenamephr <- paste(outpath, "perhapsrice_", z, "_", y, ".grd", sep="")
-				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, "/perhapsrice_", z, "_", y, ".grd", sep=""), filetype="raster", datatype="INT1S",overwrite=TRUE)
+				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, "/perhapsrice_", z, "_", y, ".tif", sep=""), format="GTiff", datatype="INT1S",overwrite=TRUE)
 			}
 		}
 	}
