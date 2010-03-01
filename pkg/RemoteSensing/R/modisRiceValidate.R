@@ -104,7 +104,7 @@ x11()
 	plot(riceRast)
 	
 	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	writeRaster(riceRast, filename=fnameRast, filetype="GTiff", datatype= "INT1U", overwrite=T)
+	writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1U", overwrite=T)
 
 }
 
