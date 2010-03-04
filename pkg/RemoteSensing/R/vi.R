@@ -78,8 +78,6 @@ nddi <- function(NDVI, NDWI) # NDDI: Normalized Difference Drought Index
 {
 	result<- (NDVI - NDWI) / (NDVI + NDWI)
 	result[is.infinite(result)] <- -9999
-	result[result < -1] <- -1
-	result[result > 1] <- 1
 	return(result)
 }
 
