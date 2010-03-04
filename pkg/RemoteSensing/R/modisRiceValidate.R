@@ -21,7 +21,7 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 
 	print(paste("Verifying using evi: ", inpath, sep=""))
 
-	pat <- paste("perhapsrice_.*", tileNumber, sep="")
+	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.grd", sep="")
 	perhapsRice <- list.files(path=inpath, pattern=pat)
 	pRice <- raster(paste(inpath,perhapsRice[1],sep=""))
 plot(pRice)
@@ -48,9 +48,9 @@ x11()
 	# stck <- stack( allfiles[k:l] )
 	
 	stck <- stack( allfiles[1:k] )
-
 	vals <- getValues(stck, 1)
 	rice <- vals[,1]
+
 
 	for( r in 1:nrow(stck) ){
 		print( paste("=============================Row:", r) )
@@ -104,8 +104,6 @@ x11()
 	plot(riceRast)
 	
 	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1U", overwrite=T)
+	writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1S", overwrite=T)
 
 }
-
-
