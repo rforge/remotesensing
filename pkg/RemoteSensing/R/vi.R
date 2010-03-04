@@ -24,7 +24,7 @@ evi<-function(blue, red, nir) #EVI: Enhanced Vegetation Index
 # A comparison of vegetation indices global set of TM images for EOS-MODIS
 # Remote Sensing of Environment, 59:440-451.
 	result <- 2.5 * (nir - red) / (nir + 6 * red - 7.5 * blue + 1)
-	result[is.infinite(result)] <- NA
+	result[is.infinite(result)] <- -9999
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
@@ -77,7 +77,7 @@ msavi<-function(red, nir) #MSAVI: Modified Soil Adjusted Vegetation Index
 nddi <- function(NDVI, NDWI) # NDDI: Normalized Difference Drought Index
 {
 	result<- (NDVI - NDWI) / (NDVI + NDWI)
-	result[is.infinite(result)] <- NA
+	result[is.infinite(result)] <- -9999
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
@@ -86,7 +86,7 @@ nddi <- function(NDVI, NDWI) # NDDI: Normalized Difference Drought Index
 ndvi<-function(red, nir) #NDVI: Normalized Difference Vegetation Index
 {
 	result<- (nir - red) / (nir + red)
-	result[is.infinite(result)] <- NA
+	result[is.infinite(result)] <- -9999
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
@@ -95,7 +95,7 @@ ndvi<-function(red, nir) #NDVI: Normalized Difference Vegetation Index
 ndwi <- function(nir, swir2) # NDWI: Normalized Difference Water Index
 {
 	result<- (nir - swir2) / (nir + swir2)
-	result[is.infinite(result)] <- NA
+	result[is.infinite(result)] <- -9999
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
