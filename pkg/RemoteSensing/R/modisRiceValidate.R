@@ -21,7 +21,7 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 
 	print(paste("Verifying using evi: ", inpath, sep=""))
 
-	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.grd", sep="")
+	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.tif", sep="")
 	perhapsRice <- list.files(path=inpath, pattern=pat)
 	pRice <- raster(paste(inpath,perhapsRice[1],sep=""))
 plot(pRice)
