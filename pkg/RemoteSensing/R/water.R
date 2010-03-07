@@ -8,7 +8,7 @@ lswi<-function(nir, swir)
  #LSWI: Land Surface Water Index
 {
 	result <- (nir - swir) / (nir + swir)
-	result[is.infinite(result)] <- -9999
+	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
