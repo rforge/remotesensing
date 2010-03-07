@@ -92,7 +92,7 @@ x11()
 						}
 					}
 					if(flag!=1){
-						riceRast2[cellFromRowCol(riceRast, r, i)] <- NA
+						riceRast2[cellFromRowCol(riceRast, r, i)] <- -1
 					}
 				}
 			}
