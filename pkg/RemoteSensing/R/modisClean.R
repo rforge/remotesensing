@@ -132,7 +132,7 @@ modisClean <- function(inpath, tileNumber="0"){
                         # GREEN
                         green <- r
                     }
-					r <- writeRaster(r, filename=filenamec, datatype="FLT4S", fileformat='raster', overwrite=TRUE)
+					r <- writeRaster(r, filename=filenamec, datatype="FLT4S", format='raster', overwrite=TRUE)
 				}
 
 				# create ndsi
