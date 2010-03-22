@@ -66,13 +66,15 @@ modisVeg <- function(inpath, tileNumber="0"){
 				#pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="") 
 				bluemaskfile <- paste(inpath, paste(d, "_", z, "_b03_mask.grd", sep=""), sep="/")
 				if(!file.exists(bluemaskfile)) stop(paste(bluemaskfile, "does not exist!"))
-				bluemask <- raster(bluemaskfile, values=TRUE)
+				bluemask <- raster(bluemaskfile)
+				NAvalue(bluemask) <- 0
 				
 				#pat2 <- paste(d, "_", z, "_SnowMask2.grd", sep="")
 				#snowmaskfiles <- list.files(inpath, pattern=pat2)
 				snowmaskfile <- paste(inpath, paste(d, "_", z, "_SnowMask2.grd", sep=""), sep="/")
 				if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
 				snowmask <- raster(snowmaskfile, values=TRUE)
+				NAvalue(snowmask) <- 0
 				
 				
 				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndvi-cleaned.grd", sep=""), overwrite=TRUE)
