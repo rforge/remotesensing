@@ -73,7 +73,7 @@ modisVeg <- function(inpath, tileNumber="0"){
 				#snowmaskfiles <- list.files(inpath, pattern=pat2)
 				snowmaskfile <- paste(inpath, paste(d, "_", z, "_SnowMask2.grd", sep=""), sep="/")
 				if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
-				snowmask <- raster(snowmaskfile, values=TRUE)
+				snowmask <- raster(snowmaskfile)
 				NAvalue(snowmask) <- 0
 				
 				
