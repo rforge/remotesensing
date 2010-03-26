@@ -1,119 +1,165 @@
-# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin, Angelo Carlo Pacheco
+# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil Aunario
 # International Rice Research Institute
 # Date :  Feb 2009
 # Version 0.1
 # Licence GPL v3
 
-modisRice <- function(inpath,tileNumber="") {
+mysum <- function(x){ sum(x, na.rm=T) }
 
-	mysum <- function(x){ sum(x, na.rm=T) }
-	sumNotNA <- function(x){ sum(!is.na(x)) }
-	mymean <- function(x) {
-		sumv <- mysum(x)
-		sumnotna <- sumNotNA(x)
-		return(sumv/sumnotna)
-	}
-	mymax <- function(x) {
+sumNotNA <- function(x){ sum(!is.na(x)) }
+
+mymean <- function(x) {
+	sumv <- mysum(x)
+	sumnotna <- sumNotNA(x)
+	return(sumv/sumnotna)
+}
+
+mymax <- function(x) {
 		x <- na.omit(x)
-		if (length(x) > 0) {
-		
-			return(max(x)) 
-		} else { 
-			return( NA ) 
-		}
+	if (length(x) > 0) {
+		return(max(x)) 
+	} else { 
+		return( NA ) 
 	}
+}
 	
-	Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
-	Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
-	Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not forest =0
-	Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
+Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
+Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
+Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not forest =0
+Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 	# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
-	riceFxn <- function(inpath, tileNumber){
-		# file reading
-		pat <- paste(tileNumber, ".*.grd", sep="")
-		m <- modisFilesClean(inpath, pat)
-		m$filename <- paste(inpath, m$filename, sep="/")
+modisRice <- function(inpath, informat, outformat="raster", tiles="all"){
+    
+	# creation of output director "tif" folder
+	outpath <- paste(inpath,"/../rice",sep="")
+    if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
 
-		# creation of output director "tif" folder
-		outpath <- paste(inpath,"/../rice",sep="")
-		if(!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
+    IntNA <- -15
+    FltNA <- -9999.0
+	
+	if (informat=="raster") {
+        inext <- ".grd"
+    } else if (informat=="GTiff") {
+        inext <- ".tif"
+    } else {
+        stop(paste("Input format", informat, "not supported."))
+    }   
+	
+	if (outformat=="raster"){
+        ext <- ".grd"
+    } else if (outformat=="GTiff"){
+        if (!require(rgdal)) stop("rgdal loading failed")
+        ext <- ".tif"
+        opts <- c("COMPRESS=LZW", "TFW=YES")
+    } else {
+        cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
+        ext <- ".grd"
+        outformat <- "raster"                
+    }
 
-		# looping
-		zones <- unique(m$zone)
-		for (z in zones) {
-			mm <- subset(m, m$zone==z)
-			years <- unique(mm$year)
-			cat(paste("Processing Zone", z, "\n"))
-			flush.console()
-			for (y in years) {
-				cat("Year:", y, "\n")
-				flush.console()
-				mmm <- subset(mm, mm$year == y, )
-				dates <- unique(mmm$date)
-				dates <- sort(dates)
-				if (length(dates) < 46) { 
-					if (length(dates) < 43) { 
-						stop(paste("expected 46 files, found:", length(dates))) 
-					}
-					warning(paste("expected 46 files, found:", length(dates))) 
-				}
-
-				ndvistk <- stack(mmm$filename[grep('ndvi-cleaned',mmm$band)])
-				evistk <- stack( as.vector( mmm$filename[grep('evi-cleaned',mmm$band)]) )
-				lswistk <- stack( as.vector( mmm$filename[grep('lswi-cleaned',mmm$band)]) )
-				floodstk <- stack( as.vector( mmm$filename[grep('flooded',mmm$band)]) )
-				permanentstk <- stack(as.vector( mmm$filename[grep('permanent',mmm$band)]) )
-
-				#fnameflood <- paste(outpath, 'flooded_', z, '_', y, '.grd', sep='')
-				#flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, datatype='INT1S', overwrite=TRUE)
-				#flooded <- readAll(flooded)
-
-
-				fnameflood <- paste(outpath, "/flooded_", z, "_", y, ".tif", sep="")
-				flooded <- calc(floodstk, fun=Flooded, filename= fnameflood, format='GTiff', datatype="INT1S", overwrite=TRUE)
-				flooded <- readAll(flooded)
-
-				fnamepermanent <- paste(outpath, "/permanent_", z, "_", y, ".tif", sep="")
-				permanent <- calc(permanentstk, fun=Permanent, filename=fnamepermanent, format='GTiff', datatype="INT1S", overwrite=TRUE)
-				permanent <- readAll(permanent)
-
-				fnameforest <- paste(outpath, "/forest_", z, "_", y, ".tif", sep="") 
-				forest <- calc(ndvistk, fun=Forest, filename=fnameforest, format='GTiff', datatype="INT1S", overwrite=TRUE)
-				forest <- readAll(forest)
-
-				fnameshrub <- paste(outpath, "/shrub_", z, "_", y, ".tif", sep="") 
-				shrub <- calc(lswistk, fun=Shrub, filename=fnameshrub, format='GTiff', datatype="INT1S", overwrite=TRUE) 
-				shrub <- readAll(shrub)
-				shrub  <- shrub & !forest
-        
-				notrice <- (permanent | forest | shrub)
-				#notrice <- readAll(notrice)
-				#filenamenr <- paste(outpath, "notrice_", z, "_", y, ".grd", sep="")
-				notrice <- writeRaster(notrice, filename=paste(outpath, "/notrice_", z, "_", y, ".tif", sep=""), format="GTiff", datatype="INT1S",overwrite=TRUE)
-
-				perhapsrice <- flooded & !notrice
-				#filenamephr <- paste(outpath, "perhapsrice_", z, "_", y, ".grd", sep="")
-				perhapsrice <- writeRaster(perhapsrice, filename=paste(outpath, "/perhapsrice_", z, "_", y, ".tif", sep=""), format="GTiff", datatype="INT1S",overwrite=TRUE)
-			}
-		}
-	}
-
-
-	# processing of all tiles in a directory
-	if(tileNumber==""){
-		cat("You did not indicate a tile number. The script will process all the existing tiles in the inpath...\n")
+    # processing of all tiles in a directory
+    if(tiles=="all"){
+		cat("Acquiring available tiles in input folder.\n")
 		flush.console()
-		tiles <- substr(list.files(inpath, pattern="001.*ndvi-cleaned.grd"), 10, 15)
-		for(i in tiles){
-			#print(paste("Now mapping tile:", i ))
-			riceFxn(inpath, i)
-		}
-	}
-	# Processing of only one tile indicated in the function parameter
-	else{
-		riceFxn(inpath, tileNumber)
+		#print("Press CTRL + C to terminate.")
+		tiles <- unique(substr(list.files(inpath, pattern=paste("001.*ndvi.*",inext,sep="")), 10, 15))		
 	}
 	
+	for (tile in tiles) {
+	    cat("Processing tile:", tile, "\n")
+        flush.console()
+        
+		# file reading
+		pat <- paste(tile, ".*", inext, sep="")
+        m <- modisFilesClean(inpath, pat)
+		m$filename <- paste(inpath, m$filename, sep="/")
+        years <- unique(m$year[m$zone==tile])
+		# looping				
+        #mm <- subset(m, m$zone==tile)
+		
+        for (y in years) {
+            batch <- m[m$year==y & m$zone==tile,]
+		    braster <- raster(batch$filename[1])
+			dlab <- paste("Year ", y, ":", sep="")
+			
+			
+            dates <- unique(batch$date)
+			#dates <- sort(dates)
+			
+            if (length(dates) < 46) { 
+				if (length(dates) < 43) { 
+					stop(paste("expected 46 files, found:", length(dates))) 
+				}
+				warning(paste("expected 46 files, found:", length(dates))) 
+			}
+            
+            
+            bands <- c("ndvi", "lswi", "flooded", "permanent")
+            indnames <- c("forest", "shrub", "flooded", "permanent")
+            indicators <- list()
+            for (i in 1:length(bands)){
+                cat(dlab, "Delineating ", indnames[i],". \r", sep="")
+			    flush.console()
+                bfiles <- batch$filename[grep(bands[i],batch$band)]
+                indicators[[indnames[i]]] <- 0
+                for (bfile in bfiles){
+                    vals <- getValues(raster(bfile))                    
+                    if (indnames[i]=="forest"){
+                        vals[vals<=FltNA] <- NA
+                        vals <- vals >= 0.7
+                    }else if (indnames[i]=="shrub"){
+                        vals[vals<=FltNA] <- NA
+                        vals <- vals < 0.1
+                    }else{
+                        vals[vals<=IntNA] <- NA
+                    }                
+                    vals[is.na(vals)] <- 0
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]]+ vals
+                }
+                if (indnames[i]=="forest"){
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 20
+                }else if (indnames[i]=="shrub"){
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] == 0
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] & !indicators[["forest"]] 
+                }else if (indnames[i]=="flooded"){
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 0
+                }else if (indnames[i]=="permanent"){
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
+                }
+            }
+			indicators$notrice <- (indicators$permanent | indicators$forest | indicators$shrub)
+			indicators$perhapsrice <- indicators$flooded & !indicators$notrice
+			
+			cat (dlab, "Writing output files.                           \r")
+            flush.console()
+            
+            if (outformat=="raster"){
+                r <- raster(braster)
+                for(i in 1:length(indicators)){
+                    rnew <- setValues(r, indicators[[i]])
+                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, ext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
+                    rm(rnew)
+                }                                
+            } else if (outformat=="GTiff"){
+                gtop <- GridTopology(c(xmin(braster)+(xres(braster)/2),ymin(braster)+(yres(braster)/2)),c(xres(braster),yres(braster)),c(ncol(braster),nrow(braster)))
+                proj <- CRS(projection(braster))
+                for(i in 1:length(indicators)){
+                    band1 <- indicators[[i]]
+                    band1[is.na(band1)] <- IntNA    
+                    band1 <- as.data.frame(band1)
+                    bfname <- paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, ext, sep=""), sep="/")
+                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=opts, type="Int16")
+                    rm(rnew)
+                }
+            }
+            cat (dlab, " -------------------- DONE -------------------- \n")
+            flush.console()
+            rm(indicators,vals)
+            gc(verbose=FALSE)                    	
+		}
+    }
 }
 

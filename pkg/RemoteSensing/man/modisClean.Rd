@@ -10,12 +10,13 @@ Requires the bitops package
 }
 
 \usage{
-modisClean(inpath, tileNumber)
+modisClean(inpath, outformat="raster", tiles="all")
 }
 
 \arguments{
   \item{inpath}{ path with modis files in Geotiff format }
-  \item{tileNumber}{ vertical and horizontal tile number of MODIS, tileNumber should follow the format in the MODIS filename, e.g. "h29v07"  }
+  \item{outformat}{ File format desired by user can either be "raster" (.grd) or "GTiff" (.tif). }
+  \item{tiles}{ vertical and horizontal tile number of MODIS, tiles should follow the format in the MODIS filename, e.g. "h29v07"  }
   }
 
 \details{

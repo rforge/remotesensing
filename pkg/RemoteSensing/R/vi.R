@@ -77,7 +77,7 @@ msavi<-function(red, nir) #MSAVI: Modified Soil Adjusted Vegetation Index
 nddi <- function(NDVI, NDWI) # NDDI: Normalized Difference Drought Index
 {
 	result<- (NDVI - NDWI) / (NDVI + NDWI)
-	result[is.infinite(result)] <- -9999
+	result[is.infinite(result)] <- NA
 	return(result)
 }
 

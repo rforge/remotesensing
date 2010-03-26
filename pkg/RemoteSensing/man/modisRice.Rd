@@ -10,12 +10,14 @@ Generates six classes based on NDVI, EVI, LSWI thresholds.
 }
 
 \usage{
-modisRice(inpath, tileNumber)
+modisRice(inpath, informat, outformat="raster", tiles="all")
 }
 
 \arguments{
-  \item{inpath}{ path with vegetation indices files }
-  \item{tileNumber}{ vertical and horizontal tile number of MODIS, tileNumber should follow the format in the MODIS filename, e.g. "h29v07"  }
+\item{inpath}{ path with cleaned modis files }
+  \item{informat}{ File format of the input files can either be "raster" (.grd) or "GTiff" (.tif). }
+  \item{outformat}{ File format desired by user can either be "raster" (.grd) or "GTiff" (.tif). }
+  \item{tiles}{ vertical and horizontal tile number of MODIS, tiles should follow the format in the MODIS filename, e.g. "h29v07"  }
 }
 
 \details{

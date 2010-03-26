@@ -11,104 +11,168 @@
 	return(res)
 	}
 
-modisVeg <- function(inpath, tileNumber="0"){
+modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
+	#creation of output director "tif" folder
+	outpath <- paste(inpath,"/../veg",sep="")
+	if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
+    
+    IntNA <- -15
+    FltNA <- -9999.0
+	
+	if (informat=="raster") {
+        inext <- ".grd"
+    } else if (informat=="GTiff") {
+        inext <- ".tif"
+    } else {
+        stop(paste("Input format", informat, "not supported."))
+    }   
+	
+	if (outformat=="raster"){
+        ext <- ".grd"
+    } else if (outformat=="GTiff"){
+        if (!require(rgdal)) stop("rgdal loading failed")
+        ext <- ".tif"
+        opts <- c("COMPRESS=LZW", "TFW=YES")
+    } else {
+        cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
+        ext <- ".grd"
+        outformat <- "raster"                
+    }
 
-	# multiply function used in masking snow, blue band values >=0.20
-	multiply <- function(x,y,z) {
-		result <- x*y*z
-		return(result)
+    # processing of all tiles in a directory
+    if(tiles=="all"){
+		cat("Acquiring available tiles in input folder.\n")
+		flush.console()
+		#print("Press CTRL + C to terminate.")
+		tiles <- unique(substr(list.files(inpath, pattern=paste("001.*b01_clean.*", inext, sep="")), 10, 15))		
 	}
-
-
-	vegFxn <- function(inpath, tileNumber){
+	
+	# looping
+	for (tile in tiles) {
 		# file reading
-		pat <- paste(tileNumber, ".*clean.grd", sep="")
+		pat <- paste(tile, ".*clean", inext, sep="")
 		m <- modisFilesClean(inpath, pat)
 
-		#creation of output director "tif" folder
-		outpath <- paste(inpath,"/../veg",sep="")
-		if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
+        cat("Processing tile:", tile, "\n")
+        flush.console()
+        
+        dates <- unique(m$date[m$zone==tile])
 
-		# looping
-		zones <- unique(m$zone)
-		for (z in zones) {
-			mm <- subset(m, m$zone==z)
-			dates <- unique(mm$date)
-			cat("Zone:", z, "\n")
+		for (d in dates) {
+		    batch <- m[m$date==d & m$zone==tile,]
+			
+            dlab <- paste("Date ", d, ":", sep ="")
+		    fname <- paste(outpath, "/", batch$date[1], "_", batch$zone[1], "_", sep="")
+				
+			cat(dlab, "loading images. \r")
 			flush.console()
-
-			for (d in dates) {
-			    dlab <- paste("Date ", d, ":", sep ="")
-				cat(dlab, "loading images. \r")
-				flush.console()
-				b <- subset(mm, mm$date == d)
-				fname <- paste(outpath, "/", b$date[1], "_", b$zone[1], "_", sep="")
 				
-                red <- raster(paste(inpath, b$filename[b$band=="b01"], sep="/"), values=TRUE)
-				nir <- raster(paste(inpath, b$filename[b$band=="b02"], sep="/"), values=TRUE)
-				blue <- raster(paste(inpath, b$filename[b$band=="b03"], sep="/"), values=TRUE)
-				green <- raster(paste(inpath, b$filename[b$band=="b04"], sep="/"), values=TRUE)
-				swir1 <- raster(paste(inpath, b$filename[b$band=="b06"], sep="/"), values=TRUE)
-				swir2 <- raster(paste(inpath, b$filename[b$band=="b07"], sep="/"), values=TRUE)
+            red <- raster(paste(inpath, batch$filename[batch$band=="b01"], sep="/"))
+            vred <- getValues(red)
+            vred[vred==FltNA] <- NA
+			nir <- raster(paste(inpath, batch$filename[batch$band=="b02"], sep="/"))
+			vnir <- getValues(nir)
+            vnir[vnir==FltNA] <- NA
+			blue <- raster(paste(inpath, batch$filename[batch$band=="b03"], sep="/"))
+			vblue <- getValues(blue)
+            vblue[vblue==FltNA] <- NA
+			green <- raster(paste(inpath, batch$filename[batch$band=="b04"], sep="/"))
+			vgreen <- getValues(green)
+            vgreen[vgreen==FltNA] <- NA
+			swir1 <- raster(paste(inpath, batch$filename[batch$band=="b06"], sep="/"))
+			vswir1 <- getValues(swir1)
+            vswir1[vswir1==FltNA] <- NA
+			swir2 <- raster(paste(inpath, batch$filename[batch$band=="b07"], sep="/"))
+			vswir2 <- getValues(swir2)
+            vswir2[vswir2==FltNA] <- NA
 				
-                # making of VIs
-                cat (dlab, "computing vegetation indices. \r")
-                flush.console()
-				NDVI <- overlay(red, nir, fun=ndvi)
-				LSWI <- overlay(nir, swir1, fun=lswi)
-				EVI <- overlay(blue, red, nir, fun=evi)
-				NDWI <- overlay(nir, swir2, fun=ndwi)
+            # making of VIs
+            cat (dlab, "Computing vegetation indices. \r")
+            flush.console()
+            
+            indices <- list()			
+            indices$ndvi.cleaned <- ndvi(vred,vnir)
+			indices$lswi.cleaned <- lswi(vnir,vswir1)
+			indices$evi.cleaned <- evi(vblue, vred, vnir)
+			indices$ndwi.cleaned <- ndwi(vnir, vswir2)
 				
-				# masking of VIs
-				cat (dlab, "masking vegetation indices.   \r")
-                flush.console()
+			# masking of VIs
+			cat (dlab, "masking vegetation indices.   \r")
+            flush.console()
 				
-				#pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="") 
-				bluemaskfile <- paste(inpath, paste(d, "_", z, "_b03_mask.grd", sep=""), sep="/")
-				if(!file.exists(bluemaskfile)) stop(paste(bluemaskfile, "does not exist!"))
-				bluemask <- raster(bluemaskfile)
-				NAvalue(bluemask) <- 0
+			#pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="") 
+			bluemaskfile <- paste(inpath, paste(d, "_", tile, "_b03_mask", ext, sep=""), sep="/")
+			if(!file.exists(bluemaskfile)) stop(paste(bluemaskfile, "does not exist!"))
+			bluemask <- getValues(raster(bluemaskfile))
+			bluemask[bluemask==IntNA] <- NA
+			bluemask[bluemask==0] <- NA
 				
-				#pat2 <- paste(d, "_", z, "_SnowMask2.grd", sep="")
-				#snowmaskfiles <- list.files(inpath, pattern=pat2)
-				snowmaskfile <- paste(inpath, paste(d, "_", z, "_SnowMask2.grd", sep=""), sep="/")
-				if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
-				snowmask <- raster(snowmaskfile)
-				NAvalue(snowmask) <- 0
-				
-				
-				NDVI <- overlay(NDVI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndvi-cleaned.grd", sep=""), overwrite=TRUE)
-				LSWI <- overlay(LSWI, bluemask, snowmask, fun=multiply,  filename=paste(fname, "lswi-cleaned.grd", sep=""), overwrite=TRUE)
-				EVI <- overlay(EVI, bluemask, snowmask, fun=multiply, filename=paste(fname, "evi-cleaned.grd", sep=""), overwrite=TRUE)
-				NDWI <- overlay(NDWI, bluemask, snowmask, fun=multiply, filename=paste(fname, "ndwi-cleaned.grd", sep=""), format='raster', overwrite=TRUE)
-				NDDI <- overlay(NDVI, NDWI, fun=nddi, filename=paste(fname, "nddi-cleaned.grd", sep=""), format='raster', overwrite=TRUE)
-								
-				# writing of flooded,permanent water and drought
-				cat (dlab, "Computing drought, flooded, and permanent water \r")
-                flush.console()				
-				flood <- overlay(LSWI, NDVI, EVI, fun=flooded, filename=paste(fname, "flooded.grd", sep=""), datatype="INT1S", overwrite=TRUE)
-				permanent <- overlay(NDVI, LSWI, fun=persistentwater, filename=paste(fname, "permanent.grd", sep=""), datatype="INT1S", overwrite=TRUE)
-				droughtpix <- overlay(NDVI, NDWI, fun=.drought, filename=paste(fname, 'drought.grd', sep=''), format='raster', datatype='INT1S', overwrite=TRUE)
-                cat (dlab, " -------------------- DONE -------------------- \n")
-                flush.console()
-				
-				
-			}
+			#pat2 <- paste(d, "_", z, "_SnowMask2.grd", sep="")
+			#snowmaskfiles <- list.files(inpath, pattern=pat2)
+			snowmaskfile <- paste(inpath, paste(d, "_", tile, "_SnowMask2", ext, sep=""), sep="/")
+			if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
+			snowmask <- getValues(raster(snowmaskfile))
+			snowmask[snowmask==IntNA] <- NA	
+			snowmask[snowmask==0] <- NA
+			
+            indices$ndvi.cleaned <- indices$ndvi.cleaned*bluemask*snowmask
+			indices$lswi.cleaned <- indices$lswi.cleaned*bluemask*snowmask
+			indices$evi.cleaned <- indices$evi.cleaned*bluemask*snowmask
+			indices$ndwi.cleaned <- indices$ndwi.cleaned*bluemask*snowmask
+			indices$nddi.cleaned <- nddi(indices$ndvi.cleaned, indices$ndwi.cleaned)
+            
+			# writing of flooded,permanent water and drought
+			cat (dlab, "Computing drought, flooded, and permanent water \r")
+            flush.console()
+            maps <- list()				
+			maps$flooded <- flooded(indices$lswi.cleaned,indices$ndvi.cleaned,indices$evi.cleaned)
+			maps$permanent <- persistentwater(indices$ndvi.cleaned,indices$lswi.cleaned)
+			maps$drought <- .drought(indices$ndvi.cleaned,indices$ndwi.cleaned)
+			
+			cat (dlab, "Writing output files.                           \r")
+            flush.console()
+            
+            if (outformat=="raster"){
+                r <- raster(red)
+                for(i in 1:length(indices)){
+                    rnew <- setValues(r, indices[[i]])
+                    rnew <- writeRaster(rnew,filename=paste(fname, names(indices)[i], ext, sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+                    rm(rnew)
+                }
+                for(i in 1:length(maps)){
+                    rnew <- setValues(r, maps[[i]])
+                    rnew <- writeRaster(rnew,filename=paste(fname, names(maps)[i], ext, sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
+                    rm(rnew)
+                }                
+            } else if (outformat=="GTiff"){
+                proj <- CRS(projection(red))
+                gtop <- GridTopology(c(xmin(red)+(xres(red)/2),ymin(red)+(yres(red)/2)),c(xres(red),yres(red)),c(ncol(red),nrow(red)))
+                for(i in 1:length(indices)){
+                    band1 <- indices[[i]]
+                    band1[is.na(band1)] <- FltNA    
+                    band1 <- as.data.frame(band1)
+                    bfname <- paste(fname, names(indices)[i], ext, sep="")
+                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=opts)
+                    rm(rnew)
+                }
+                for(i in 1:length(maps)){
+                    band1 <- maps[[i]]
+                    band1[is.na(band1)] <- IntNA    
+                    band1 <- as.data.frame(band1)
+                    bfname <- paste(fname, names(maps)[i], ext, sep="")
+                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=opts,type = "Int16")
+                    rm(rnew)
+                }                                
+            }
+        	
+            cat (dlab, " -------------------- DONE -------------------- \n")
+            flush.console()
+            rm(indices, maps)
+            gc(verbose=FALSE)            
 		}
 	}
-	# processing of all tiles in a directory
-	if(tileNumber=="0"){
-		cat("You did not indicate a tile number. The script will process all the existing tiles in the inpath... \n")
-		flush.console()
-		str <- list.files(inpath, pattern="001.*b01.*grd")
-		str2 <- substr(str, 10, 15)
-		for(i in str2){
-			# print(paste("Now mapping tile:", i ))
-			vegFxn(inpath, i)
-		}
-	}
-	# Processing of only one tile indicated in the function parameter
-	else{
-		vegFxn(inpath, tileNumber)
-	}	
 }
