@@ -28,6 +28,7 @@ readLandsatCPF <- function(sensor, filename) {
 landsat <- function(filename) {
 	
 	pars <- readMetadata(filename)
+	pathname <- dirname(filename)
 	
 	spacecraft	   			<- pars[pars[,1]=="SPACECRAFT_ID",2]
 	sensor	        	    	<-  pars[pars[,1]=="SENSOR_ID",2]
@@ -70,7 +71,7 @@ landsat <- function(filename) {
 		lmin[i]       		<- as.numeric(pars[pars[,1]==paste("LMIN_", bandn[i], sep=""),2])
 		qcalmax[i] 		<- as.numeric(pars[pars[,1]==paste("QCALMAX_", bandn[i], sep=""),2])
 		qcalmin[i]  		<- as.numeric(pars[pars[,1]==paste("QCALMIN_", bandn[i], sep=""),2])
-		band_filenames[i]  	<- pars[pars[,1]==paste( bandn[i], "_FILE_NAME", sep=""),2]
+		band_filenames[i]  	<- paste(pathname, '/', pars[pars[,1]==paste( bandn[i], "_FILE_NAME", sep=""),2], sep='')
 	}
 	
 	#cpf <- readLandsatCPF(sensor, cpf_filename)

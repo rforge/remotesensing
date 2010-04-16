@@ -58,17 +58,24 @@ getGainBias(SatImgObject)
 
 \examples{
 
-setwd(dirname(system.file("external/.", package="RemoteSensing")))
-metafile <- "L71129046_04620080329_MTL.txt"
 
-#read Landsat metadata file and get parameters
+metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
+
+#Create Landsat object
 img <- landsat(metafile)
 
-#calculate reflectance and save output in ref.stk; individual bands are stored as ref_BAND1, ref_BAND2, etc
+#calculate reflectance and save output as a RasterStack (ref.stk);
+#individual bands are stored as RasterLayers ref_BAND1, ref_BAND2, etc
 ref <- dn2ref(img, "ref")
 
-#calculate temperature from thermal bands; output is saved on disk
+# true color:
+# plotRGB(ref, 3,2,1, scale=0.36)
+# false color:
+# plotRGB(ref, 4,3,2, scale=0.45)
+
+#calculate temperature from thermal bands 
 temp <- dn2temp(img, "temp")
+
 
 }
 
