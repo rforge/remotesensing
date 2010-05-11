@@ -71,7 +71,7 @@ x11()
 			}
 			else{
 				flag=0
-				for(j in 46:8){
+				for(j in 92:47){
 					if(is.na(vals[i,j])){
 						z=1  #no value (cloud)
 					}
