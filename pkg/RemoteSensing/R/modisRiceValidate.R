@@ -1,109 +1,112 @@
-# Authors: Angelo Carlo Pachec and Robert J. Hijmans 
+# Authors: Jorrel Khalil Aunario, Angelo Carlo Pachec and Robert J. Hijmans 
 # International Rice Research Institute
 # Date :  December 2009
 # Version 0,1
 # Licence GPL v3
-
+require(rgdal)
 
 modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber){
 
 	# thresholds:
 	upperT <- 0.75   #considered as the highest EVI value of rice; adjustable
 	riceT <- 0.40    #considered as half of the maximum rice EVI; adjustable
-	floodT <- 0.20   #considered as maximum value for flooded; adjustable
+	floodT <- 0.25   #considered as maximum value for flooded; adjustable
 
-	inpath = paste(perhapsPath, "/", sep="")
-	vegpath = paste(curYearPath, "/", sep="")
-	prevPath = paste(prevYearPath, "/", sep="")
+	#curYearPath = paste(curYearPath, "/", sep="")
+	#prevYearPath = paste(prevYearPath, "/", sep="")
 
-	outpath <- paste(outPath, "/", sep="")
-	dir.create(outpath, showWarnings = FALSE)
+	if (!file.exists(outPath)) dir.create(outPath, recursive = TRUE)
 
-	print(paste("Verifying using evi: ", inpath, sep=""))
+	cat("Verifying using evi: ", perhapsPath, "\n", sep="")
+	flush.console()
 
-	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.tif", sep="")
-	perhapsRice <- list.files(path=inpath, pattern=pat)
-	pRice <- raster(paste(inpath,perhapsRice[1],sep=""))
-plot(pRice)
-x11()
-
-	riceRast <- raster(paste(inpath,perhapsRice[1],sep=""))
-	riceRast[] <- 0
-	riceRast2 <- 1:length(riceRast[])
-	riceRast2[] <- 0
-
-	pat <- paste(tileNumber, "_evi-cleaned.grd", sep="")
-	files <- list.files(path=prevPath, pattern=pat)
-	files <- paste(prevPath, files, sep="")
+	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.grd", sep="")
+	perhapsRice <- list.files(perhapsPath, pattern=pat)
+	pRice <- raster(paste(perhapsPath,perhapsRice[1],sep="/"))
+    
+	pat <- paste(tileNumber, "_evi.*cleaned.grd", sep="")
+	files <- list.files(prevYearPath, pattern=pat)
+	files <- paste(prevYearPath, files, sep="/")
+	st <- grep("249",files)
 	
-	pat <- paste(tileNumber, "_evi-cleaned.grd", sep="")
-	files2 <- list.files(path=vegpath, pattern=pat)
-	files2 <- paste(vegpath, files2, sep="")
+	files2 <- list.files(curYearPath, pattern=pat)
+	files2 <- paste(curYearPath, files2, sep="/")
 	
-	allfiles <- c(files, files2)
-	k <- length(allfiles)
+	allfiles <- c(files[st:length(files)], files2)
 	
 	#l  <- k-10
 	# k <- l-45
 	# stck <- stack( allfiles[k:l] )
 	
-	stck <- stack( allfiles[1:k] )
-	vals <- getValues(stck, 1)
-	rice <- vals[,1]
-
-
-	for( r in 1:nrow(stck) ){
-		print( paste("=============================Row:", r) )
-		vals <- getValues(stck, r)
-		pVec <- getValues(pRice, r)
-		rice[] <- 0
+	stck <- stack(allfiles)	
+    riceRast2 <- numeric(0)
+    
+	for( r in 1:nrow(pRice) ){
+		cat("Row:", r,"\n")
+		flush.console()
 		
-		for(i in 1:length(pVec[])){
-			#print( paste("cell:", i) )
-			if( length(pVec[i])==0 ){
-				z=1
-			}
-			else if( is.na(pVec[i]) ){
-				z=1
-			}
-			else if(pVec[i]!=1){
-				z=1 #not rice
-			}
-			else{
-				flag=0
-				for(j in 92:47){
-					if(is.na(vals[i,j])){
-						z=1  #no value (cloud)
-					}
-					else if( vals[i,j]<upperT & vals[i,j]>riceT){  # candidate for rice (proceed backtracking)
-
-						#print(paste(">>", vals[i,j]))
-						#print(vals[i,(j-1):(j-7)])
-
-						for(bak in (j-1):(j-7)){
-							if(! is.na(vals[i,bak]) ){
-								if(vals[i,bak]<=floodT){
-									riceRast2[cellFromRowCol(riceRast, r, i)] <- 1
-									#print("Rice found!")
-									flag=1
-									break
-								}
-							}
-						}
-					}
-					if(flag!=1){
-						riceRast2[cellFromRowCol(riceRast, r, i)] <- 2
-					}
-				}
-			}
-		}
+		vals <- t(getValues(stck, r))
+		
+		pVec <- getValues(pRice, r)
+		rice <- rep(0,length(pVec))
+		
+		# get perhaps rice
+		pvec1 <- which(pVec==1)
+		if (length(pvec1)==0){
+            riceRast2 <- c(riceRast2,rice)
+            next          
+        }
+        
+        #Flag pixels as detected with water but not rice
+        rice[pvec1]<- 2            
+		# find flooding in EVIs
+		fld <- vals[,pvec1]<=floodT
+		nfld <- colSums(as.matrix(fld), na.rm=TRUE)
+		 
+		veg <- vals[,pvec1]>=riceT
+		nveg <- colSums(as.matrix(veg),na.rm=TRUE)
+        
+        # remove pixels with no flooding detected and no EVI > 0.4
+		pvec2 <- pvec1[nfld>0 & nveg>0]
+		# if no pixel fits the criteria go to next row
+        if (length(pvec2)==0){
+            riceRast2 <- c(riceRast2,rice)
+            next          
+        }
+        
+        vals <- as.matrix(vals[,pvec2])        
+		
+		for(i in 1:ncol(vals)){
+            for(j in 61:8){
+                if((!is.na(vals[j,i])) & (vals[j,i]<upperT & vals[j,i]>riceT)){
+                    img7 <- vals[(j-1):(j-7),i]
+                    chk <- img7<=floodT
+                    if (sum(chk,na.rm=TRUE)>0){
+                        rice[pvec2[i]] <- 1
+                    }
+                }
+		    }
+        }            
+        riceRast2 <- c(riceRast2,rice)
 	}
 	
-	riceRast <- setValues(riceRast, riceRast2[])
-
+	riceRast <- raster(pRice)	
+	riceRast <- setValues(riceRast, riceRast2)
+    
+    plot(pRice)
+    x11()
 	plot(riceRast)
 	
 	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1S", overwrite=T)
+	proj <- CRS(projection(pRice))
+    gtop <- GridTopology(c(xmin(pRice)+(xres(pRice)/2),ymin(pRice)+(yres(pRice)/2)),c(xres(pRice),yres(pRice)),c(ncol(pRice),nrow(pRice)))
+    band1 <- riceRast2
+    band1[is.na(band1)] <- -15    
+    band1 <- as.data.frame(band1)
+    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+    if (file.exists(fnameRast)) file.remove(bfname)
+    rnew <- writeGDAL(rnew,fnameRast, options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
+    rm(rnew)            
+	# writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1S", overwrite=T)
 
 }
