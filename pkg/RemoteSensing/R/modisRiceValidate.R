@@ -20,8 +20,12 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 	cat("Verifying using evi: ", perhapsPath, "\n", sep="")
 	flush.console()
 
-	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*.grd", sep="")
+	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*", sep="")
 	perhapsRice <- list.files(perhapsPath, pattern=pat)
+	if (length(perhapsRice)>1){
+	    getthis <- c(grep(".grd", perhapsRice), grep(".tif", perhapsRice))
+        perhapsRice <- perhapsRice[getthis]
+    }
 	pRice <- raster(paste(perhapsPath,perhapsRice[1],sep="/"))
     
 	pat <- paste(tileNumber, "_evi.*cleaned.grd", sep="")
