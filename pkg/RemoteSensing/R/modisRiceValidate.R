@@ -97,9 +97,9 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 	riceRast <- raster(pRice)	
 	riceRast <- setValues(riceRast, riceRast2)
     
-    plot(pRice)
-    x11()
-	plot(riceRast)
+    #plot(pRice)
+    #x11()
+	#plot(riceRast)
 	
 	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
 	proj <- CRS(projection(pRice))
