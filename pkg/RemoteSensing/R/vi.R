@@ -23,7 +23,7 @@ evi<-function(blue, red, nir) #EVI: Enhanced Vegetation Index
 # Huete A.R., Liu H.Q., Batchily K., vanLeeuwen W. (1997)
 # A comparison of vegetation indices global set of TM images for EOS-MODIS
 # Remote Sensing of Environment, 59:440-451.
-	result <- 2.5 * (nir - red) / (nir + 6 * red - 7.5 * blue + 1)
+	result <- 2.5 * ( ( nir - red ) / ( nir + ( 6 * red ) - ( 7.5 * blue )  + 1 ) )
 	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
 	result[result > 1] <- 1
