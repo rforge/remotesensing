@@ -1,7 +1,7 @@
 Package: RemoteSensing
 Type: Package
 Title: Remote Sensing 
-Version: 0.3-2
+Version: 0.3-3
 Date: 03-June-2010
 Depends: raster, methods
 Suggests: bitops, rgdal, splines, timeSeries

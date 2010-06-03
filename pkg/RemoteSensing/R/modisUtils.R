@@ -15,15 +15,18 @@ properPath <- function(path, changeBS=TRUE){
     return(path)
 }
 
-raster2SGDF <- function(baseraster, vals=NA){
+raster2SGDF <- function(baseraster, vals=NULL){
     require(rgdal)
     gtop <- GridTopology(c(xmin(baseraster)+(xres(baseraster)/2),ymin(baseraster)+(yres(baseraster)/2)),c(xres(baseraster),yres(baseraster)),c(ncol(baseraster),nrow(baseraster)))
     proj <- CRS(projection(baseraster))
-    if (is.na(vals)){
-        rnew <- SpatialGridDataFrame(gtop, as.data.frame(values(baseraster)), proj4string=proj)
-    } else {
-        if (length(vals)==ncell(baseraster))
+    if (is.null(vals)){
+        rnew <- SpatialGridDataFrame(gtop, as.data.frame(getValues(baseraster)), proj4string=proj)
+    } else if (length(vals)==ncell(baseraster)){
         rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
-    }
+    } else {
+        cat("Length of vals does not match ncells of raster.\n Creating a blank SpatialGridDataFrame instead.\n")
+        flush.console()
+        rnew <- SpatialGridDataFrame(gtop, as.data.frame(rep(NA,ncell(baseraster))), proj4string=proj)    
+    }     
     return(rnew)            
 }

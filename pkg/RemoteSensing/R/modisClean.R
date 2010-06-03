@@ -4,65 +4,6 @@
 # Version 0,1
 # Licence GPL v3
 
-
-
-# Cloud Mask
-.cloudMask <- function(b3){
-	b3 <- b3/100
-	res <- (((b3 > 18)*0) + (b3 < 18)*1)
-    return(res)
-}
-
-# Water mask
-.waterMask <- function(pixel) {
-	res <- modis.sqa500c(pixel)
-	res[res < 1 | res == 2 | res >= 3 ] <- 0
-	res[res >= 1] <- 1
-	return(res)
-}
-
-# Internal cloud  algorithm flag
-# .internalCloud <- function (pixel) {
-	# pixel <- modis.sqa500f(pixel)
-	# pixel <- pixel + 1
-	# pixel[pixel > 1] <- 0
-	# return(pixel)
-# }
-
-# Cloud shadow mask
-# .cloudShadow <- function (pixel) {
-	# pixel <- modis.sqa500b(pixel)
-	# pixel <- pixel + 1
-	# pixel[pixel > 1] <- 0
-	# return(pixel)
-# }
-
-#Internal Snow maskhttp://us.mc763.mail.yahoo.com/mc/welcome?.gx=1&.tm=1275444931&.rand=6c9njpt06qcdi#Close%20Chat%20Window
-# .snowMask <- function(pixel) {
-	# pixel <- modis.sqa500k(pixel)
-	# pixel <- pixel + 1
-	# pixel[pixel > 1] <- 0
-	# return(pixel)
-# }
-
-# Blue mask
-#.blueMask <- function(pixel) {
-    # pixel[pixel >= 0.2] <- NA
-	# pixel[pixel < 0.2] <- 1
-	# pixel[is.na(pixel)] <- 0
-	# return(pixel)
-#}
-
-
-#second snow mask
-# .snowMask2 <- function(nir, ndsi) {
-	# res <- rep(NA, length(nir))
-	# res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
-	# res[(nir > 0.11) & (ndsi > 0.40)] <- 0
-	# res[is.na(res)] <- 0
-	# return(res)
-# }
-
 # sum (snow count)
 mysum <- function(x){ 
 	sum(x, na.rm=T)  
@@ -72,21 +13,14 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
     
     outpath <- paste(inpath,"/../clean",sep="")
     if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
-
+    
+    if (!outformat %in% c("raster","GTiff")){
+        cat("Unrecognized output format. Saving as raster (.grd). \n")
+        flush.console()
+    }
+                
 	FltNA <- -9999.0
     
-    if (outformat=="raster"){
-        ext <- ".grd"
-    } else if (outformat=="GTiff"){
-        if (!require(rgdal)) stop("rgdal loading failed")    
-        ext <- ".tif"
-        opts <- c("COMPRESS=LZW", "TFW=YES")
-    } else {
-        cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
-        ext <- ".grd"
-        outformat <- "raster"                
-    }
-			
     # processing of all tiles in a directory
     if(tiles=="all"){
 		cat("Acquiring available tiles in input folder.\n")
@@ -115,20 +49,11 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
 			qfile <- paste(inpath,batch$filename[batch$band=="sta"], sep="/")
 			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
 			b3 <- raster(b3file, values=TRUE)
+			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
 			#b <- subset(mm, mm$date == d & mm$band != "sta")
-			rq <- raster(qfile, values=TRUE)
+			rq <- raster(qfile)
 			
-			masks <- list()
-			masks$CloudMask <- .cloudMask(values(b3))
-			#masks$CloudMask <- .internalCloud(values(rq))
-			#masks$ShadowMask <- .cloudShadow(values(rq))
-            masks$WaterMask <- .waterMask(values(rq))
-			#masks$SnowMask <- .snowMask(values(rq))
-            
-            masks$CloudMask[masks$CloudMask==0] <- NA 
-			#masks$ShadowMask[masks$ShadowMask==0] <- NA 
-			masks$WaterMask[masks$WaterMask==0] <- NA
-			#masks$SnowMask[masks$SnowMask==0] <- NA
+			masks <- modisMask(qfile, b3file, saveRasters=TRUE, outdir=outpath)
 			   	
 			bands <- stack(paste(inpath,batch$filename[batch$band!="sta"], sep="/"))
 			vbands <- NULL
@@ -137,8 +62,8 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
     			flush.console()
                 vals <- getValues(bands@layers[[i]])
                 vals[vals<=-28672] <- NA
-                #vbands <- cbind(vbands, vals*masks$CloudMask*masks$ShadowMask*masks$WaterMask*masks$SnowMask/10000)
-                vbands <- cbind(vbands, vals*masks$CloudMask*masks$WaterMask/10000)
+                vbands <- cbind(vbands, vals*masks/10000)
+                
                 #if (i==3) masks$b03_mask <- .blueMask(vbands[,i])
             }
             rm(bands)
@@ -152,51 +77,38 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
             cat (dlab, " Writing output files.                 \r")
             flush.console()
             
-            if (outformat=="raster"){
+            if (outformat=="GTiff"){
+                for(i in 1:ncol(vbands)){
+                    band1 <- vbands[,i]
+                    band1[is.na(band1)] <- FltNA
+                    rnew <- raster2SGDF(rq,vals=band1)    
+                    bfname <- paste(fname, batch$band[i], "_clean.tif", sep="")
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
+                }
+                #band1 <- NDSI
+                #band1[is.na(band1)] <- FltNA
+                #rnew <- raster2SGDF(rq,vals=band1)    
+                #bfname <- paste(fname, "ndsi.tif", sep="")
+                #if (file.exists(bfname)) file.remove(bfname)
+                #rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
+                rm(rnew)
+                
+            } else {
                 r <- raster(rq)
                 for(i in 1:ncol(vbands)){
                     rnew <- setValues(r, vbands[,i])
-                    rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean",ext, sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+                    rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
                 }                
                 for(i in 1:length(masks)){
                     rnew <- setValues(r, masks[[i]])
                     rnew[is.na(rnew)] <- 0 
-                    rnew <- writeRaster(rnew,filename=paste(fname, names(masks)[i], ext, sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
+                    rnew <- writeRaster(rnew,filename=paste(fname, names(masks)[i], ".grd", sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
                 }
                 #rnew <- setValues(r, NDSI)
-                #rnew <- writeRaster(rnew,filename=paste(fname, "NDSI", ext, sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+                #rnew <- writeRaster(rnew,filename=paste(fname, "NDSI", ".grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
                 rm(r)
-            } else if (outformat=="GTiff"){
-                proj <- CRS(projection(rq))
-                gtop <- GridTopology(c(xmin(rq)+(xres(rq)/2),ymin(rq)+(yres(rq)/2)),c(xres(rq),yres(rq)),c(ncol(rq),nrow(rq)))
-                for(i in 1:ncol(vbands)){
-                    band1 <- vbands[,i]
-                    band1[is.na(band1)] <- FltNA
-                    band1 <- as.data.frame(band1)
-                    bfname <- paste(fname, batch$band[i], "_clean", ext, sep="")
-                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=opts)
-                }
-                for(i in 1:length(masks)){
-                    band1 <- masks[[i]]
-                    band1[is.na(band1)] <- 0
-                    band1 <- as.data.frame(band1)
-                    bfname <- paste(fname, names(masks)[i], ext, sep="")
-                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=opts, type = "Int16")
-                }
-                #band1 <- NDSI
-                #band1[is.na(band1)] <- FltNA    
-                #band1 <- as.data.frame(band1)
-                #bfname <- paste(fname, "ndsi", ext, sep="")
-                #rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
-                #if (file.exists(bfname)) file.remove(bfname)
-                #rnew <- writeGDAL(rnew,bfname, options=opts)
-                #rm(rnew)
-                
-            }
+            } 
 
 			cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()

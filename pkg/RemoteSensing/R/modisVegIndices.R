@@ -1,4 +1,4 @@
-# Authors: Sonia Asilo, Ritsuko Fuchiyama, Robert J. Hijmans, Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil S. Aunario
+# Authors: Sonia Asilo, Ritsuko Fuchiyama, Robert J. Hijmans, Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil S. Aunario, Andrew Nelson
 # International Rice Research Institute
 # Date :  Feb 2009
 # Version 0,1
@@ -101,24 +101,24 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
             flush.console()
 				
 			#pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="") 
-			bluemaskfile <- paste(inpath, paste(d, "_", tile, "_b03_mask", ext, sep=""), sep="/")
-			if(!file.exists(bluemaskfile)) stop(paste(bluemaskfile, "does not exist!"))
-			bluemask <- getValues(raster(bluemaskfile))
-			bluemask[bluemask==IntNA] <- NA
-			bluemask[bluemask==0] <- NA
+			#bluemaskfile <- paste(inpath, paste(d, "_", tile, "_b03_mask", ext, sep=""), sep="/")
+			#if(!file.exists(bluemaskfile)) stop(paste(bluemaskfile, "does not exist!"))
+			#bluemask <- getValues(raster(bluemaskfile))
+			#bluemask[bluemask==IntNA] <- NA
+			#bluemask[bluemask==0] <- NA
 				
 			#pat2 <- paste(d, "_", z, "_SnowMask2.grd", sep="")
 			#snowmaskfiles <- list.files(inpath, pattern=pat2)
-			snowmaskfile <- paste(inpath, paste(d, "_", tile, "_SnowMask2", ext, sep=""), sep="/")
-			if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
-			snowmask <- getValues(raster(snowmaskfile))
-			snowmask[snowmask==IntNA] <- NA	
-			snowmask[snowmask==0] <- NA
+			#snowmaskfile <- paste(inpath, paste(d, "_", tile, "_SnowMask2", ext, sep=""), sep="/")
+			#if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
+			#snowmask <- getValues(raster(snowmaskfile))
+			#snowmask[snowmask==IntNA] <- NA	
+			#snowmask[snowmask==0] <- NA
 			
-            indices$ndvi.cleaned <- indices$ndvi.cleaned*bluemask*snowmask
-			indices$lswi.cleaned <- indices$lswi.cleaned*bluemask*snowmask
-			indices$evi.cleaned <- indices$evi.cleaned*bluemask*snowmask
-			indices$ndwi.cleaned <- indices$ndwi.cleaned*bluemask*snowmask
+            #indices$ndvi.cleaned <- indices$ndvi.cleaned*bluemask*snowmask
+			#indices$lswi.cleaned <- indices$lswi.cleaned*bluemask*snowmask
+			#indices$evi.cleaned <- indices$evi.cleaned*bluemask*snowmask
+			#indices$ndwi.cleaned <- indices$ndwi.cleaned*bluemask*snowmask
 			indices$nddi.cleaned <- nddi(indices$ndvi.cleaned, indices$ndwi.cleaned)
             
 			# writing of flooded,permanent water and drought
