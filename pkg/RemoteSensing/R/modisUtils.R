@@ -1,0 +1,29 @@
+# Author: Jorrel Khalil Aunario 
+# International Rice Research Institute
+# Date : 21 May 2010
+# Version 0,1
+# Licence GPL v3
+
+properPath <- function(path, changeBS=TRUE){
+    if (changeBS){
+        path <- gsub("\\\\", "/", path)
+    }
+    lastchar <- substr(path,nchar(path),nchar(path))
+    if (lastchar=="/"){
+        path <- substr(path,1,nchar(path)-1)
+    }
+    return(path)
+}
+
+raster2SGDF <- function(baseraster, vals=NA){
+    require(rgdal)
+    gtop <- GridTopology(c(xmin(baseraster)+(xres(baseraster)/2),ymin(baseraster)+(yres(baseraster)/2)),c(xres(baseraster),yres(baseraster)),c(ncol(baseraster),nrow(baseraster)))
+    proj <- CRS(projection(baseraster))
+    if (is.na(vals)){
+        rnew <- SpatialGridDataFrame(gtop, as.data.frame(values(baseraster)), proj4string=proj)
+    } else {
+        if (length(vals)==ncell(baseraster))
+        rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
+    }
+    return(rnew)            
+}

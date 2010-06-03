@@ -47,14 +47,14 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all"){
     }   
 	
 	if (outformat=="raster"){
-        ext <- ".grd"
+        outext <- ".grd"
     } else if (outformat=="GTiff"){
         if (!require(rgdal)) stop("rgdal loading failed")
-        ext <- ".tif"
+        outext <- ".tif"
         opts <- c("COMPRESS=LZW", "TFW=YES")
     } else {
         cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
-        ext <- ".grd"
+        outext <- ".grd"
         outformat <- "raster"                
     }
 
@@ -138,18 +138,15 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all"){
                 r <- raster(braster)
                 for(i in 1:length(indicators)){
                     rnew <- setValues(r, indicators[[i]])
-                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, ext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
+                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
                     rm(rnew)
                 }                                
             } else if (outformat=="GTiff"){
-                gtop <- GridTopology(c(xmin(braster)+(xres(braster)/2),ymin(braster)+(yres(braster)/2)),c(xres(braster),yres(braster)),c(ncol(braster),nrow(braster)))
-                proj <- CRS(projection(braster))
                 for(i in 1:length(indicators)){
                     band1 <- indicators[[i]]
                     band1[is.na(band1)] <- IntNA    
-                    band1 <- as.data.frame(band1)
-                    bfname <- paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, ext, sep=""), sep="/")
-                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+                    rnew <- raster2SGDF(braster,vals=band1)
+                    bfname <- paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/")
                     if (file.exists(bfname)) file.remove(bfname)
                     rnew <- writeGDAL(rnew,bfname, options=opts, type="Int16")
                     rm(rnew)

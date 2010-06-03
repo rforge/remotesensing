@@ -3,9 +3,9 @@
 # Date :  December 2009
 # Version 0,1
 # Licence GPL v3
-require(rgdal)
 
-modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber){
+modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber, interpolation=NULL){
+    require(rgdal)
 
 	# thresholds:
 	upperT <- 0.75   #considered as the highest EVI value of rice; adjustable
@@ -81,6 +81,18 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
         vals <- as.matrix(vals[,pvec2])        
 		
 		for(i in 1:ncol(vals)){
+            if (interpolation=="linear"){
+                require(timeSeries)
+                vals[,i] <- interpNA(vals[,i])
+            } else if (interpolation=="spline"){
+                #require(splines)
+                #x <- 1:length(vals[,i])
+                #y <- vals[,i]
+                #ts <- interpSpline(x,y,na.action=na.omit)
+                #vals[,i] <- predict(ts,x)$y
+                #sm <- smooth.spline(pr$x,pr$y,df=length(x)*0.5)
+                
+            }
             for(j in 61:8){
                 if((!is.na(vals[j,i])) & (vals[j,i]<upperT & vals[j,i]>riceT)){
                     img7 <- vals[(j-1):(j-7),i]
@@ -102,12 +114,9 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 	#plot(riceRast)
 	
 	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	proj <- CRS(projection(pRice))
-    gtop <- GridTopology(c(xmin(pRice)+(xres(pRice)/2),ymin(pRice)+(yres(pRice)/2)),c(xres(pRice),yres(pRice)),c(ncol(pRice),nrow(pRice)))
-    band1 <- riceRast2
+	band1 <- riceRast2
     band1[is.na(band1)] <- -15    
-    band1 <- as.data.frame(band1)
-    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+    rnew <- raster2SGDF(pRice,vals=band1)
     if (file.exists(fnameRast)) file.remove(bfname)
     rnew <- writeGDAL(rnew,fnameRast, options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
     rm(rnew)            

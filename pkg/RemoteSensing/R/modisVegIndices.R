@@ -145,14 +145,11 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
                     rm(rnew)
                 }                
             } else if (outformat=="GTiff"){
-                proj <- CRS(projection(red))
-                gtop <- GridTopology(c(xmin(red)+(xres(red)/2),ymin(red)+(yres(red)/2)),c(xres(red),yres(red)),c(ncol(red),nrow(red)))
                 for(i in 1:length(indices)){
                     band1 <- indices[[i]]
                     band1[is.na(band1)] <- FltNA    
-                    band1 <- as.data.frame(band1)
+                    rnew <- raster2SGDF(red,vals=band1)                    
                     bfname <- paste(fname, names(indices)[i], ext, sep="")
-                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
                     if (file.exists(bfname)) file.remove(bfname)
                     rnew <- writeGDAL(rnew,bfname, options=opts)
                     rm(rnew)
@@ -160,9 +157,8 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
                 for(i in 1:length(maps)){
                     band1 <- maps[[i]]
                     band1[is.na(band1)] <- IntNA    
-                    band1 <- as.data.frame(band1)
-                    bfname <- paste(fname, names(maps)[i], ext, sep="")
-                    rnew <- SpatialGridDataFrame(gtop, band1, proj4string=proj)
+                    rnew <- raster2SGDF(red,vals=band1)                    
+                    bfname <- paste(fname, names(indices)[i], ext, sep="")
                     if (file.exists(bfname)) file.remove(bfname)
                     rnew <- writeGDAL(rnew,bfname, options=opts,type = "Int16")
                     rm(rnew)
