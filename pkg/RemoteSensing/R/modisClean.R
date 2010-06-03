@@ -100,11 +100,11 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                     rnew <- setValues(r, vbands[,i])
                     rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
                 }                
-                for(i in 1:length(masks)){
-                    rnew <- setValues(r, masks[[i]])
-                    rnew[is.na(rnew)] <- 0 
-                    rnew <- writeRaster(rnew,filename=paste(fname, names(masks)[i], ".grd", sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
-                }
+                #for(i in 1:length(masks)){
+                 #   rnew <- setValues(r, masks[[i]])
+                  #  rnew[is.na(rnew)] <- 0 
+                  #  rnew <- writeRaster(rnew,filename=paste(fname, names(masks)[i], ".grd", sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
+                #}
                 #rnew <- setValues(r, NDSI)
                 #rnew <- writeRaster(rnew,filename=paste(fname, "NDSI", ".grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
                 rm(r)
