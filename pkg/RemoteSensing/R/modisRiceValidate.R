@@ -4,7 +4,7 @@
 # Version 0,1
 # Licence GPL v3
 
-modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber, interpolation=NULL){
+modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber){
     require(rgdal)
 
 	# thresholds:
@@ -81,19 +81,7 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
         vals <- as.matrix(vals[,pvec2])        
 		
 		for(i in 1:ncol(vals)){
-            if (interpolation=="linear"){
-                require(timeSeries)
-                vals[,i] <- interpNA(vals[,i])
-            } else if (interpolation=="spline"){
-                #require(splines)
-                #x <- 1:length(vals[,i])
-                #y <- vals[,i]
-                #ts <- interpSpline(x,y,na.action=na.omit)
-                #vals[,i] <- predict(ts,x)$y
-                #sm <- smooth.spline(pr$x,pr$y,df=length(x)*0.5)
-                
-            }
-            for(j in 61:8){
+		    for(j in 61:8){
                 if((!is.na(vals[j,i])) & (vals[j,i]<upperT & vals[j,i]>riceT)){
                     img7 <- vals[(j-1):(j-7),i]
                     chk <- img7<=floodT

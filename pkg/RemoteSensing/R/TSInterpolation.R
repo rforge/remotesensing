@@ -3,10 +3,10 @@
 # Date : 21 May 2010
 # Version 0,1
 # Licence GPL v3
-require(timeSeries)
-require(splines)
 
 .interpolate <- function(series, fillends=TRUE){
+    require(timeSeries)
+    require(splines)
     valids <- which(!is.na(series))
     if (fillends){
         if(valids[1]!=1){
@@ -26,7 +26,12 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
         fname <- filename(imgstack@layers[[k]])
         srcfile <- basename(fname)
         srcdir <- dirname(fname)
-        target <- paste(srcdir, "interpolated", sep="/")
+        if(is.na(targetfolder)){
+            target <- paste(srcdir, "../interpolated", sep="/")    
+        } else {
+            target <- targetfolder
+        }
+        
         if(!file.exists(target)){
             dir.create(target)  
         }
@@ -62,8 +67,8 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
             typ='Int16'
         }
         dat[is.na(dat)] <- -9999 
-        newraster[] <- dat
-        rnew <- raster2SpatialGridDataFrame(newraster)
+        #newraster[] <- dat
+        rnew <- raster2SGDF(newraster, vals=dat)
         rnew <- writeGDAL(rnew,paste(substr(fnames[k],1,nchar(fnames[k])-4),".tif",sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type=typ)
         rm(rnew,newraster)
     }
