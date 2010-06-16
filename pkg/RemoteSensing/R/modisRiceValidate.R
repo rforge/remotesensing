@@ -4,7 +4,7 @@
 # Version 0,1
 # Licence GPL v3
 
-modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber){
+modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber, informat="raster", valscale=NULL){
     require(rgdal)
 
 	# thresholds:
@@ -19,16 +19,20 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 
 	cat("Verifying using evi: ", perhapsPath, "\n", sep="")
 	flush.console()
-
-	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*", sep="")
-	perhapsRice <- list.files(perhapsPath, pattern=pat)
-	if (length(perhapsRice)>1){
-	    getthis <- c(grep(".grd", perhapsRice), grep(".tif", perhapsRice))
-        perhapsRice <- perhapsRice[getthis]
+    if (informat=="GTiff"){
+        ext <- ".tif"
+    } else {
+        ext <- ".grd"
     }
+	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*", ext, sep="")
+	perhapsRice <- list.files(perhapsPath, pattern=pat)
+	#if (length(perhapsRice)>1){
+	#    getthis <- c(grep(".grd", perhapsRice), grep(".tif", perhapsRice))
+    #   perhapsRice <- perhapsRice[getthis]
+    #}
 	pRice <- raster(paste(perhapsPath,perhapsRice[1],sep="/"))
     
-	pat <- paste(tileNumber, "_evi.*cleaned.grd", sep="")
+	pat <- paste(tileNumber, "_evi.*cleaned",ext, sep="")
 	files <- list.files(prevYearPath, pattern=pat)
 	files <- paste(prevYearPath, files, sep="/")
 	st <- grep("249",files)
@@ -50,7 +54,11 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 		flush.console()
 		
 		vals <- t(getValues(stck, r))
-		
+		vals[vals==-9999] <- NA
+		if(!is.null(valscale)){
+            vals <- vals/valscale
+        }                    
+                    
 		pVec <- getValues(pRice, r)
 		rice <- rep(0,length(pVec))
 		

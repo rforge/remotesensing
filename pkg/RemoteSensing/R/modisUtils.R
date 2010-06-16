@@ -21,7 +21,10 @@ raster2SGDF <- function(baseraster, vals=NULL){
     proj <- CRS(projection(baseraster))
     if (is.null(vals)){
         rnew <- SpatialGridDataFrame(gtop, as.data.frame(getValues(baseraster)), proj4string=proj)
-    } else if (length(vals)==ncell(baseraster)){
+    } else if (is.vector(vals) & length(vals)==ncell(baseraster)){
+        rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
+    } else if (is.matrix(vals) & length(vals)==ncell(baseraster)){
+        vals <- as.vector(t(vals))
         rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
     } else {
         cat("Length of vals does not match ncells of raster.\n Creating a blank SpatialGridDataFrame instead.\n")

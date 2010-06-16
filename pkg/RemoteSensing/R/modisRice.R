@@ -29,7 +29,7 @@ Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not f
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 	# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
-modisRice <- function(inpath, informat, outformat="raster", tiles="all"){
+modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscale=NULL){
     
 	# creation of output director "tif" folder
 	outpath <- paste(inpath,"/../rice",sep="")
@@ -104,15 +104,16 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all"){
                 bfiles <- batch$filename[grep(bands[i],batch$band)]
                 indicators[[indnames[i]]] <- 0
                 for (bfile in bfiles){
-                    vals <- getValues(raster(bfile))                    
+                    vals <- getValues(raster(bfile))
+                    vals[vals<=FltNA] <- NA
+                        
+                    if(!is.null(valscale)){
+                        vals <- vals/valscale
+                    }                    
                     if (indnames[i]=="forest"){
-                        vals[vals<=FltNA] <- NA
                         vals <- vals >= 0.7
                     }else if (indnames[i]=="shrub"){
-                        vals[vals<=FltNA] <- NA
                         vals <- vals < 0.1
-                    }else{
-                        vals[vals<=IntNA] <- NA
                     }                
                     vals[is.na(vals)] <- 0
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]]+ vals

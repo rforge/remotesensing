@@ -6,7 +6,7 @@
 
 .interpolate <- function(series, fillends=TRUE){
     require(timeSeries)
-    require(splines)
+    #require(splines)
     valids <- which(!is.na(series))
     if (fillends){
         if(valids[1]!=1){
@@ -20,7 +20,7 @@
     return(series)
 }
 
-tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=TRUE,...){
+tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=TRUE, na=-9999 , verbose=TRUE, ...){
     fnames <- character(0)
     for (k in 1:nlayers(imgstack)){
         fname <- filename(imgstack@layers[[k]])
@@ -40,7 +40,12 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
     }
     nacount <- numeric(0)
     for (i in 1:nrow(imgstack)){
+        if (verbose){
+            cat("Row:", i, "\r")
+            flush.console()
+        }
         vals <- getValues(imgstack,i)
+        vals[vals==na] <- NA
         nacount <- c(nacount,rowSums(is.na(vals)))
         #x <- rep(NA,nrow(vals))
         for (j in 1:nrow(vals)){
@@ -56,21 +61,27 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
         }        
     }
     for (k in 1:nlayers(imgstack)){
+        if (verbose){
+            cat("Writing to disk:", basename(fnames[k]), "\r")
+            flush.console()
+        }        
+            
         newraster <- raster(imgstack@layers[[k]])        
         dat <- as.matrix(read.csv(paste(fnames[k],".txt",sep=""),header=FALSE))
-        if(rm.interm){
-            file.remove(paste(fnames[k],".txt",sep=""))
-        }
         typ <- 'Float32'
         if (dataAsInt){
             dat <- round(dat*10000,0)
             typ='Int16'
         }
-        dat[is.na(dat)] <- -9999 
-        #newraster[] <- dat
+        dat[is.na(dat)] <- na 
         rnew <- raster2SGDF(newraster, vals=dat)
         rnew <- writeGDAL(rnew,paste(substr(fnames[k],1,nchar(fnames[k])-4),".tif",sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type=typ)
-        rm(rnew,newraster)
+        if(rm.interm){
+            file.remove(paste(fnames[k],".txt",sep=""))
+        }        
+        rm(rnew,newraster,dat)
+        gc(verbose=FALSE)
+        
     }
     newraster <- raster(imgstack@layers[[k]])
     newraster[] <- nacount

@@ -97,8 +97,8 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 			indices$ndwi.cleaned <- ndwi(vnir, vswir2)
 				
 			# masking of VIs
-			cat (dlab, "masking vegetation indices.   \r")
-            flush.console()
+			#cat (dlab, "masking vegetation indices.   \r")
+            #flush.console()
 				
 			#pat1 <- paste(d, "_", z, "_b03_mask.grd", sep="") 
 			#bluemaskfile <- paste(inpath, paste(d, "_", tile, "_b03_mask", ext, sep=""), sep="/")
@@ -132,7 +132,27 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 			cat (dlab, "Writing output files.                           \r")
             flush.console()
             
-            if (outformat=="raster"){
+            if (outformat=="GTiff"){
+                for(i in 1:length(indices)){
+                    band1 <- indices[[i]]
+                    band1[is.na(band1)] <- FltNA    
+                    rnew <- raster2SGDF(red,vals=band1)                    
+                    bfname <- paste(fname, names(indices)[i], ext, sep="")
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=opts, type="Float32")
+                    rm(rnew)
+                }
+                for(i in 1:length(maps)){
+                    band1 <- maps[[i]]
+                    band1[is.na(band1)] <- IntNA    
+                    rnew <- raster2SGDF(red,vals=band1)                    
+                    bfname <- paste(fname, names(maps)[i], ext, sep="")
+                    if (file.exists(bfname)) file.remove(bfname)
+                    rnew <- writeGDAL(rnew,bfname, options=opts,type = "Int16")
+                    rm(rnew)
+                }                                
+                            
+            } else {
                 r <- raster(red)
                 for(i in 1:length(indices)){
                     rnew <- setValues(r, indices[[i]])
@@ -143,26 +163,7 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
                     rnew <- setValues(r, maps[[i]])
                     rnew <- writeRaster(rnew,filename=paste(fname, names(maps)[i], ext, sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
                     rm(rnew)
-                }                
-            } else if (outformat=="GTiff"){
-                for(i in 1:length(indices)){
-                    band1 <- indices[[i]]
-                    band1[is.na(band1)] <- FltNA    
-                    rnew <- raster2SGDF(red,vals=band1)                    
-                    bfname <- paste(fname, names(indices)[i], ext, sep="")
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=opts)
-                    rm(rnew)
                 }
-                for(i in 1:length(maps)){
-                    band1 <- maps[[i]]
-                    band1[is.na(band1)] <- IntNA    
-                    rnew <- raster2SGDF(red,vals=band1)                    
-                    bfname <- paste(fname, names(indices)[i], ext, sep="")
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=opts,type = "Int16")
-                    rm(rnew)
-                }                                
             }
         	
             cat (dlab, " -------------------- DONE -------------------- \n")
