@@ -4,12 +4,17 @@
 # Version 0,1
 # Licence GPL v3
 
-modisInterpolateVeg <- function(inpath, informat="raster", outformat="raster"){
+modisInterpolateVeg <- function(inpath, informat="raster"){
     indnames <- c("evi", "ndvi", "lswi", "ndwi")
     interppath <- paste(inpath, "../interpolated",sep="/")
     files <- character(0)
+    if (informat="GTiff"){
+        ext <- ".tif"
+    } else {
+        ext <- ".grd"
+    }
     for (i in 1:length(indnames)){
-        files <- cbind(files, list.files(inpath, pattern=paste(indnames[i],".cleaned.tif",sep="")))
+        files <- cbind(files, list.files(inpath, pattern=paste(indnames[i],".cleaned",ext,sep="")))
         stck <- stack(paste(inpath,files[,i],sep="/"))
         interp <- tsInterpolate(evistack, targetfolder=interppath)
         interp <- writeRaster(interp,paste(interppath,paste(indnames[i],"_na_count.grd",sep=""), sep="/"), datatype="INT1U")
@@ -17,7 +22,6 @@ modisInterpolateVeg <- function(inpath, informat="raster", outformat="raster"){
         gc(verbose=FALSE)    
     }
    
-    files <- cbind(list.files(interppath, pattern="evi.cleaned.tif"),list.files(interppath, pattern="ndvi.cleaned.tif"),list.files(interppath, pattern="lswi.cleaned.tif"))
     for (i in 1:nrow(files)){
         base <- substring(files[i,1],1,16)
         cat(base, "\r")
