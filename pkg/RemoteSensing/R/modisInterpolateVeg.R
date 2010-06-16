@@ -8,7 +8,7 @@ modisInterpolateVeg <- function(inpath, informat="raster"){
     indnames <- c("evi", "ndvi", "lswi", "ndwi")
     interppath <- paste(inpath, "../interpolated",sep="/")
     files <- character(0)
-    if (informat="GTiff"){
+    if (informat=="GTiff"){
         ext <- ".tif"
     } else {
         ext <- ".grd"
