@@ -142,3 +142,8 @@ wdvi<-function(red, nir, slslope = 1) #WDVI: Weighted Difference Vegetation Inde
 	return(result)
 }
 
+# DROUGHT where drought = 2, no drought=1
+drought <- function(NDVI, NDWI) {
+	res <- ((NDVI < 0.5 & NDWI < 0.3)*2) + ((NDVI > 0.6 & NDWI > 0.4)*1)
+	return(res)
+	}
