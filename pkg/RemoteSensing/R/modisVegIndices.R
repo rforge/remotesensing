@@ -104,16 +104,16 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 				
 			#pat2 <- paste(d, "_", z, "_SnowMask2.grd", sep="")
 			#snowmaskfiles <- list.files(inpath, pattern=pat2)
-			#snowmaskfile <- paste(inpath, paste(d, "_", tile, "_SnowMask2", ext, sep=""), sep="/")
-			#if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
-			#snowmask <- getValues(raster(snowmaskfile))
-			#snowmask[snowmask==IntNA] <- NA	
-			#snowmask[snowmask==0] <- NA
+			snowmaskfile <- paste(inpath, paste(d, "_", tile, "_SnowMask2.tif", sep=""), sep="/")
+			if(!file.exists(snowmaskfile)) stop(paste(snowmaskfile, "does not exist!"))
+			snowmask <- getValues(raster(snowmaskfile))
+			snowmask[snowmask==IntNA] <- NA	
+			snowmask[snowmask==0] <- NA
 			
-            #indices$ndvi.cleaned <- indices$ndvi.cleaned*bluemask*snowmask
-			#indices$lswi.cleaned <- indices$lswi.cleaned*bluemask*snowmask
-			#indices$evi.cleaned <- indices$evi.cleaned*bluemask*snowmask
-			#indices$ndwi.cleaned <- indices$ndwi.cleaned*bluemask*snowmask
+            indices$ndvi.cleaned <- indices$ndvi.cleaned*snowmask
+			indices$lswi.cleaned <- indices$lswi.cleaned*snowmask
+			indices$evi.cleaned <- indices$evi.cleaned*snowmask
+			indices$ndwi.cleaned <- indices$ndwi.cleaned*snowmask
 			indices$nddi.cleaned <- nddi(indices$ndvi.cleaned, indices$ndwi.cleaned)
             
 			# writing of flooded,permanent water and drought
