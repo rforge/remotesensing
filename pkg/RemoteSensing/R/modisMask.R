@@ -45,33 +45,34 @@
 
 # Blue mask
 #.blueMask <- function(pixel) {
-#    pixel[pixel >= 0.2] <- NA
+#    pixel[pixel >= 0.2] <- NA 
 #	pixel[pixel < 0.2] <- 1
 #	pixel[is.na(pixel)] <- 0
 #	return(pixel)
 #}
 
-# second snow mask
-#.snowMask2 <- function(nir, ndsi) {
-#	res <- rep(NA, length(nir))
-#	res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
-#	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
-#	res[is.na(res)] <- 0
-#	return(res)
-#}
+#second snow mask
+.snowMask2 <- function(nir, ndsi) {
+	res <- rep(NA, length(nir))
+	res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
+	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
+	res[is.na(res)] <- 0
+	return(res)
+}
 
 modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
     namecomps <- unlist(strsplit(basename(qcfile),"\\."))
     rq <- raster(qcfile)
 	b3 <- raster(b3file)
+	
 	#masks <- data.frame(CloudMask=integer(ncell(rq)), ShadowMask=integer(ncell(rq)), WaterMask=integer(ncell(rq)), SnowMask=integer(ncell(rq)))
 	masks <- data.frame(CloudMask=integer(ncell(rq)), WaterMask=integer(ncell(rq)))
 	masks$CloudMask <- .cloudMask(getValues(b3))
 	#masks$ShadowMask <- .cloudShadow(vals)
     masks$WaterMask <- .waterMask(getValues(rq))
 	#masks$SnowMask <- .snowMask(vals)
+	mask <- masks$CloudMask*masks$WaterMask
     
-    mask <- masks$CloudMask*masks$WaterMask
     #mask <- masks$CloudMask*masks$ShadowMask*masks$WaterMask*masks$SnowMask
     mask[mask==0] <- NA
     
@@ -89,7 +90,7 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
             bfname <- paste(outdir, "/", paste(namecomps[2],namecomps[3],names(masks)[i], sep="_"), ".tif", sep="")
             if (file.exists(bfname)) file.remove(bfname)
             rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
-        }
+		}
                     
     }            
     #masks$CloudMask[masks$CloudMask==0] <- NA 
