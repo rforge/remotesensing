@@ -20,7 +20,7 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
     }
                 
 	FltNA <- -9999.0
-    
+    IntNA <- -15
     # processing of all tiles in a directory
     if(tiles=="all"){
 		cat("Acquiring available tiles in input folder.\n")
@@ -48,8 +48,6 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
 
 			qfile <- paste(inpath,batch$filename[batch$band=="sta"], sep="/")
 			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
-			b3 <- raster(b3file, values=TRUE)
-			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
 			#b <- subset(mm, mm$date == d & mm$band != "sta")
 			rq <- raster(qfile)
 			
@@ -63,16 +61,16 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                 vals <- getValues(bands@layers[[i]])
                 vals[vals<=-28672] <- NA
                 vbands <- cbind(vbands, vals*masks/10000)
-                
                 #if (i==3) masks$b03_mask <- .blueMask(vbands[,i])
             }
             rm(bands)
             
-            cat(dlab, "Computing NDSI and secondary snow mask. \r")
+            cat(dlab, "Computing NDSI and snow mask. \r")
 			flush.console()
-
-            #NDSI <- ndsi(vbands[,4],vbands[,2])
-            #masks$SnowMask2 <- .snowMask2(vbands[,2], NDSI)
+			
+			NDSI <- ndsi(vbands[,4],vbands[,2])
+			SnowMask <- .snowMask2(vbands[,2], NDSI)
+			SnowMask[is.na(SnowMask)] <- IntNA
             
             cat (dlab, " Writing output files.                 \r")
             flush.console()
@@ -85,21 +83,30 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                     bfname <- paste(fname, batch$band[i], "_clean.tif", sep="")
                     if (file.exists(bfname)) file.remove(bfname)
                     rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
+					rm(rnew)
                 }
-                #band1 <- NDSI
-                #band1[is.na(band1)] <- FltNA
-                #rnew <- raster2SGDF(rq,vals=band1)    
+				NDSI[is.na(NDSI)] <- FltNA            
+                band1 <- NDSI
+                rnew <- raster2SGDF(rq,vals=band1)
+				rnew <- writeGDAL(rnew,paste(fname, "ndsi.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Float32")
+				rm(rnew)
+                band1 <- SnowMask
+                rnew <- raster2SGDF(rq,vals=band1)
+				rnew <- writeGDAL(rnew,paste(fname, "snowmask.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
+				rm(rnew)
                 #bfname <- paste(fname, "ndsi.tif", sep="")
                 #if (file.exists(bfname)) file.remove(bfname)
                 #rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
-                rm(rnew)
-                
             } else {
                 r <- raster(rq)
                 for(i in 1:ncol(vbands)){
                     rnew <- setValues(r, vbands[,i])
                     rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
-                }                
+                }
+				rnew <- setValues(r, NDSI)
+                rnew <- writeRaster(rnew,filename=paste(fname, "ndsi.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+				rnew <- setValues(r, SnowMask)
+                rnew <- writeRaster(rnew,filename=paste(fname, "snowmask.grd", sep=""), format=outformat, datatype="INT1U", overwrite=TRUE)                
                 #for(i in 1:length(masks)){
                  #   rnew <- setValues(r, masks[[i]])
                   #  rnew[is.na(rnew)] <- 0 
