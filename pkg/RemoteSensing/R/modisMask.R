@@ -35,13 +35,13 @@
 	return(res)
 }
 
-# Internal Snow mask
-#.snowMask <- function(pixel) {
-#	pixel <- modis.sqa500k(pixel)
-#	pixel <- pixel + 1
-#	pixel[pixel > 1] <- 0
-#	return(pixel)
-#}
+#Internal Snow mask
+.snowMask <- function(pixel) {
+	pixel <- modis.sqa500k(pixel)
+	pixel <- pixel + 1
+	pixel[pixel > 1] <- 0
+	return(pixel)
+}
 
 # Blue mask
 #.blueMask <- function(pixel) {
@@ -70,8 +70,8 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
 	masks$CloudMask <- .cloudMask(getValues(b3))
 	#masks$ShadowMask <- .cloudShadow(vals)
     masks$WaterMask <- .waterMask(getValues(rq))
-	#masks$SnowMask <- .snowMask(vals)
-	mask <- masks$CloudMask*masks$WaterMask
+	masks$SnowMask <- .snowMask(getValues(rq))
+	mask <- masks$CloudMask*masks$WaterMask*masks$SnowMask
     
     #mask <- masks$CloudMask*masks$ShadowMask*masks$WaterMask*masks$SnowMask
     mask[mask==0] <- NA
