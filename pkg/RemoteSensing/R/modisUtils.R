@@ -33,3 +33,8 @@ raster2SGDF <- function(baseraster, vals=NULL){
     }     
     return(rnew)            
 }
+
+rescale <- function(x, oldmin, oldmax, newmin, newmax){
+	y <- newmin + (newmax * ((x-oldmin)/(oldmax-oldmin)))
+	return(y)
+}
