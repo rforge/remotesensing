@@ -69,8 +69,8 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
 			flush.console()
 			
 			NDSI <- ndsi(vbands[,4],vbands[,2])
-			SnowMask <- .snowMask2(vbands[,2], NDSI)
-			SnowMask[is.na(SnowMask)] <- IntNA
+			SnowMask2 <- .snowMask2(vbands[,2], NDSI)
+			SnowMask2[is.na(SnowMask2)] <- IntNA
             
             cat (dlab, " Writing output files.                 \r")
             flush.console()
@@ -90,9 +90,9 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                 rnew <- raster2SGDF(rq,vals=band1)
 				rnew <- writeGDAL(rnew,paste(fname, "ndsi.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Float32")
 				rm(rnew)
-                band1 <- SnowMask
+                band1 <- SnowMask2
                 rnew <- raster2SGDF(rq,vals=band1)
-				rnew <- writeGDAL(rnew,paste(fname, "snowmask.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
+				rnew <- writeGDAL(rnew,paste(fname, "SnowMask2.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
 				rm(rnew)
                 #bfname <- paste(fname, "ndsi.tif", sep="")
                 #if (file.exists(bfname)) file.remove(bfname)
@@ -105,8 +105,8 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                 }
 				rnew <- setValues(r, NDSI)
                 rnew <- writeRaster(rnew,filename=paste(fname, "ndsi.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
-				rnew <- setValues(r, SnowMask)
-                rnew <- writeRaster(rnew,filename=paste(fname, "snowmask.grd", sep=""), format=outformat, datatype="INT1U", overwrite=TRUE)                
+				rnew <- setValues(r, SnowMask2)
+                rnew <- writeRaster(rnew,filename=paste(fname, "SnowMask2.grd", sep=""), format=outformat, datatype="INT1U", overwrite=TRUE)                
                 #for(i in 1:length(masks)){
                  #   rnew <- setValues(r, masks[[i]])
                   #  rnew[is.na(rnew)] <- 0 
