@@ -25,9 +25,9 @@ mymax <- function(x) {
 	
 Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
 Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
-Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) > 20}	# Forest: 1, ; not forest =0
+Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not forest =0
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
-	# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
+# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
 modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscale=NULL){
     
