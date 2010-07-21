@@ -68,9 +68,17 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
             cat(dlab, "Computing NDSI and snow mask. \r")
 			flush.console()
 			
+<<<<<<< .mine
+			#NDSI <- ndsi(vbands[,4],vbands[,2])
+			NDSI <- ndsi(vbands[,4],vbands[,5])
+			#SnowMask <- .snowMask2(vbands[,2], NDSI)
+			SnowMask <- .snowMask3(vbands[,2], vbands[,4], NDSI)
+			SnowMask[is.na(SnowMask)] <- IntNA
+=======
 			NDSI <- ndsi(vbands[,4],vbands[,2])
 			SnowMask2 <- .snowMask2(vbands[,2], NDSI)
 			SnowMask2[is.na(SnowMask2)] <- IntNA
+>>>>>>> .r199
             
             cat (dlab, " Writing output files.                 \r")
             flush.console()
@@ -83,18 +91,21 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                     bfname <- paste(fname, batch$band[i], "_clean.tif", sep="")
                     if (file.exists(bfname)) file.remove(bfname)
                     rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
-					rm(rnew)
+					rm(rnew, band1)
                 }
 				NDSI[is.na(NDSI)] <- FltNA            
                 band1 <- NDSI
                 rnew <- raster2SGDF(rq,vals=band1)
 				rnew <- writeGDAL(rnew,paste(fname, "ndsi.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Float32")
+<<<<<<< .mine
+				band1 <- SnowMask
+=======
 				rm(rnew)
                 band1 <- SnowMask2
+>>>>>>> .r199
                 rnew <- raster2SGDF(rq,vals=band1)
 				rnew <- writeGDAL(rnew,paste(fname, "SnowMask2.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
-				rm(rnew)
-                #bfname <- paste(fname, "ndsi.tif", sep="")
+				#bfname <- paste(fname, "ndsi.tif", sep="")
                 #if (file.exists(bfname)) file.remove(bfname)
                 #rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
             } else {
@@ -119,7 +130,7 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
 
 			cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
-            rm(masks,vbands)
+            rm(rnew, NDSI, SnowMask, band1, masks, vbands)
             gc(verbose=FALSE)
             
         }

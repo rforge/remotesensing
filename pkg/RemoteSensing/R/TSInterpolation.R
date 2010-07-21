@@ -20,25 +20,37 @@
     return(series)
 }
 
-tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=TRUE, na=-9999 , verbose=TRUE, ...){
-    fnames <- character(0)
-    for (k in 1:nlayers(imgstack)){
-        fname <- filename(imgstack@layers[[k]])
-        srcfile <- basename(fname)
-        srcdir <- dirname(fname)
-        if(is.na(targetfolder)){
-            target <- paste(srcdir, "../interpolated", sep="/")    
-        } else {
-            target <- targetfolder
-        }
-        
-        if(!file.exists(target)){
-            dir.create(target)  
-        }
-        fnames <- c(fnames,paste(target, srcfile,sep="/"))
-        file.create(paste(fnames[k],".txt",sep=""))
+fillMissingDOY <- function(missingdoys, dat){
+    #insert NA column for each missing DOY
+    for (a in length(missingdoys):1){
+        end <- dat[ ,missingdoys[a]:ncol(dat)]
+        st <- dat[,1:(missingdoys[a]-1)]
+        dat <- cbind(st, NA, end)
     }
+    return(dat)        
+}
+
+tsInterpolate <- function(imgfiles, targetfolder=NA, rm.interm =TRUE, dataAsInt=TRUE, na=-9999 , verbose=TRUE, ...){
+    attribs <- ricefile.attribs(imgfiles)
+    stdoy <- 1+(0:45*8)
+    fnames <- paste(paste("A",attribs$year[1],gsub(" ", 0, format(stdoy,widht=3)), sep=""),attribs$tile[1],attribs$band[1], sep="_")
+    
+    srcdir <- dirname(imgfiles[1])
+    if(is.na(targetfolder)){
+        target <- paste(srcdir, "../interpolated", sep="/")    
+    } else {
+        target <- targetfolder
+    }
+    if(!file.exists(target)){
+        dir.create(target)  
+    }
+    fnames <- paste(target, fnames, sep="/")
+    file.create(paste(fnames,".txt",sep=""))
+    miss <- which(!stdoy %in% attribs$doy)
+
     nacount <- numeric(0)
+    imgstack <- stack(imgfiles)
+    
     for (i in 1:nrow(imgstack)){
         if (verbose){
             cat("Row:", i, "\r")
@@ -46,6 +58,7 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
         }
         vals <- getValues(imgstack,i)
         vals[vals==na] <- NA
+        if (length(miss)>0) vals <- fillMissingDOY(miss, vals)
         nacount <- c(nacount,rowSums(is.na(vals)))
         #x <- rep(NA,nrow(vals))
         for (j in 1:nrow(vals)){
@@ -53,20 +66,22 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
             if(sum(!is.na(vals[j,]))>=12){
               #cat("accept",j, sum(!is.na(vals[j,])),"\n")
               #flush.console()
-              vals[j,] <- .interpolate(vals[j,],...)  
+              vals[j,] <- round(.interpolate(vals[j,],...),4)  
             }             
         }
-        for (k in 1:nlayers(imgstack)){
+        for (k in 1:ncol(vals)){
             write.table(t(vals[,k]), paste(fnames[k],".txt",sep="") , sep=",", na="", row.names=FALSE, col.names=FALSE, quote=FALSE, append=TRUE)
-        }        
+        }
+        rm(vals)
+        gc(verbose=FALSE)        
     }
-    for (k in 1:nlayers(imgstack)){
+    for (k in 1:length(fnames)){
         if (verbose){
             cat("Writing to disk:", basename(fnames[k]), "\r")
             flush.console()
         }        
             
-        newraster <- raster(imgstack@layers[[k]])        
+        newraster <- raster(imgstack)        
         dat <- as.matrix(read.csv(paste(fnames[k],".txt",sep=""),header=FALSE))
         typ <- 'Float32'
         if (dataAsInt){
@@ -75,7 +90,7 @@ tsInterpolate <- function(imgstack, targetfolder=NA, rm.interm =TRUE, dataAsInt=
         }
         dat[is.na(dat)] <- na 
         rnew <- raster2SGDF(newraster, vals=dat)
-        rnew <- writeGDAL(rnew,paste(substr(fnames[k],1,nchar(fnames[k])-4),".tif",sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type=typ)
+        rnew <- writeGDAL(rnew,paste(fnames[k],".tif",sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type=typ)
         if(rm.interm){
             file.remove(paste(fnames[k],".txt",sep=""))
         }        

@@ -104,22 +104,23 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
                 bfiles <- batch$filename[grep(bands[i],batch$band)]
                 indicators[[indnames[i]]] <- 0
                 for (bfile in bfiles){
-                    vals <- getValues(raster(bfile))
-                    vals[vals<=FltNA] <- NA
+                    braster <- raster(bfile)
+                    NAvalue(braster) <- -9999
+                    vals <- getValues(braster)
                         
                     if(!is.null(valscale)){
                         vals <- vals/valscale
                     }                    
                     if (indnames[i]=="forest"){
-                        vals <- vals >= 0.7
+                        vals <- as.numeric(vals >= 0.7)
                     }else if (indnames[i]=="shrub"){
-                        vals <- vals < 0.1
+                        vals <- as.numeric(vals < 0.1)
                     }                
-                    vals[is.na(vals)] <- 0
+                    #vals[is.na(vals)] <- 0
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]]+ vals
                 }
                 if (indnames[i]=="forest"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 20
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 20
                 }else if (indnames[i]=="shrub"){
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] == 0
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] & !indicators[["forest"]] 
@@ -138,6 +139,7 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
             if (outformat=="raster"){
                 r <- raster(braster)
                 for(i in 1:length(indicators)){
+                    indicators[[i]][is.na(indicators[[i]])] <- -9999 
                     rnew <- setValues(r, indicators[[i]])
                     rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
                     rm(rnew)
@@ -160,4 +162,3 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 		}
     }
 }
-

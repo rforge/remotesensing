@@ -38,3 +38,21 @@ rescale <- function(x, oldmin, oldmax, newmin, newmax){
 	y <- newmin + (newmax * ((x-oldmin)/(oldmax-oldmin)))
 	return(y)
 }
+
+formatExt <- function(myformat){
+    ext <- rep(NA, length(myformat))
+    ext[tolower(myformat)=="raster"] <- ".grd"
+    ext[tolower(myformat)=="gtiff"] <- ".tif"
+    return(ext)    
+}
+
+rsMessage <- function(msg, newln=FALSE){
+    if (newln){
+        cat(msg, "\n")
+        flush.console()    
+    } else {
+        cat(rep(" ", getOption("width")),"\r", sep="")        
+        cat(msg, "\r")
+        flush.console()
+    }    
+}

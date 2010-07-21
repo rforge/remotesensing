@@ -109,7 +109,7 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 			snowmask1 <- getValues(raster(snowmaskfile1))
 			snowmask1[snowmask1==IntNA] <- NA	
 			snowmask1[snowmask1==0] <- NA
-			
+
 			snowmaskfile2 <- paste(inpath, paste(d, "_", tile, "_SnowMask2.tif", sep=""), sep="/")
 			if(!file.exists(snowmaskfile2)) stop(paste(snowmaskfile2, "does not exist!"))
 			snowmask2 <- getValues(raster(snowmaskfile2))
@@ -169,7 +169,7 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
         	
             cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
-            rm(indices, maps)
+            rm(indices, maps, band1)
             gc(verbose=FALSE)            
 		}
 	}

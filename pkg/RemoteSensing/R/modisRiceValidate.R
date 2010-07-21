@@ -4,7 +4,7 @@
 # Version 0,1
 # Licence GPL v3
 
-modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, tileNumber, informat="raster", valscale=NULL){
+modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, informat="raster", valscale=NULL){
     require(rgdal)
 
 	# thresholds:
@@ -19,12 +19,9 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
 
 	cat("Verifying using evi: ", perhapsPath, "\n", sep="")
 	flush.console()
-    if (informat=="GTiff"){
-        ext <- ".tif"
-    } else {
-        ext <- ".grd"
-    }
-	pat <- paste("perhapsrice_.*", tileNumber, "_[0-9]*", ext, sep="")
+	
+    filext <- formatExt(informat)
+    pat <- paste("perhapsrice", tileNumber, year, filext, sep=".*")
 	perhapsRice <- list.files(perhapsPath, pattern=pat)
 	#if (length(perhapsRice)>1){
 	#    getthis <- c(grep(".grd", perhapsRice), grep(".tif", perhapsRice))
@@ -32,21 +29,18 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
     #}
 	pRice <- raster(paste(perhapsPath,perhapsRice[1],sep="/"))
     
-	pat <- paste(tileNumber, "_evi.*cleaned",ext, sep="")
-	files <- list.files(prevYearPath, pattern=pat)
-	files <- paste(prevYearPath, files, sep="/")
+	files <- list.files(eviPath, pattern=paste(year-1,tileNumber, "evi.cleaned",filext, sep=".*"))
+	files <- paste(eviPath, files, sep="/")
 	st <- grep("249",files)
 	
-	files2 <- list.files(curYearPath, pattern=pat)
-	files2 <- paste(curYearPath, files2, sep="/")
-	
-	allfiles <- c(files[st:length(files)], files2)
+	files2 <- list.files(eviPath, pattern=paste(year,tileNumber, "evi.cleaned",filext, sep=".*"))
+	files2 <- paste(eviPath, files2, sep="/")
 	
 	#l  <- k-10
 	# k <- l-45
 	# stck <- stack( allfiles[k:l] )
 	
-	stck <- stack(allfiles)	
+	stck <- stack(c(files[st:length(files)], files2))	
     riceRast2 <- numeric(0)
     
 	for( r in 1:nrow(pRice) ){
@@ -89,7 +83,7 @@ modisRiceValidate <- function(perhapsPath, curYearPath, prevYearPath, outPath, t
         vals <- as.matrix(vals[,pvec2])        
 		
 		for(i in 1:ncol(vals)){
-		    for(j in 61:8){
+		    for(j in nlayers(stck):8){
                 if((!is.na(vals[j,i])) & (vals[j,i]<upperT & vals[j,i]>riceT)){
                     img7 <- vals[(j-1):(j-7),i]
                     chk <- img7<=floodT
