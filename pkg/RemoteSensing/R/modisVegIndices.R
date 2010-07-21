@@ -123,12 +123,12 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 			indices$nddi.cleaned <- nddi(indices$ndvi.cleaned, indices$ndwi.cleaned)
             
 			# writing of flooded,permanent water and drought
-			cat (dlab, "Computing drought, flooded, and permanent water \r")
+			cat (dlab, "Computing flooded \r")
             flush.console()
             maps <- list()				
 			maps$flooded <- flooded(indices$lswi.cleaned,indices$ndvi.cleaned,indices$evi.cleaned)
-			maps$permanent <- persistentwater(indices$ndvi.cleaned,indices$lswi.cleaned)
-			maps$drought <- drought(indices$ndvi.cleaned,indices$ndwi.cleaned)
+			#maps$permanent <- persistentwater(indices$ndvi.cleaned,indices$lswi.cleaned)
+			#maps$drought <- drought(indices$ndvi.cleaned,indices$ndwi.cleaned)
 			
 			cat (dlab, "Writing output files.                           \r")
             flush.console()
