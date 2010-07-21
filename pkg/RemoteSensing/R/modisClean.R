@@ -9,7 +9,7 @@ mysum <- function(x){
 	sum(x, na.rm=T)  
 }
 
-modisClean <- function(inpath, outformat="raster", tiles="all"){
+modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
     
     outpath <- paste(inpath,"/../clean",sep="")
     if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
@@ -68,17 +68,15 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
             cat(dlab, "Computing NDSI and snow mask. \r")
 			flush.console()
 			
-<<<<<<< .mine
-			#NDSI <- ndsi(vbands[,4],vbands[,2])
-			NDSI <- ndsi(vbands[,4],vbands[,5])
-			#SnowMask <- .snowMask2(vbands[,2], NDSI)
-			SnowMask <- .snowMask3(vbands[,2], vbands[,4], NDSI)
-			SnowMask[is.na(SnowMask)] <- IntNA
-=======
-			NDSI <- ndsi(vbands[,4],vbands[,2])
-			SnowMask2 <- .snowMask2(vbands[,2], NDSI)
+			if (snowx){
+				NDSI <- ndsi(vbands[,4],vbands[,2])
+				SnowMask2 <- .snowMask2(vbands[,2], NDSI)
+			} else {
+				NDSI <- ndsi(vbands[,4],vbands[,5])
+				SnowMask2 <- .snowMask3(vbands[,2], vbands[,4], NDSI)
+			}
+			
 			SnowMask2[is.na(SnowMask2)] <- IntNA
->>>>>>> .r199
             
             cat (dlab, " Writing output files.                 \r")
             flush.console()
@@ -97,12 +95,9 @@ modisClean <- function(inpath, outformat="raster", tiles="all"){
                 band1 <- NDSI
                 rnew <- raster2SGDF(rq,vals=band1)
 				rnew <- writeGDAL(rnew,paste(fname, "ndsi.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Float32")
-<<<<<<< .mine
-				band1 <- SnowMask
-=======
 				rm(rnew)
+
                 band1 <- SnowMask2
->>>>>>> .r199
                 rnew <- raster2SGDF(rq,vals=band1)
 				rnew <- writeGDAL(rnew,paste(fname, "SnowMask2.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
 				#bfname <- paste(fname, "ndsi.tif", sep="")

@@ -56,7 +56,7 @@
 	res <- rep(NA, length(nir))
 	res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
 	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
-	res[is.na(res)] <- 0
+	res[is.na(res)] <- -15
 	return(res)
 }
 
@@ -64,7 +64,7 @@
 	res <- rep(NA, length(nir))
 	res [!((nir > 0.10) & (green > 0.10) & (ndsi >= 0.40))]<- 1
 	res[(nir > 0.10) & (green > 0.10) & (ndsi >= 0.40)] <- 0
-	res[is.na(res)] <- 0
+	res[is.na(res)] <- -15
 	return(res)
 }
 
