@@ -24,7 +24,7 @@ mymax <- function(x) {
 }
 	
 Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
-Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
+#Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
 Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not forest =0
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
@@ -95,8 +95,10 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 			}
             
             
-            bands <- c("ndvi", "lswi", "flooded", "permanent")
-            indnames <- c("forest", "shrub", "flooded", "permanent")
+            #bands <- c("ndvi", "lswi", "flooded", "permanent")
+            #indnames <- c("forest", "shrub", "flooded", "permanent")
+			bands <- c("ndvi", "lswi", "flooded")
+            indnames <- c("forest", "shrub", "flooded")
             indicators <- list()
             for (i in 1:length(bands)){
                 cat(dlab, "Delineating ", indnames[i],". \r", sep="")
@@ -104,30 +106,29 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
                 bfiles <- batch$filename[grep(bands[i],batch$band)]
                 indicators[[indnames[i]]] <- 0
                 for (bfile in bfiles){
-                    braster <- raster(bfile)
-                    NAvalue(braster) <- -9999
-                    vals <- getValues(braster)
+                    vals <- getValues(raster(bfile))
+                    vals[vals<=FltNA] <- NA
                         
                     if(!is.null(valscale)){
                         vals <- vals/valscale
                     }                    
                     if (indnames[i]=="forest"){
-                        vals <- as.numeric(vals >= 0.7)
+                        vals <- vals >= 0.7
                     }else if (indnames[i]=="shrub"){
-                        vals <- as.numeric(vals < 0.1)
+                        vals <- vals < 0.1
                     }                
-                    #vals[is.na(vals)] <- 0
+                    vals[is.na(vals)] <- 0
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]]+ vals
                 }
                 if (indnames[i]=="forest"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 20
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 20
                 }else if (indnames[i]=="shrub"){
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] == 0
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] & !indicators[["forest"]] 
                 }else if (indnames[i]=="flooded"){
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 0
-                }else if (indnames[i]=="permanent"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
+                #}else if (indnames[i]=="permanent"){
+                #    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
                 }
             }
 			indicators$notrice <- (indicators$permanent | indicators$forest | indicators$shrub)
@@ -139,7 +140,6 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
             if (outformat=="raster"){
                 r <- raster(braster)
                 for(i in 1:length(indicators)){
-                    indicators[[i]][is.na(indicators[[i]])] <- -9999 
                     rnew <- setValues(r, indicators[[i]])
                     rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
                     rm(rnew)
@@ -162,3 +162,4 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 		}
     }
 }
+
