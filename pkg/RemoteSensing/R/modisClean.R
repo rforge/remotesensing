@@ -21,17 +21,20 @@ modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
                 
 	FltNA <- -9999.0
     IntNA <- -15
+    
+    m <- modisFiles(inpath, pat=".*.tif")
+    avtiles <- unique(m$zone)
+    
     # processing of all tiles in a directory
-    if(tiles=="all"){
+    if (tiles=="all"){
 		cat("Acquiring available tiles in input folder.\n")
 		flush.console()
-		#print("Press CTRL + C to terminate.")
-		tiles <- unique(substr(list.files(inpath, pattern="001.*b01.*.tif"), 18, 23))		
-	}
+        tiles <- avtiles				
+	} else if (!tiles %in% avtiles){
+	   stop("The tile you've specified is not available in your input folder.")
+    }
 	
 	for (tile in tiles){
-        pat <- paste(tile, ".*.tif", sep="")
-        m <- modisFiles(inpath, pat)
         
 		cat("Processing tile:", tile, "\n")
         flush.console()
@@ -54,15 +57,17 @@ modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
 			masks <- modisMask(qfile, b3file, saveRasters=TRUE, outdir=outpath)
 			   	
 			bands <- stack(paste(inpath,batch$filename[batch$band!="sta"], sep="/"))
-			vbands <- NULL
-            for(i in 1:nlayers(bands)){
-       			cat(dlab, " Applying masks to ",batch$band[i],".\r", sep="")
-    			flush.console()
-                vals <- getValues(bands@layers[[i]])
-                vals[vals<=-28672] <- NA
-                vbands <- cbind(vbands, vals*masks/10000)
+			vbands <- getValues(bands)
+			vbands[vbands<=-28672] <- NA
+			vbands <- vbands*masks/10000
+            #for(i in 1:nlayers(bands)){
+       		#	cat(dlab, " Applying masks to ",batch$band[i],".\r", sep="")
+    		#	flush.console()
+            #    vals <- getValues(bands@layers[[i]])
+            #    vals[vals<=-28672] <- NA
+                
                 #if (i==3) masks$b03_mask <- .blueMask(vbands[,i])
-            }
+            #}
             rm(bands)
             
             cat(dlab, "Computing NDSI and snow mask. \r")
@@ -125,7 +130,7 @@ modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
 
 			cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
-            rm(rnew, NDSI, SnowMask, band1, masks, vbands)
+            rm(rnew, NDSI, SnowMask2, band1, masks, vbands)
             gc(verbose=FALSE)
             
         }
