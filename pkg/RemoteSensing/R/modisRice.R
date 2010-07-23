@@ -1,4 +1,4 @@
-# Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil Aunario
+#Authors: Sonia Asilo, Robert J. Hijmans, Ritsuko Fuchiyama,  Yann Chemin, Angelo Carlo Pacheco, Jorrel Khalil Aunario
 # International Rice Research Institute
 # Date :  Feb 2009
 # Version 0.1
@@ -24,7 +24,7 @@ mymax <- function(x) {
 }
 	
 Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
-#Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
+Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
 Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not forest =0
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
@@ -95,10 +95,8 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 			}
             
             
-            #bands <- c("ndvi", "lswi", "flooded", "permanent")
-            #indnames <- c("forest", "shrub", "flooded", "permanent")
-			bands <- c("ndvi", "lswi", "flooded")
-            indnames <- c("forest", "shrub", "flooded")
+            bands <- c("ndvi", "lswi", "flooded", "permanent")
+            indnames <- c("forest", "shrub", "flooded", "permanent")
             indicators <- list()
             for (i in 1:length(bands)){
                 cat(dlab, "Delineating ", indnames[i],". \r", sep="")
@@ -127,11 +125,12 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] & !indicators[["forest"]] 
                 }else if (indnames[i]=="flooded"){
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 0
-                #}else if (indnames[i]=="permanent"){
-                #    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
+                }else if (indnames[i]=="permanent"){
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
                 }
             }
-			indicators$notrice <- (indicators$permanent | indicators$forest | indicators$shrub)
+			#indicators$notrice <- (indicators$permanent | indicators$forest | indicators$shrub)
+			indicators$notrice <- (indicators$forest | indicators$shrub)
 			indicators$perhapsrice <- indicators$flooded & !indicators$notrice
 			
 			cat (dlab, "Writing output files.                           \r")
@@ -162,4 +161,3 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 		}
     }
 }
-
