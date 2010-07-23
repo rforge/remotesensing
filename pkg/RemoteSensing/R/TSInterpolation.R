@@ -23,9 +23,16 @@
 fillMissingDOY <- function(missingdoys, dat){
     #insert NA column for each missing DOY
     for (a in length(missingdoys):1){
-        end <- dat[ ,missingdoys[a]:ncol(dat)]
-        st <- dat[,1:(missingdoys[a]-1)]
-        dat <- cbind(st, NA, end)
+        if (missingdoys[a]>ncol(dat)) {
+            dat <- cbind(dat,NA)
+        } else if (FALSE){
+            #TODO: what if missing at the begining? way to check where missin doy is.
+            dat <- cbind(NA, dat)
+        } else {
+            end <- dat[ ,missingdoys[a]:ncol(dat)]
+            st <- dat[,1:(missingdoys[a]-1)]
+            dat <- cbind(st, NA, end)            
+        }
     }
     return(dat)        
 }
@@ -98,7 +105,7 @@ tsInterpolate <- function(imgfiles, targetfolder=NA, rm.interm =TRUE, dataAsInt=
         gc(verbose=FALSE)
         
     }
-    newraster <- raster(imgstack@layers[[k]])
+    newraster <- raster(imgstack)
     newraster[] <- nacount
     return(newraster)    
 }
