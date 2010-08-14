@@ -4,7 +4,7 @@
 # Version 0,1
 # Licence GPL v3
 
-modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, valscale=NULL){
+modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, valscale=NULL, format='raster'){
     require(rgdal)
 
 	# thresholds:
@@ -20,8 +20,7 @@ modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, v
 	cat("Verifying using evi: ", perhapsPath, "\n", sep="")
 	flush.console()
 	
-    filext <- formatExt(informat)
-    pat <- paste("perhapsrice", tileNumber, year, filext, sep=".*")
+    pat <- paste("perhapsrice", tileNumber, year, sep=".*")
 	perhapsRice <- list.files(perhapsPath, pattern=pat)
 	#if (length(perhapsRice)>1){
 	#    getthis <- c(grep(".grd", perhapsRice), grep(".tif", perhapsRice))
@@ -29,11 +28,11 @@ modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, v
     #}
 	pRice <- raster(paste(perhapsPath,perhapsRice[1],sep="/"))
     
-	files <- list.files(eviPath, pattern=paste(year-1,tileNumber, "evi.cleaned",filext, sep=".*"))
+	files <- list.files(eviPath, pattern=paste(year-1,tileNumber, "evi.cleaned", sep=".*"))
 	files <- paste(eviPath, files, sep="/")
 	st <- grep("249",files)
 	
-	files2 <- list.files(eviPath, pattern=paste(year,tileNumber, "evi.cleaned",filext, sep=".*"))
+	files2 <- list.files(eviPath, pattern=paste(year,tileNumber, "evi.cleaned", sep=".*"))
 	files2 <- paste(eviPath, files2, sep="/")
 	
 	#l  <- k-10
@@ -99,7 +98,7 @@ modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, v
 	riceRast <- setValues(pRice, riceRast2)
     riceRast[is.na(riceRast)] <- -15    # ??? why?
 
-	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	riceRast <- writeRaster(riceRast, filename=fnameRast, datatye='INT2S', options=c("COMPRESS=LZW", "TFW=YES"))
+	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), sep="")
+	riceRast <- writeRaster(riceRast, filename=fnameRast, datatye='INT2S', format=format, options=c("COMPRESS=LZW", "TFW=YES"))
 }
 

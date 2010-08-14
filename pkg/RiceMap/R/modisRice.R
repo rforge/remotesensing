@@ -4,18 +4,18 @@
 # Version 0.1
 # Licence GPL v3
 
-mysum <- function(x){ sum(x, na.rm=T) }
-
-sumNotNA <- function(x){ sum(!is.na(x)) }
 
 mymean <- function(x) {
-	sumv <- mysum(x)
-	sumnotna <- sumNotNA(x)
-	return(sumv/sumnotna)
+	x <- na.omit(x)
+	if (length(x) > 0) {
+		return(mean(x)) 
+	} else { 
+		return( NA ) 
+	}
 }
 
 mymax <- function(x) {
-		x <- na.omit(x)
+	x <- na.omit(x)
 	if (length(x) > 0) {
 		return(max(x)) 
 	} else { 
@@ -29,7 +29,7 @@ Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not 
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
-modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscale=NULL){
+modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=NULL){
     
 	# creation of output director "tif" folder
 	outpath <- paste(inpath,"/../rice",sep="")
@@ -46,16 +46,11 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
         stop(paste("Input format", informat, "not supported."))
     }   
 	
-	if (outformat=="raster"){
-        outext <- ".grd"
-    } else if (outformat=="GTiff"){
+    if (format != "raster"){
         if (!require(rgdal)) stop("rgdal loading failed")
-        outext <- ".tif"
         opts <- c("COMPRESS=LZW", "TFW=YES")
     } else {
-        cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
-        outext <- ".grd"
-        outformat <- "raster"                
+        opts <- ''
     }
 
     # processing of all tiles in a directory
@@ -136,24 +131,13 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 			cat (dlab, "Writing output files.                           \r")
             flush.console()
             
-            if (outformat=="raster"){
-                r <- raster(braster)
-                for(i in 1:length(indicators)){
-                    rnew <- setValues(r, indicators[[i]])
-                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT1S", overwrite=TRUE)
-                    rm(rnew)
-                }                                
-            } else if (outformat=="GTiff"){
-                for(i in 1:length(indicators)){
-                    band1 <- indicators[[i]]
-                    band1[is.na(band1)] <- IntNA    
-                    rnew <- raster2SGDF(braster,vals=band1)
-                    bfname <- paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/")
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=opts, type="Int16")
-                    rm(rnew)
-                }
-            }
+             r <- raster(braster)
+             for(i in 1:length(indicators)){
+                rnew <- setValues(r, indicators[[i]])
+                filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, sep=""), sep="/")
+				rnew <- writeRaster(rnew, filename=filename, format=format, datatype="INT1S", overwrite=TRUE, options=opts)
+                rm(rnew)
+            }                                
             cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
             rm(indicators,vals)

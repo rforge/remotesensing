@@ -69,7 +69,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
         st <- which(vfiles$year==y & vfiles$doy==1)-1
         en <- which(vfiles$year==y & vfiles$doy==361)-1
         if (st<1){
-            rsMessage(paste("Data from last image from previous year not available.\nWill start on first image of year ", y, ".",sep=""), newln=TRUE)
+            .rsMessage(paste("Data from last image from previous year not available.\nWill start on first image of year ", y, ".",sep=""), newln=TRUE)
             st <- 1            
         }
         perhaps <- paste(ricepath, paste("perhapsrice_", vfiles$tile[1], "_", y, filext, sep=""), sep="/")
@@ -78,11 +78,11 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
         counts <- vector(length=length(st:en))
         for (i in st:en){
             if(i==(nrow(vfiles)-12)){
-                rsMessage("Succeeding files not found.")
+                .rsMessage("Succeeding files not found.")
                 break
             }
-            rsMessage(paste("Processing DOY", vfiles$doy[i+1], "of", y), newln=TRUE)
-            rsMessage("Isolating flooded pixels.")
+            .rsMessage(paste("Processing DOY", vfiles$doy[i+1], "of", y), newln=TRUE)
+            .rsMessage("Isolating flooded pixels.")
             fld <- raster(paste(inpath,vfiles$floodfiles[i],sep="/"))
             if (file.exists(perhaps)){
                 mfld <- pr[]*fld[]
@@ -101,15 +101,15 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             if(i==st){
                 overall <- rep(NA,ncell(fld))
             }
-            rsMessage(paste("Reading EVI values: Files", i+1, "to", i+12))
+            .rsMessage(paste("Reading EVI values: Files", i+1, "to", i+12))
             evi12 <- getValues(stack(paste(inpath,vfiles$evifiles[i+(1:12)],sep="/")))[fpix,]
             evi12[evi12==-9999] <- NA
             evi12 <- evi12/valscale
-            rsMessage("Calculating statistics.")
+            .rsMessage("Calculating statistics.")
             max5 <- maxEVI(evi12[,1:5])*2
             max12 <- maxEVI(evi12)
             ave611 <- rowMeans(evi12[,6:11], na.rm=TRUE)
-            rsMessage("Determining rice pixels.")
+            .rsMessage("Determining rice pixels.")
             ricet1 <- max5>=max12
             ricet2 <- ave611>=0.35
             rice <- fld[fpix] & ricet1 & ricet2
@@ -117,10 +117,10 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             rvals <- rep(NA,ncell(fld))
             rvals[fpix] <- as.numeric(rice)
             overall <- rowSums(cbind(overall,rvals), na.rm=TRUE)
-            rsMessage("Writing rice map to disk.")
+            .rsMessage("Writing rice map to disk.")
             ricegrid <- raster2SGDF(fld,rvals)
             writeGDAL(ricegrid, paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
-            rsMessage(paste("Done.", counts[i-st+1],"rice pixels found.\n"))
+            .rsMessage(paste("Done.", counts[i-st+1],"rice pixels found.\n"))
             rm(ricegrid,rice, max5, max12, ave611, ricet1, ricet2, rvals,evi12)
             gc(verbose=FALSE)
         }

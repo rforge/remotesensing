@@ -4,21 +4,12 @@
 # Version 0,1
 # Licence GPL v3
 
-# sum (snow count)
-mysum <- function(x){ 
-	sum(x, na.rm=T)  
-}
 
-modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
+modisClean <- function(inpath, format="raster", tiles="all", snowx=TRUE){
     
     outpath <- paste(inpath,"/../clean",sep="")
     if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
-    
-    if (!outformat %in% c("raster","GTiff")){
-        cat("Unrecognized output format. Saving as raster (.grd). \n")
-        flush.console()
-    }
-                
+           
 	FltNA <- -9999.0
     IntNA <- -15
     
@@ -86,51 +77,21 @@ modisClean <- function(inpath, outformat="raster", tiles="all", snowx=TRUE){
             cat (dlab, " Writing output files.                 \r")
             flush.console()
             
-            if (outformat=="GTiff"){
-                for(i in 1:ncol(vbands)){
-                    band1 <- vbands[,i]
-                    band1[is.na(band1)] <- FltNA
-                    rnew <- raster2SGDF(rq,vals=band1)    
-                    bfname <- paste(fname, batch$band[i], "_clean.tif", sep="")
-                    if (file.exists(bfname)) file.remove(bfname)
-                    rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
-					rm(rnew, band1)
-                }
-				NDSI[is.na(NDSI)] <- FltNA            
-                band1 <- NDSI
-                rnew <- raster2SGDF(rq,vals=band1)
-				rnew <- writeGDAL(rnew,paste(fname, "ndsi.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Float32")
-				rm(rnew)
-
-                band1 <- SnowMask2
-                rnew <- raster2SGDF(rq,vals=band1)
-				rnew <- writeGDAL(rnew,paste(fname, "SnowMask2.tif", sep=""), options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
-				#bfname <- paste(fname, "ndsi.tif", sep="")
-                #if (file.exists(bfname)) file.remove(bfname)
-                #rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
-            } else {
-                r <- raster(rq)
-                for(i in 1:ncol(vbands)){
-                    rnew <- setValues(r, vbands[,i])
-                    rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
-                }
+            r <- raster(rq)
+             for(i in 1:ncol(vbands)){
+                 rnew <- setValues(r, vbands[,i])
+                 rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], "_clean", sep=""), format=format, datatype="FLT4S", overwrite=TRUE)
+             }
 				rnew <- setValues(r, NDSI)
-                rnew <- writeRaster(rnew,filename=paste(fname, "ndsi.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+                rnew <- writeRaster(rnew,filename=paste(fname, "ndsi", sep=""), format=format, datatype="FLT4S", overwrite=TRUE)
 				rnew <- setValues(r, SnowMask2)
-                rnew <- writeRaster(rnew,filename=paste(fname, "SnowMask2.grd", sep=""), format=outformat, datatype="INT1U", overwrite=TRUE)                
-                #for(i in 1:length(masks)){
-                 #   rnew <- setValues(r, masks[[i]])
-                  #  rnew[is.na(rnew)] <- 0 
-                  #  rnew <- writeRaster(rnew,filename=paste(fname, names(masks)[i], ".grd", sep=""), format=outformat, datatype="INT1S", overwrite=TRUE)
-                #}
-                #rnew <- setValues(r, NDSI)
-                #rnew <- writeRaster(rnew,filename=paste(fname, "NDSI", ".grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)
+                rnew <- writeRaster(rnew,filename=paste(fname, "SnowMask2", sep=""), format=format, datatype="INT1U", overwrite=TRUE)                
                 rm(r)
-            } 
+             
 
 			cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
-            rm(rnew, NDSI, SnowMask2, band1, masks, vbands)
+            rm(rnew, NDSI, SnowMask2, masks, vbands)
             gc(verbose=FALSE)
             
         }

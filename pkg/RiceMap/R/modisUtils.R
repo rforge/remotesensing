@@ -16,23 +16,13 @@ properPath <- function(path, changeBS=TRUE){
 }
 
 raster2SGDF <- function(baseraster, vals=NULL){
-    require(rgdal)
-    gtop <- GridTopology(c(xmin(baseraster)+(xres(baseraster)/2),ymin(baseraster)+(yres(baseraster)/2)),c(xres(baseraster),yres(baseraster)),c(ncol(baseraster),nrow(baseraster)))
-    proj <- CRS(projection(baseraster))
-    if (is.null(vals)){
-        rnew <- SpatialGridDataFrame(gtop, as.data.frame(getValues(baseraster)), proj4string=proj)
-    } else if (is.vector(vals) & length(vals)==ncell(baseraster)){
-        rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
-    } else if (is.matrix(vals) & length(vals)==ncell(baseraster)){
-        vals <- as.vector(t(vals))
-        rnew <- SpatialGridDataFrame(gtop, as.data.frame(vals), proj4string=proj)
-    } else {
-        cat("Length of vals does not match ncells of raster.\n Creating a blank SpatialGridDataFrame instead.\n")
-        flush.console()
-        rnew <- SpatialGridDataFrame(gtop, as.data.frame(rep(NA,ncell(baseraster))), proj4string=proj)    
-    }     
-    return(rnew)            
+	if (!is.null(vals)) {
+		baseraster <- setValues(baseraster, vals)
+	}
+	baseraster <- as(baseraster, 'SpatialGridDataFrame')
+	return(baseraster)
 }
+
 
 rescale <- function(x, oldmin, oldmax, newmin, newmax){
 	y <- newmin + (newmax * ((x-oldmin)/(oldmax-oldmin)))
@@ -46,7 +36,7 @@ formatExt <- function(myformat){
     return(ext)    
 }
 
-rsMessage <- function(msg, newln=FALSE){
+.rsMessage <- function(msg, newln=FALSE){
     if (newln){
         cat(msg, "\n")
         flush.console()    
