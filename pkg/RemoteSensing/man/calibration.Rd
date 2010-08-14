@@ -43,15 +43,15 @@ getGainBias(SatImgObject)
   \item{radiance}{spectral radiance at the sensor's aperture, W/(m2 * sr * micrometer)}
   \item{ESUN}{mean solar exoatmospheric irradiances, W/(m2 * sr * micrometer)}
   \item{radiance_thermal}{thermal band spectral radiance at the sensor's aperture,  W / (m2 * sr * micrometer)}
+  \item{K}{vector of two numeric values. Landsat thermal calibration constants K1, K2, returned by K_landsat }
   \item{spacecraft}{space craft id: Landsat1, Landsat2, Landsat3, Landsat4, Landsat5, Landsat7, Terra}
   \item{sensor}{sensor: MSS, TM, ETM+, Aster}  
   \item{acquisition_date}{image acquisition date}
   \item{product_creation_date}{image processing date}
-  \item{K}{  }
 }
 
 \value{
-
+callibrated Landsat image.
 }
 
 \author{Alice Laborte and Yann Chemin}

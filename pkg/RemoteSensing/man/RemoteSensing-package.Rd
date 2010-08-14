@@ -36,7 +36,7 @@ Functions include:
 }
 
 \author{
-Alice Laborte, Yann Chemin, Sonia Asilo, Robert Hijmans
+Alice Laborte, Yann Chemin, Robert Hijmans
 
 Maintainer: Who to complain to <r.hijmans@gmail.com>
 }

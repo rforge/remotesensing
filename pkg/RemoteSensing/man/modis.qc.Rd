@@ -51,19 +51,15 @@ modis.qc500e(pixel)
 }
 }
 
-\value{
-  
-}
+
 \references{ Vermote E.F., Kotchenova S.Y., Ray J.P. MODIS Surface Reflectance User's Guide. Version 1.2. June 2008. MODIS Land Surface Reflectance Science Computing Facility. }
 
 \author{ Yann Chemin }
 
+
 \note{ In MOD09A1: It seems that cloud related info is not filled properly in the standard QC (MOD09A1 in this module) since version 3, State-QA 500m images (MOD09A1s in this module) should be used (see Vermote et al., 2008).
 }
-\seealso{  }
 
-\examples{
 
-}
 \keyword{ spatial }
 

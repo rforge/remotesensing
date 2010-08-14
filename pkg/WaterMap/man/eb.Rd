@@ -109,24 +109,18 @@ eta(rnet_day,evapfr,surface_temperature)
   \item{row_wet}{}
   \item{col_wet}{}
 }
-\details{
-  
-}
+
 \value{
-  Water Mapping
+Water Mapping
 }
+
 \references{ 
 Bastiaanssen, W.G.M. 1995. Regionalization of surface flux densities and moisture indicators in composite terrain. SC-DLO Report 109. Wageningen, The Netherlands.
 Alexandridis T.K., Cherif I., Chemin Y., Silleos N.G., Stavrinos E., Zalidis G.C. Integrated methodology for estimating water use in Mediterranean agricultural areas. Remote Sensing. -(-):,2009. (submitted)
+
 }
 \author{ Yann Chemin }
-\note{ 
 
- 
-}
-\seealso{ }
-\examples{
 
-}
 \keyword{spatial}
 

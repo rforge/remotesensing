@@ -7,8 +7,9 @@
 
 
 \title{ Albedo }
+
 \description{
-  Compute albedo from remote sensing data. 
+Compute albedo from remote sensing data. 
 }
 
 \usage{
@@ -24,32 +25,25 @@ albedoAvhrr(red, nir)
   \item{nir}{ near infra-red wavelength channel (band) }
   \item{blue}{ blue wavelength channel (band) }
   \item{green}{ green wavelength channel (band)}
-  \item{swir1}{ ~~Describe \code{chan} here~~ }  
-  \item{swir2}{ ~~Describe \code{chan} here~~ }
-  \item{swir3}{ ~~Describe \code{chan} here~~ }
-  \item{swir5}{ ~~Describe \code{han} here~~ }
-  \item{swir6}{ ~~Describe \code{chan} here~~ }  
-  \item{chan5}{ ~~Describe \code{chan5} here~~ }
-  \item{chan7}{ ~~Describe \code{chan7} here~~ }
+  \item{swir1}{ short wave infrared channel 1 }  
+  \item{swir2}{ short wave infrared channel 2 }
+  \item{swir3}{ short wave infrared channel 3 }
+  \item{swir5}{ short wave infrared channel 5 }
+  \item{swir6}{ short wave infrared channel 6 }  
+  \item{chan5}{ channel 5 }
+  \item{chan7}{ channel 7 }
 }
-
-\details{
-  }
   
 \value{
-  albedo
+ albedo
 }
 
-\references{  }
 
 \author{ Yann Chemin }
 
-\note{ 
- 
-}
-\seealso{ }
 \examples{
-
+albedoAvhrr(200, 100)
 }
+
 \keyword{ spatial }
 

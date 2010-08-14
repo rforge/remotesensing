@@ -1,0 +1,11 @@
+Package: WaterMap
+Type: Package
+Title: Mapping evao-transpiration from satellite images.  
+Version: 0.4
+Date: 13-August-2010
+Depends: raster, RemoteSensing
+Author: Yann Chemin, .... , Robert J. Hijmans
+Maintainer: Sonia Asilo <r.hijmans@gmail.com> 
+Description: Mapping evapotranspiration
+License: GPL (>=3)
+LazyLoad: yes

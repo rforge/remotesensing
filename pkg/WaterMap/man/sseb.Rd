@@ -34,8 +34,5 @@ Senay, G.B, M. Budde, J.P. Verdin, A.M. Melesse (2007). A Coupled Remote Sensing
 \author{Yann Chemin, Umair Rabbani}
 
 
-\examples{
-}
-
 \keyword{spatial}
 

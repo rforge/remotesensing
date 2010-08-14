@@ -1,6 +1,5 @@
 # Authors: Robert Hijmans and Alice Laborte
-# International Rice Research Institute
-#Date: February 2009
+# Date: February 2009
 
 
 
@@ -23,7 +22,7 @@ setClass('SatelliteImage',
 
 
 
-setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),	
+setClass('Landsat',  contains=c('RasterStack', 'SatelliteImage', 'VIRTUAL'),	
 	representation (
 		cpf_filename =  'character',		
 		product_creation_date = 'character',		
@@ -37,21 +36,21 @@ setClass('LandsatImage',  contains=c('SatelliteImage', 'VIRTUAL'),
 	),
 )
 
-setClass('LandsatMSS', contains='LandsatImage',
+setClass('LandsatMSS', contains='Landsat',
 	representation (
 
 	),
 )
 
 
-setClass('LandsatTM', contains='LandsatImage',
+setClass('LandsatTM', contains='Landsat',
 	representation (
 		thermalband = 'RasterLayer'
 	
 	),
 )
 
-setClass('LandsatETMp', contains='LandsatImage',
+setClass('LandsatETMp', contains='Landsat',
 	representation (
 		thermal = 'RasterStack',
 		panchromatic = 'RasterLayer'
@@ -61,14 +60,14 @@ setClass('LandsatETMp', contains='LandsatImage',
 
 
 
-setClass('ModisImage', contains='SatelliteImage',
+setClass('Aster', contains=c('RasterStack', 'SatelliteImage'),
 	representation (
 		
 	),
 )
 
 
-setClass('AsterImage', contains='SatelliteImage',
+setClass('Modis', contains=c('RasterStack', 'SatelliteImage'),
 	representation (
 		
 	),

@@ -1,0 +1,12 @@
+Package: RiceMap
+Type: Package
+Title: Mapping rice area with time series of MoDIS images
+Version: 0.4
+Date: 13-August-2010
+Depends: raster, RemoteSensing
+Suggests: splines, timeSeries
+Author: Sonia Asilo, Robert J. Hijmans, Jorrel Anauria, Andy Nelson
+Maintainer: Sonia Asilo <s.asilo@cgiar.org> 
+Description: Sattelite image analysis algorithms
+License: GPL (>=3)
+LazyLoad: yes

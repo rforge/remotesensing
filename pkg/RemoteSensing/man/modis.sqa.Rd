@@ -14,10 +14,13 @@
 
 
 \title{ MODIS State Quality Assessment Extractor }
+
 \description{
+
 Makes Human-readable images of State Quality Assessment binary bits from MOD09A 500m products (Vermote et al., 2008), this is the proper place to find cloud related information.
-Vermote E.F., Kotchenova S.Y., Ray J.P. MODIS Surface Reflectance User's Guide. Version 1.2. June 2008. MODIS Land Surface Reflectance Science Computing Facility. Homepage
+
 }
+
 
 \usage{
 modis.sqa500a(pixel) 
@@ -53,18 +56,16 @@ modis.sqa500k(pixel)
  \tab \code{modis.sqa500j} \tab BRDF correction performed \cr
  \tab \code{modis.sqa500k} \tab Internal Snow Mask \cr
  }
- 
 }
-\value{
-  
-}
-\references{ Vermote E.F., Kotchenova S.Y., Ray J.P. MODIS Surface Reflectance User's Guide. Version 1.2. June 2008. MODIS Land Surface Reflectance Science Computing Facility.}
-\author{ Yann Chemin }
-\note{ 
-}
-\seealso{  }
-\examples{
 
+
+\value{
+RasterLayer with binary (0,1) values  
 }
+
+\references{ Vermote E.F., Kotchenova S.Y., Ray J.P. MODIS Surface Reflectance User's Guide. Version 1.2. June 2008. MODIS Land Surface Reflectance Science Computing Facility.}
+
+\author{ Yann Chemin }
+
 \keyword{ spatial }
 
