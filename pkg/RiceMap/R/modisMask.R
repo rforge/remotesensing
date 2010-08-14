@@ -94,17 +94,13 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
         for(i in 1:length(masks)){
             band1 <- masks[[i]]
             band1[is.na(band1)] <- 0
-            rnew <- raster2SGDF(rq, band1)
             bfname <- paste(outdir, "/", paste(namecomps[2],namecomps[3],names(masks)[i], sep="_"), ".tif", sep="")
-            if (file.exists(bfname)) file.remove(bfname)
-            rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
+			band1 <- writeRaster(band1, filename=bfname, overwrite=TRUE, datatype='INT2S', options=c("COMPRESS=LZW", "TFW=YES"))
 		}
-                    
     }            
     #masks$CloudMask[masks$CloudMask==0] <- NA 
 	#masks$ShadowMask[masks$ShadowMask==0] <- NA 
 	#masks$WaterMask[masks$WaterMask==0] <- NA
 	#masks$SnowMask[masks$SnowMask==0] <- NA
-	rm(masks,rnew)
     return(mask)    
 }

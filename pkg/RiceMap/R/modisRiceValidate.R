@@ -4,7 +4,7 @@
 # Version 0,1
 # Licence GPL v3
 
-modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, informat="raster", valscale=NULL){
+modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, valscale=NULL){
     require(rgdal)
 
 	# thresholds:
@@ -96,20 +96,10 @@ modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, i
         riceRast2 <- c(riceRast2,rice)
 	}
 	
-	riceRast <- raster(pRice)	
-	riceRast <- setValues(riceRast, riceRast2)
-    
-    #plot(pRice)
-    #x11()
-	#plot(riceRast)
-	
-	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
-	band1 <- riceRast2
-    band1[is.na(band1)] <- -15    
-    rnew <- raster2SGDF(pRice,vals=band1)
-    if (file.exists(fnameRast)) file.remove(bfname)
-    rnew <- writeGDAL(rnew,fnameRast, options=c("COMPRESS=LZW", "TFW=YES"), type = "Int16")
-    rm(rnew)            
-	# writeRaster(riceRast, filename=fnameRast, format="GTiff", datatype= "INT1S", overwrite=T)
+	riceRast <- setValues(pRice, riceRast2)
+    riceRast[is.na(riceRast)] <- -15    # ??? why?
 
+	fnameRast <- paste(outPath, "/reallyRice_", tileNumber, "_", substr(perhapsRice, 20,23), ".tif", sep="")
+	riceRast <- writeRaster(riceRast, filename=fnameRast, datatye='INT2S', options=c("COMPRESS=LZW", "TFW=YES"))
 }
+
