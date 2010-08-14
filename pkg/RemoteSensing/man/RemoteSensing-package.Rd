@@ -38,12 +38,9 @@ Functions include:
 \author{
 Alice Laborte, Yann Chemin, Robert Hijmans
 
-Maintainer: Who to complain to <r.hijmans@gmail.com>
+Maintainer: r.hijmans@gmail.com
 }
 
 \keyword{ package }
 \keyword{ spatial }
 
-\seealso{
-\code{\link[<raster>:<raster>-package]{<raster>}}
-}

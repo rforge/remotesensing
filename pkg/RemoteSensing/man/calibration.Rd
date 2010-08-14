@@ -33,7 +33,7 @@ getGainBias(SatImgObject)
 
 \arguments{
   \item{SatImgObject}{Satellite image object}
-  \item{filename}{filename to output raster stack of reflectance or temperature values}
+  \item{filename}{filename to output RasterStack of reflectance or temperature values}
   \item{DN}{Digital number}
   \item{sun_elevation}{sun elevation in degrees}
   \item{doy}{day of the year}

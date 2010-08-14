@@ -1,4 +1,5 @@
 \name{Vegetation indices}
+
 \alias{arvi}
 \alias{wdvi}
 \alias{sr}
@@ -16,6 +17,7 @@
 \alias{vari}
 
 \title{Vegetation indices}
+
 \description{
   Compute vegetation indices from remote sensing data. 
 }
@@ -70,9 +72,9 @@ NDVI <- overlay(red, nir, fun=ndvi)
 #Plot the raster output
 plot(NDVI, col=grey(0:255/255))
 
-#add Philippines country administrative boundary
-#require(geodata)
-#plot(adm("PHL"), add=T, border="red")
+#add Philippines country boundary
+#phl <- getData('gadm', country="PHL", level=0)
+#plot(phl, add=T, border="red")
 }
 
 \keyword{spatial}
