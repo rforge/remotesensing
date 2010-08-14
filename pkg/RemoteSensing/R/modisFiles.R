@@ -1,5 +1,4 @@
-# Authors: Sonia Asilo, Robert J. Hijmans, Jorrel Khalil S. Aunario
-# International Rice Research Institute
+# Authors: Robert J. Hijmans, Sonia Asilo, Jorrel Khalil S. Aunario
 # Date :  Feb 2009
 # Version 0,1
 # Licence GPL v3
@@ -11,7 +10,6 @@ modisFiles <- function(path, pat) {
 	x <- strsplit(f, "\\.")
 	try(m <- cbind((matrix(unlist(x), ncol=length(x[[1]]), byrow=TRUE)),f))
 	if (ncol(m) != 9) { 
-        return(FALSE)
         stop('oops, non standard filenames found') 
     }
 	m <- as.data.frame(m[,-c(4,6,8)], stringsAsFactors=FALSE)
