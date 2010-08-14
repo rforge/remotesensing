@@ -1,22 +1,20 @@
-\name{lswi}
+\name{water}
 
 \alias{lswi}
 \alias{water}
 \alias{waterModis}
-\alias{flooded}
 
 
 \title{ Water indices }
 
 \description{
-  Identify the prenence of water, and related indices from remote sensing data. 
+  Identify the presence of water, and related indices from remote sensing data. 
 }
 
 \usage{
 lswi(nir, swir) 
 water(ndvi, albedo) 
 waterModis(ndvi, band7) 
-flooded(lswi, ndvi, evi)  
 }
 
 \arguments{
@@ -25,9 +23,6 @@ flooded(lswi, ndvi, evi)
   \item{ndvi}{ NDVI values }
   \item{band7}{ MODIS \code{Band7} satellite band values}
   \item{albedo}{ albedo layer }
-  \item{lswi}{ LSWI values }
-  \item{evi}{ EVI values }
-  
 }
 
 \value{
@@ -39,10 +34,10 @@ flooded(lswi, ndvi, evi)
 }
 
 \references{ 
- Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C.,  Salas W., Moore III B. (2005). Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. Remote Sensing of Environment 95:480-492.
- 
  Roy D.P., Jin Y., Lewis P.E., Justice C.O. (2005). Prototyping a global algorithm for systematic fire-affected area mapping using MODIS time series data.  Remote Sensing of Environment 97:137-162.
+ Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C.,  Salas W., Moore III B. (2005). Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. Remote Sensing of Environment 95:480-492.
 }
+
 \author{ Yann Chemin }
 
 \examples{
