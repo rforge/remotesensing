@@ -12,9 +12,13 @@ setClass('SatelliteImage', contains=c('RasterStack', 'VIRTUAL'),
 		sun_azimuth = 'numeric',
 		zone = 'character',
 		band_filenames = 'vector',
-		meta_filename = 'character'
+		meta_filename = 'character',
+		callibrated = 'logical',
+		callibration = 'character'
 	),
 	prototype (
+		callibrated = FALSE,
+		callibration = ''
 	)
 )
 

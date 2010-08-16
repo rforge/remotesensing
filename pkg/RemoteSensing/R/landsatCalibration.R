@@ -20,35 +20,41 @@
 #  \item{K}{vector of two numeric values. Landsat thermal calibration constants K1, K2, returned by K_landsat }
 
 
-dn2rad <- function(x, filename) {
+dn2rad <- function(x, filename='', ...) {
 #Conversion of DN to radiance 
-#DN, gain, bias) {
-#  \item{DN}{Digital number}
 #  \item{gain}{band-specific rescaling gain factor, W / (m2 * sr * micrometer) /DN }
 #  \item{bias}{band-specific rescaling bias factor, W / (m2 * sr * micrometer) }
-	return(gain * DN + bias)
+	if (x@callibrated) {
+		stop('This object has already been callibrated')
+	}
+
+	gb 			<- .getGainBias(x)
+	gain		<- gb[, "gain"]
+	bias		<- gb[,"bias"]
+	radiance 	<- calc(x, function(x){ (x * gain + bias) }, filename=filename, ... )
+
+	x@callibrated <- TRUE
+	x@callibration <- 'radiance'
 	
-	
-	
-	
-	
+	return(radiance)
 }
 
 
 #Conversion of DN to reflectance
-dn2ref  <- function( x, filename, ... ) {
+dn2ref  <- function( x, filename='', ... ) {
+
+	if (x@callibrated) {
+		stop('This object has already been callibrated')
+	}
+
+
+	if (! inherits(x, 'Landsat')) {
+		stop('only available for Landsat objects')	
+	}
 
 	getDS <- function(doy) {
 		# ds = earth to sun distance in astronomical units}
 		return ( 1.0 + 0.01672 * sin( 2 * pi * ( doy - 93.5 ) / 365 ) )
-	}
-	
-	if (x@sensor %in% c("TM","ETM+")) {
-		b <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7") 
-	} else if (x@sensor  == "MSS") {
-		b <- c("BAND1","BAND2","BAND3","BAND4") 
-	} else {
-		stop('not done yet')	
 	}
 	
 	gb 			<- .getGainBias(x)
@@ -58,20 +64,25 @@ dn2ref  <- function( x, filename, ... ) {
 	ESUN	<- .esun(x@spacecraft, x@sensor)
 	doy 	<- as.integer(format(as.Date(x@acquisition_date),"%j"))
 	ds		<- getDS(doy)
-	xfac 		<- (pi * ds * ds) / (ESUN[i] * cos ((90 - x@sun_elevation)* pi/180))
-	NAvalue(x)	<- 0
+	xfac 	<- (pi * ds * ds) / (ESUN * cos ((90 - x@sun_elevation)* pi/180))
 
-	radiance 	<- calc(x, function(x){ (x * gain + bias) * xfac }, filename=filename, ... )
+	radiance <- calc(x, function(x){ (x * gain + bias) * xfac }, filename=filename, ... )
 	
 	radiance <- stack(radiance)
 	x@layers <- radiance@layers
+
+	x@callibrated <- TRUE
+	x@callibration <- 'reflectance'
 	
 	return(radiance)
 }
 
 
 #Conversion of DN to temperature
-dn2temp <- function(x, filename) {
+dn2temp <- function(x, filename='', ...) {
+	if (x@callibrated) {
+		stop('This object has already been callibrated')
+	}
 
 	K_landsat <- function(spacecraft, sensor) {
 	#Landsat thermal calibration constants K1, K2
@@ -82,51 +93,22 @@ dn2temp <- function(x, filename) {
 		return (K)
 	}
 
-	spacecraft	<- x@spacecraft
-	sensor		<- x@sensor
-	gb 			<- .getGainBias(x)
-	gain		<- gb[, "gain"]
-	bias		<- gb[,"bias"]
-	
-	if (sensor == "ETM+") {
-		b <- c("BAND61","BAND62")
-		names(gain) <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND61","BAND62","BAND7")
-		names(bias) <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND61","BAND62","BAND7")
-
-	} else if (sensor  == "TM") {
-		b <- "BAND61"  
-		names(gain) <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7")
-		names(bias) <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7") 
-		
-	} else  { 
-		stop('function not done yet for this sensor:', sensor) 
+	if (! inherits(x, 'Landsat')) {
+		stop('only available for Landsat objects')	
 	}
 
-	temp_stk <- new("RasterStack")
+	K <- K_landsat(x@spacecraft, x@sensor)
+
+	radiance 	<- dn2rad(x)
+	temp		<- calc(radiance, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename=filename, ...)
+	temp_stk	<- addLayer(temp_stk, temp)
+
+	radiance <- stack(radiance)
+	x@layers <- radiance@layers
+	x@callibrated <- TRUE
+	x@callibration <- 'temperature'
 	
-	b_filename <- vector(length=length(b))
-	for (i in 1:length(b)) {
-		b_filename[i] <- paste(filename,"_",b[i],sep="") 
-	}
-	
-	names(b_filename) <- b
-	
-	K <- K_landsat(spacecraft, sensor)
-	
-	for (j in b) {
-		DN				<- raster(x@band_filenames[j])
-		NAvalue(DN) 	<- 0
-		
-		#DN			<- setMinMax(DN)   #replace this with qcalmin[i], qcalmax[i] when minmax can be assigned
-		radiance 		<- .dn2rad(DN, gain[j], bias[j])
-		
-		temp			<- calc(radiance, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename= b_filename[j], overwrite=TRUE)				
-		temp_stk		<- addLayer(temp_stk, temp)
-	}
-	
-	filename(temp_stk) 	<- filename
-	temp_stk 			<- stackSave(temp_stk)
-	return(temp_stk)
+	return(x)
 }
 
 
@@ -289,13 +271,15 @@ dn2temp <- function(x, filename) {
 		else if (spacecraft == "Landsat4") { ESUN <- c(1851.0, 1593.0, 1260.0, 878.0) }
 		else if (spacecraft == "Landsat5") { ESUN <- c(1849.0, 1595.0, 1253.0, 870.0)  }
 		names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4")
-	}
-	else if (sensor == "TM")  {
-		if (spacecraft == "Landsat4") { ESUN <- c(1957.0, 1825.0, 1557.0, 1033.0, 214.9, NA, 80.72)  }
+		
+	} else if (sensor == "TM")  {
+		if (spacecraft == "Landsat4") { 
+			ESUN <- c(1957.0, 1825.0, 1557.0, 1033.0, 214.9, NA, 80.72)  
+		}
 		else if (spacecraft == "Landsat5") { ESUN <- c(1957.0, 1826.0, 1554.0, 1036.0, 215.0, NA, 80.67)  }
 		names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4", "BAND5","BAND6","BAND7")
-	}
-	else if (sensor == "ETM+")    { 
+		
+	} else if (sensor == "ETM+")    { 
 		if (spacecraft == "Landsat7")  { 
 			ESUN <- c(1969.0, 1840.0, 1551.0, 1044.0, 225.7, NA, NA, 82.07, 1368.00) 
 			names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4", "BAND5","BAND61","BAND62","BAND7","BAND8")
@@ -306,8 +290,6 @@ dn2temp <- function(x, filename) {
 	#}	
 	return (ESUN)
 }
-
-
 
 
 
