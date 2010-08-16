@@ -1,20 +1,19 @@
-\name{readMetadata}
+\name{landsat}
 
-\alias{readMetadata}
-\alias{readLandsatCPF}
 \alias{landsat}
+\alias{getLandsatCPF}
 
-\title{Read Landsat 5/7 metadata text files}
+\title{Create a Landsat type object from metadata}
+
 \description{
-  Read metadata text file and retrieve sensor related parameters (date/time of satellite overpass, sun elevation angle, sun azimuth angle, etc).
+\code{landsat} reads Landsat 5/7 metadata text files to retrieve sensor related parameters (date/time of satellite overpass, 
+sun elevation angle, sun azimuth angle, etc).
 }
 
 \usage{
-readMetadata(filename)
-readLandsatCPF(sensor, filename)
 landsat(filename) 
+getLandsatCPF(sensor, filename)
 }
-
 
 \arguments{
   \item{sensor}{....}
@@ -22,8 +21,8 @@ landsat(filename)
 }
 
 \value{
-  readMetadata and readLandsatCPF: matrix of names and values	
   landsat: LandsatImage object
+  readLandsatCPF: file
 }
 
 \author{Alice Laborte}
@@ -31,7 +30,6 @@ landsat(filename)
 \examples{
 
 metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
-
 #read Landsat metadata file and get parameters
 img <- landsat(metafile)
 

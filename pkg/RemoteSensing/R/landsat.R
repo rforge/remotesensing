@@ -3,15 +3,15 @@
 #Date: February 2009
 
 #Read metadata text file
-readMetadata <- function(filename) {
+.readMetadata <- function(filename) {
 	meta <- readIniFile(filename)
 	meta <- meta[,-1]
 	meta[,2] <- gsub('\"', "", meta[,2])
 	return(meta)
 }
 
+getLandsatCPF <- function(sensor, filename) {
 #Read the Landsat calibration paramter file (CPF) via ftp
-readLandsatCPF <- function(sensor, filename) {
 	if (sensor == "ETM+")   
 		ftpdir <- "ftp://edclpdsftp.cr.usgs.gov/pub/data/CPF/ETM/"
 	else  
@@ -20,14 +20,15 @@ readLandsatCPF <- function(sensor, filename) {
 	n <- nchar(filename)
 	cpf_filename <- paste(substr(filename, 1, n-3), ".", substr(filename,n-1,n), sep="")
 	download.file(paste(ftpdir, cpf_filename, sep=""), filename)
-	cpf <- readMetadata(filename)
+	cpf <- .readMetadata(filename)
 	return(cpf)
 }
+
 
 #parse Landsat metadata file and extract needed parameters
 landsat <- function(filename) {
 	
-	pars <- readMetadata(filename)
+	pars <- .readMetadata(filename)
 	pathname <- dirname(filename)
 	
 	spacecraft	   			<- pars[pars[,1]=="SPACECRAFT_ID",2]
@@ -79,11 +80,13 @@ landsat <- function(filename) {
 	
 	if (sensor == "ETM+") {			
 		img <- new("LandsatETMp")	
-		img@bands <- stack(c(band_filenames["BAND1"], band_filenames["BAND2"], band_filenames["BAND3"], band_filenames["BAND4"], band_filenames["BAND5"], band_filenames["BAND7"]))
+		img <- addLayer(img,  stack(c(band_filenames["BAND1"], band_filenames["BAND2"], band_filenames["BAND3"], band_filenames["BAND4"], band_filenames["BAND5"], band_filenames["BAND7"])) )
 		img@thermal <- stack(c(band_filenames["BAND61"], band_filenames["BAND62"]))
 		img@panchromatic <- raster(band_filenames["BAND8"])
-	}
-	else {		stop('not done yet')	}			
+		
+	} else {	
+		stop('this function only works for the ETM+ sensor, other sensors to be done later...')
+	}			
 	
 	img@spacecraft	   		<- spacecraft		
 	img@sensor	        	<-  sensor		

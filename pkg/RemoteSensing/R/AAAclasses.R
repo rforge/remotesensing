@@ -2,8 +2,7 @@
 # Date: February 2009
 
 
-
-setClass('SatelliteImage',
+setClass('SatelliteImage', contains=c('RasterStack', 'VIRTUAL'), 
 	representation (
 		spacecraft = 'character',
 		sensor = 'character',
@@ -13,20 +12,17 @@ setClass('SatelliteImage',
 		sun_azimuth = 'numeric',
 		zone = 'character',
 		band_filenames = 'vector',
-		meta_filename = 'character',
-		bands = 'RasterStack'
+		meta_filename = 'character'
 	),
 	prototype (
 	)
 )
 
-
-
-setClass('Landsat',  contains=c('RasterStack', 'SatelliteImage', 'VIRTUAL'),	
+setClass('Landsat',  contains=c('SatelliteImage', 'VIRTUAL'),	
 	representation (
-		cpf_filename =  'character',		
+		cpf_filename = 'character',		
 		product_creation_date = 'character',		
-		lmax = 'vector',		
+		lmax	= 'vector',		
 		lmin 	= 'vector',		
 		qcalmax = 'vector',		
 		qcalmin = 'vector'	
@@ -38,38 +34,32 @@ setClass('Landsat',  contains=c('RasterStack', 'SatelliteImage', 'VIRTUAL'),
 
 setClass('LandsatMSS', contains='Landsat',
 	representation (
-
 	),
 )
 
 
 setClass('LandsatTM', contains='Landsat',
 	representation (
-		thermalband = 'RasterLayer'
-	
+		thermal = 'RasterLayer'
 	),
 )
 
 setClass('LandsatETMp', contains='Landsat',
 	representation (
-		thermal = 'RasterStack',
+		thermal = 'RasterStackBrick',
 		panchromatic = 'RasterLayer'
 	),
 )
 
 
-
-
-setClass('Aster', contains=c('RasterStack', 'SatelliteImage'),
+setClass('Aster', contains='Landsat',
 	representation (
-		
 	),
 )
 
 
-setClass('Modis', contains=c('RasterStack', 'SatelliteImage'),
+setClass('Modis', contains='SatelliteImage',
 	representation (
-		
 	),
 )
 
@@ -86,4 +76,9 @@ setClass('ModisTimeSeries',
 	),
 )
 
+
+setClass('Avhrr', contains='SatelliteImage',
+	representation (
+	),
+)
 
