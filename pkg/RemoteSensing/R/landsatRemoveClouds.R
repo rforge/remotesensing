@@ -1,4 +1,4 @@
-# Authors: Alice Laborte
+# Authors: Alice Laborte & Robert Hijmans
 # International Rice Research Institute
 # Date: March 2009
 
@@ -8,15 +8,17 @@
 #remove clouds using Landsat TM/ETM+ refstack and thermal band
 
 removeClouds <- function (x, filename='', ...) {
-	cloudMask <- cloudMask(x)
+	cloudMask <- .cloudMask(x)
 	nocloudM <- reclass(cloudMask, c(NA,NA,1))
- 	return(mask(x, nocloudM))
+	y <- mask(x, nocloudM)
+	x@layers <- stack(y)@layers
+ 	return(x)
 }
 
 
 
 #Create cloud mask for Landsat 7 (ETM+) image
-cloudMask <- function (x) {
+.cloudMask <- function (x) {
 
 	if ( inherits(x, 'LandsatETMp') ) {
 		band6 <- disaggregate(raster(x@thermal, 1), fact=2)
@@ -138,13 +140,15 @@ cloudMask <- function (x) {
 		if (inMemory(ct)) {
 			ct[ct==0] <- NA
 		} 
-		band6P2 	<- overlay(band6All, ct, fun=function(x,y){ return(x*y) })
-		cloudU 		<- band6P2 < tU & band6P2 >= tL
+		# band6P2 	<- overlay(band6All, ct, fun=function(x,y){ return(x*y) })
+		band6P2 <- band6All * ct
+		cloudU  <- band6P2 < tU & band6P2 >= tL
 		NAvalue(cloudU) <- 0
 		if (inMemory(cloudU)) {
 			cloudU[cloudU==0] <- NA
 		}
-		band6U	 	<- overlay(band6P2, cloudU, fun=function(x,y){ return(x*y) })
+#		band6U	 	<- overlay(band6P2, cloudU, fun=function(x,y){ return(x*y) })
+		band6U	 	<- band6P2 * cloudU
 		band6UProb 	<- cellStats(band6U, 'sum') / ncellInput
 		
 		cloudL 		<- band6P2 < tL
@@ -152,16 +156,26 @@ cloudMask <- function (x) {
 		if (inMemory(cloudL)) {
 			cloudL[cloudL==0] <- NA
 		}
-		band6L	 	<- overlay(band6P2, cloudL, fun=function(x,y){ return(x*y) })
+		#band6L	 	<- overlay(band6P2, cloudL, fun=function(x,y){ return(x*y) })
+		band6L	 	<- band6P2 * cloudL
 		band6LProb 	<- cellStats(band6L, 'sum')/ncellInput
 		mband6U 	<- cellStats(band6U, 'mean')
 		if (band6UProb > 0.4 | mband6U > 295 |  snowProp > 0.01) {
 			cloudT 		<- band6P2 < tL
-			band6T	 	<- overlay(band6T, cloudT, fun=function(x,y){ return(x*y) })
-			NAvalue(band6T) <- 0
+			 
+			#band6T 	<- band6P2  * cloudT
+			
+			#band6T 	was missing here. What should it be???
+			#based on the above, presumably
+			band6T 	<- band6P2  * cloudT
+			# and we no longer need:
+			#band6T	 	<- overlay(band6T, cloudT, fun=function(x,y){ return(x*y) })
 			if (inMemory(band6T)) {
 				band6T[band6T==0] <- NA
+			} else {
+				NAvalue(band6T) <- 0
 			}
+
 			band6TProb 	<- cellStats(band6T, 'sum')/ncellInput
 			
 			if (band6UProb > 0.4 | mband6U > 295) {
