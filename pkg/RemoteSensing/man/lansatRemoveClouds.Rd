@@ -1,26 +1,20 @@
 \name{removeClouds}
-\alias{applyMask2Stack}
-\alias{cloudMask}
+
 \alias{removeClouds}
 
 \title{Remove clouds}
 \description{
-  Create cloud mask and remove clouds from  Landsat TM/ETM+ images.
+Remove clouds from a Landsat TM/ETM+ image.
 }
 
 \usage{
-removeClouds(refstack, traster, filename)
-cloudMask (refstack, traster) 
-applyMask2Stack (rstack, mask, filename)
+removeClouds(x, filename='', ...)
 }
 
-
 \arguments{
-  \item{refstack}{RasterStack of reflectance values}
-  \item{traster}{Temperature raster: Band61 for Landsat ETM+, Band 6 for Landsat TM calibrated to temperature values in K}
-  \item{rstack}{RasterStack to be masked}
-  \item{mask}{mask}
-  \item{filename}{output filename}
+  \item{x}{Landsat object with callibrated reflectance and thermal values}
+  \item{filename}{output filename (optional) }
+  \item{...}{additional arguments passed on to writeRaster}  
 }
 
 
@@ -28,25 +22,25 @@ applyMask2Stack (rstack, mask, filename)
 \url{http://landsathandbook.gsfc.nasa.gov/handbook/pdfs/ACCA_SPIE_paper.pdf} 
 }
 
+\value{
+RasterLayer
+}
+
 \author{Alice Laborte}
 
 \examples{
-setwd(dirname(system.file("external/.", package="RemoteSensing")))
-metafile <- "L71129046_04620080329_MTL.txt"
 
-#read Landsat metadata file and get parameters
+#create Landsat object from metadata file (that has the necessary parameters)
+metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
 img <- landsat(metafile)
 
-#calculate reflectance and save output in ref.stk; individual bands are stored as ref_BAND1, ref_BAND2, etc
-ref <- dn2ref(img, "ref")
-
-#calculate temperature from thermal bands; output is saved on disk
-temp <- dn2temp(img, "temp")
-temp1 <- raster(temp,1)
+#calculate reflectance
+img <- dn2ref(img)
+#calculate temperature
+img <- dn2temp(img)
 
 #mask out clouds
-newref <- removeClouds (ref, temp1, "masked") 
-
+masked <- removeClouds(img)
 }
 
 \keyword{spatial}

@@ -1,6 +1,7 @@
-# Authors: Alice Laborte & Yann Chemin
+# Authors: Alice Laborte, Yann Chemin, Robert Hijmans
 # International Rice Research Institute
-#Date: February 2009
+# Date: February 2009
+# version 2, August 2010
 
 # Landsat and ASTER Calibration
 # Conversion of DN to radiance and to reflectance
@@ -28,7 +29,7 @@ dn2rad <- function(x, filename='', ...) {
 		stop('This object has already been callibrated')
 	}
 
-	gb 			<- .getGainBias(x)
+	gb		<- .getGainBias(x)
 	gain	<- gb[, "gain"][layerNames(x)]
 	bias	<- gb[, "bias"][layerNames(x)]
 
@@ -82,16 +83,29 @@ dn2ref  <- function( x, filename='', ... ) {
 	x@callibrated <- TRUE
 	x@callibration <- 'reflectance'
 	
-	return(radiance)
+	return(x)
 }
 
 
 #Conversion of DN to temperature
 dn2temp <- function(x, filename='', ...) {
-	if (x@callibrated) {
-		stop('This object has already been callibrated')
+
+	if (! inherits(x, 'Landsat')) {
+		stop('only available for Landsat objects')	
 	}
 
+	if (x@sensor == "ETM+") {
+		b <- c("BAND61","BAND62")
+	} else if (x@sensor  == "TM") {
+		b <- "BAND6"  
+	} else {
+		stop('not done yet')
+	}
+
+	if (x@thermal_callibrated) {
+		stop('This object has already been callibrated')
+	}
+	
 	K_landsat <- function(spacecraft, sensor) {
 	#Landsat thermal calibration constants K1, K2
 		if (spacecraft == "Landsat4" & sensor == "TM") { K <-  c(671.62, 1284.3) }
@@ -101,19 +115,22 @@ dn2temp <- function(x, filename='', ...) {
 		return (K)
 	}
 
-	if (! inherits(x, 'Landsat')) {
-		stop('only available for Landsat objects')	
-	}
-
 	K <- K_landsat(x@spacecraft, x@sensor)
 
-	temp <- dn2rad(x)
+	gb		<- .getGainBias(x)
+	gain	<- gb[, "gain"][b]
+	bias	<- gb[, "bias"][b]
+
+	# radiance	
+	temp <- calc(x@thermal, function(x){ (x * gain + bias) } )
+
 	temp <- calc(temp, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename=filename, ...)
-	temp <- stack(temp)
+	if (x@sensor == "ETM+") {
+		temp <- stack(temp)
+	} 
 	
-	x@layers <- temp@layers
-	x@callibrated <- TRUE
-	x@callibration <- 'temperature'
+	x@thermal <- temp
+	x@thermal_callibrated <- TRUE
 	
 	return(x)
 }
@@ -302,7 +319,7 @@ dn2temp <- function(x, filename='', ...) {
 
 ### not used ?
 
-.rad2ref <- function(radiance, ds, sun_elevation, ESUN) {
+..rad2ref <- function(radiance, ds, sun_elevation, ESUN) {
 # not used?
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
 	xfac <- (pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
@@ -312,7 +329,7 @@ dn2temp <- function(x, filename='', ...) {
 	return (reflectance)
 }
 
-.rad2temp <- function(radiance_thermal, K) {
+..rad2temp <- function(radiance_thermal, K) {
 ## not used ?
 #Calculate surface temperature for Landsat 
 	return(K[2] / (log ((K[1] / radiance_thermal) + 1.0)))

@@ -44,15 +44,23 @@ setClass('LandsatMSS', contains='Landsat',
 
 setClass('LandsatTM', contains='Landsat',
 	representation (
-		thermal = 'RasterLayer'
+		thermal = 'RasterLayer',
+		thermal_callibrated = 'logical'
 	),
+	prototype (
+		thermal_callibrated = FALSE
+	)
 )
 
 setClass('LandsatETMp', contains='Landsat',
 	representation (
 		thermal = 'RasterStackBrick',
-		panchromatic = 'RasterLayer'
+		panchromatic = 'RasterLayer',
+		thermal_callibrated = 'logical'
 	),
+	prototype (
+		thermal_callibrated = FALSE
+	)	
 )
 
 

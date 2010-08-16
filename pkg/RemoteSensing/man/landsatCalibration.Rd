@@ -28,7 +28,7 @@ dn2rad(x, filename='', ...)
 A callibrated Landsat object.
 }
 
-\author{Alice Laborte and Yann Chemin}
+\author{Alice Laborte, Yann Chemin, Robert Hijmans}
 
 \examples{
 metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
@@ -38,7 +38,7 @@ img <- landsat(metafile)
 
 #calculate reflectance and save output as a RasterStack (ref.stk);
 #individual bands are stored as RasterLayers ref_BAND1, ref_BAND2, etc
-ref <- dn2ref(img, "ref")
+ref <- dn2ref(img, filename="reflection.tif")
 
 # true color:
 # plotRGB(ref, 3,2,1, scale=0.36)
