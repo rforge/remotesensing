@@ -8,6 +8,8 @@
 #remove clouds using Landsat TM/ETM+ refstack and thermal band
 
 removeClouds <- function (x, filename='', ...) {
+
+
 	cloudMask <- .cloudMask(x)
 	nocloudM <- reclass(cloudMask, c(NA,NA,1))
 	y <- mask(x, nocloudM)
@@ -20,13 +22,18 @@ removeClouds <- function (x, filename='', ...) {
 #Create cloud mask for Landsat 7 (ETM+) image
 .cloudMask <- function (x) {
 
-	if ( inherits(x, 'LandsatETMp') ) {
-		band6 <- disaggregate(raster(x@thermal, 1), fact=2)
-		band6 <- crop(band6, extent(x))
-	} else {
+	if ( ! inherits(x, 'LandsatETMp') ) {
 		stop('only implemented for ETM+')
 	}
 
+	if (! x@thermal_callibrated & x@callibrated & x@callibration='reflectance')  {
+		stop('not a callibrated image')
+	}
+
+	band6 <- disaggregate(raster(x@thermal, 1), fact=2)
+	band6 <- crop(band6, extent(x))
+	
+	
 #Pass 1
 	band2 	   <- raster(x,2)
 	band3 	   <- raster(x,3)
