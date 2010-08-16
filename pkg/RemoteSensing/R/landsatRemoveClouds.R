@@ -26,7 +26,7 @@ removeClouds <- function (x, filename='', ...) {
 		stop('only implemented for ETM+')
 	}
 
-	if (! x@thermal_callibrated & x@callibrated & x@callibration='reflectance')  {
+	if (! x@thermal_callibrated & x@callibrated & x@callibration=='reflectance')  {
 		stop('not a callibrated image')
 	}
 
