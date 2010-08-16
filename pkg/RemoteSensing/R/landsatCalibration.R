@@ -29,8 +29,12 @@ dn2rad <- function(x, filename='', ...) {
 	}
 
 	gb 			<- .getGainBias(x)
-	gain		<- gb[, "gain"]
-	bias		<- gb[,"bias"]
+	gain	<- gb[, "gain"][layerNames(x)]
+	bias	<- gb[, "bias"][layerNames(x)]
+
+	if (length(gain) != nlayers(x)) {
+		stop('length(gain) != nlayers(x)')
+	}
 	radiance 	<- calc(x, function(x){ (x * gain + bias) }, filename=filename, ... )
 
 	x@callibrated <- TRUE
@@ -57,11 +61,15 @@ dn2ref  <- function( x, filename='', ... ) {
 		return ( 1.0 + 0.01672 * sin( 2 * pi * ( doy - 93.5 ) / 365 ) )
 	}
 	
-	gb 			<- .getGainBias(x)
-	gain		<- gb[, "gain"]
-	bias		<- gb[, "bias"]
+	gb 		<- .getGainBias(x)
+	gain	<- gb[, "gain"][layerNames(x)]
+	bias	<- gb[, "bias"][layerNames(x)]
 
-	ESUN	<- .esun(x@spacecraft, x@sensor)
+	if (length(gain) != nlayers(x)) {
+		stop('length(gain) != nlayers(x)')
+	}
+	
+	ESUN	<- .esun(x@spacecraft, x@sensor)[layerNames(x)]
 	doy 	<- as.integer(format(as.Date(x@acquisition_date),"%j"))
 	ds		<- getDS(doy)
 	xfac 	<- (pi * ds * ds) / (ESUN * cos ((90 - x@sun_elevation)* pi/180))
@@ -99,12 +107,11 @@ dn2temp <- function(x, filename='', ...) {
 
 	K <- K_landsat(x@spacecraft, x@sensor)
 
-	radiance 	<- dn2rad(x)
-	temp		<- calc(radiance, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename=filename, ...)
-	temp_stk	<- addLayer(temp_stk, temp)
-
-	radiance <- stack(radiance)
-	x@layers <- radiance@layers
+	temp <- dn2rad(x)
+	temp <- calc(temp, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename=filename, ...)
+	temp <- stack(temp)
+	
+	x@layers <- temp@layers
 	x@callibrated <- TRUE
 	x@callibration <- 'temperature'
 	
