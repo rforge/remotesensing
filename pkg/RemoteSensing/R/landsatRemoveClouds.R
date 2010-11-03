@@ -20,7 +20,7 @@ removeClouds <- function (x, filename='', ...) {
 
 
 #Create cloud mask for Landsat 7 (ETM+) image
-.cloudMask <- function (x) {
+.cloudMask <- function(x) {
 
 	if ( ! inherits(x, 'LandsatETMp') ) {
 		stop('only implemented for ETM+')
@@ -197,12 +197,19 @@ removeClouds <- function (x, filename='', ...) {
 				cloudMask <- (cloudFilter == 1) + (cloudL == 1) + (cloudU == 1)
 				cloudMask <- cloudMask > 0
 			}
-		}
+		} else {
+			## WHAT GOES HERE ??? 
+			## just a guess, needs to be checked
+			cloudMask <- coldCloud
+			
 		
+		}
 	} else {
 		#pass two is bypassed
 		cloudMask <- coldCloud
 	}
+	
+	cat(class(cloudMask))
 	
 	#majority analysis on 0 values in cloudMask
 	maj <- focal(cloudMask, fun=modal, ngb=3, keepdata=TRUE)
