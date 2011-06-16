@@ -32,9 +32,9 @@ ndwi <- function(nir, swir2) {
 }
 
 
-lswi<-function(nir, swir) {
+lswi<-function(nir, swir1) {
  #LSWI: Land Surface Water Index
-	result <- (nir - swir) / (nir + swir)
+	result <- (nir - swir1) / (nir + swir1)
 	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
 	result[result > 1] <- 1

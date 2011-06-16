@@ -18,7 +18,7 @@
 ndwi(nir, swir2) 
 nddi(ndvi, ndwi)
 drought(ndvi, ndwi)
-lswi(nir, swir) 
+lswi(nir, swir1) 
 water(ndvi, albedo) 
 waterModis(ndvi, band7) 
 }

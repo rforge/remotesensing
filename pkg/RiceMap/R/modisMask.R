@@ -18,7 +18,7 @@
 #	pixel[pixel > 1] <- 0
 #	return(pixel)
 #}
-
+                                      
 # Cloud shadow mask
 #.cloudShadow <- function (pixel) {
 #	pixel <- modis.sqa500b(pixel)
@@ -52,20 +52,45 @@
 #}
 
 #second snow mask
-.snowMask2 <- function(nir, ndsi) {
-	res <- rep(NA, length(nir))
-	res [!((nir > 0.11) & (ndsi > 0.40))]<- 1
+snow2 <- function(ndsi, nir) {
+    res <- rep(NA, length(ndsi))
+	res [!((nir > 0.11) & (ndsi > 0.40))] <- 1
 	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
-	res[is.na(res)] <- -15
+#	res[is.na(res)] <- -15
 	return(res)
 }
 
-.snowMask3 <- function(nir, green, ndsi) {
-	res <- rep(NA, length(nir))
+snow3 <- function(ndsi, green, nir) {
+	res <- rep(NA, length(ndsi))
 	res [!((nir > 0.10) & (green > 0.10) & (ndsi >= 0.40))]<- 1
 	res[(nir > 0.10) & (green > 0.10) & (ndsi >= 0.40)] <- 0
-	res[is.na(res)] <- -15
+#	res[is.na(res)] <- -15
 	return(res)
+}
+
+cloud <- function(b03){    
+    return(.cloudMask(b03))
+}
+
+water <- function(state_500m){    
+    return(.waterMask(state_500m))    
+}
+
+snow <- function(state_500m){    
+    return(.snowMask(state_500m))    
+}
+
+modis.mask <- function(modvals, masks){
+    # check mask values
+    #
+    #
+    masks <- as.matrix(masks)
+    for (i in 1:ncol(masks)){
+        vals <- unique(masks[,i])
+        if (sum(vals %in% c(0,1,NA))<length(vals)) stop("Invalid values found. Masks can only be 0, 1 or NA.")
+        if(min(masks[,i], na.rm=TRUE)!=max(masks[,i], na.rm=TRUE) | min(masks[,i], na.rm=TRUE)==0) modvals <- modvals*masks[,i]
+    }
+    return(modvals)
 }
 
 modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){

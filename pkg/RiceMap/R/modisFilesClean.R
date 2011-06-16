@@ -9,7 +9,7 @@ modisFilesClean <- function(path, pat) {
 	x <- strsplit(f, '_')
 	#m <- matrix(, length(x), length(x[[1]]))
 	#m <- matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f))
-    try(m <- (matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f), byrow=TRUE)))
+    m <- try((matrix(unlist(x), ncol=length(x[[1]]), nrow=length(f), byrow=TRUE)))
 	m <- as.data.frame(m[,-4],stringsAsFactors=FALSE)
 	m <- cbind(m,f)
 	colnames(m) <- c('date', 'zone', 'band', 'filename')	

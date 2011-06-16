@@ -1,19 +1,26 @@
-# Authors: Robert J. Hijmans, Sonia Asilo
+# Authors: Robert J. Hijmans, Sonia Asilo, Jorrel Khalil Aunario
 # Date :  Feb 2009
 # Version 0,1
 # Licence GPL v3
 
 
-modisFiles <- function(path) {
-	f <- list.files(path=path, pattern='.tif')
-	x <- strsplit(f, "\\.")
-	try(m <- cbind((matrix(unlist(x), ncol=length(x[[1]]), byrow=TRUE)),f))
-	if (ncol(m) != 9) { 
+modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'version', 'proddate', 'band', 'format'),...) {
+    filename <- list.files(...)
+    dirs <- list.dirs(...)
+    #remove directories from list
+    filename <- filename[!basename(filename) %in% basename(dirs)]
+	info <- sub(".hdf","",basename(filename))
+	
+	x <- unlist(strsplit(info, sep))
+	m <- as.data.frame(matrix(x, ncol=length(modisinfo), byrow=TRUE))
+	if (ncol(m) != length(modisinfo)) { 
         stop('oops, non standard filenames found') 
     }
-	m <- as.data.frame(m[,-c(4,6,8)], stringsAsFactors=FALSE)
-	colnames(m) <- c('prod1', 'date', 'zone', 'prod2', 'band', 'filename')
-	m$band <- substr(m$band, 10, 12)
+    colnames(m) <- modisinfo
+    year <- as.numeric(substr(m$acqdate,2,5))
+    doy <- as.numeric(substr(m$acqdate,6,8))
+	m <- cbind(filename,year, doy, as.data.frame(m))
+	m$band <- sub("sur_refl_","",m$band)
 	return(m)
 }
 

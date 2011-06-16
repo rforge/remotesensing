@@ -4,16 +4,53 @@
 # Version 0,1
 # Licence GPL v3
 
-
-modisClean <- function(inpath, format="raster", tiles="all", snowx=TRUE){
+modis.clean <- function(modfiles, masklist, modisdate, scalebands=c("b01", "b02", "b03", "b04", "b05", "b06", "b07"), scalemultiplier=0.0001, incmask=TRUE, verbose=TRUE){
+        
+    files <- modfiles[modfiles$acqdate==modisdate,]
+	bands <- stack(files$filename)
+	NAvalue(bands) <- -28672
+	
+    bandsval <- values(bands)
+	colnames(bandsval) <- files$band
+	
+    bandsval[,colnames(bandsval) %in% scalebands] <- bandsval[,colnames(bandsval) %in% scalebands]*scalemultiplier 	
+	masks <- modis.compute(as.data.frame(bandsval), funlist=masklist)
+    bandsval[,-ncol(bandsval)] <- modis.mask(bandsval[,-ncol(bandsval)],masks) 
     
-    outpath <- paste(inpath,"/../clean",sep="")
+    if(incmask){         
+        bandsval <- as.data.frame(cbind(bandsval[,-ncol(bandsval)],masks))
+    }
+    colnames(bandsval) <- paste(colnames(bandsval),"clean",sep=".")
+    mdata <- new("modis.data")
+        mdata@product <- files$product[1]
+        mdata@acqdate <-  files$acqdate[1]
+        mdata@zone <- files$zone[1]
+        mdata@version <- files$version[1]
+        mdata@proddate <- files$proddate[1]
+        mdata@projection <- projection(bands)
+        mdata@extent <- extent(bands)
+        mdata@ncols <- ncol(bands)
+        mdata@nrows <- nrow(bands)
+        mdata@imgvals <- bandsval
+     
+	if(verbose){
+        cat (modisdate, " -------------------- DONE -------------------- \n")
+        flush.console()	
+    }
+    rm(masks,bands,bandsval)
+    gc()
+    return(mdata)  
+}
+
+modisClean <- function(inpath, format="raster", tiles="all", snowx=TRUE, outpath=paste(inpath,"../clean",sep="/")){
+    
+    #outpath <- paste(inpath,"/../clean",sep="")
     if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
            
 	FltNA <- -9999.0
     IntNA <- -15
     
-    m <- modisFiles(inpath, pat=".*.tif")
+    m <- modisFiles(path=inpath)
     avtiles <- unique(m$zone)
     
     # processing of all tiles in a directory
@@ -30,8 +67,9 @@ modisClean <- function(inpath, format="raster", tiles="all", snowx=TRUE){
 		cat("Processing tile:", tile, "\n")
         flush.console()
         
-        dates <- unique(m$date[m$zone==tile])
-        
+        batch <- m[m$zone==tile,]
+        dates <- unique(batch$acqdate)
+
         for (d in dates){
             dlab <- paste("Date ", d, ":", sep ="")
             fname <- paste(outpath, "/", d, "_", tile, "_", sep="")
@@ -40,7 +78,7 @@ modisClean <- function(inpath, format="raster", tiles="all", snowx=TRUE){
             cat(dlab, "Calculating masks. \r")
 			flush.console()
 
-			qfile <- paste(inpath,batch$filename[batch$band=="sta"], sep="/")
+			qfile <- paste(inpath,batch$filename[batch$band=="state_500m"], sep="/")
 			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
 			#b <- subset(mm, mm$date == d & mm$band != "sta")
 			rq <- raster(qfile)

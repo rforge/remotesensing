@@ -31,9 +31,17 @@ rescale <- function(x, oldmin, oldmax, newmin, newmax){
 
 formatExt <- function(myformat){
     ext <- rep(NA, length(myformat))
-    ext[tolower(myformat)=="raster"] <- ".grd"
-    ext[tolower(myformat)=="gtiff"] <- ".tif"
+    ext[tolower(myformat)=="raster"] <- "grd"
+    ext[tolower(myformat)=="gtiff"] <- "tif"
     return(ext)    
+}
+
+force.directories <- function(path,...){
+    
+    if(!file.exists(path)){
+        success <- dir.create(path,...)  
+    } else success <- TRUE
+    return(success)
 }
 
 .rsMessage <- function(msg, newln=FALSE){

@@ -109,3 +109,80 @@ tsInterpolate <- function(imgfiles, targetfolder=NA, rm.interm =TRUE, dataAsInt=
     newraster[] <- nacount
     return(newraster)    
 }
+
+.simple <- function(modisfiles, yr, what="evi", writeto="./smooth", format="GTiff", ...){
+    sdoy <- seq(1,361,by=8)
+    if(!force.directories(writeto)){
+        stop("Cannot create output folder.")
+    }
+    success <- FALSE
+    series <- modisfiles[(modisfiles$year==yr | (modisfiles$year==(yr+1) & modisfiles$doy==1) | (modisfiles$year==(yr-1) & modisfiles$doy==361)),]
+    if(series$year[1]!=(yr-1)|series$year[nrow(series)]!=(yr+1)) {
+        cat("Warning: Last image of",yr-1,"and first image of",yr+1, "not found.")
+        flush.console()
+        sdoy <- sdoy[-c(1,length(sdoy))]
+    }
+    blue <- series[series$band=="b03",]
+    blue <- blue[order(blue$doy),]
+    this <- series[series$band==what,]
+    this <- this[order(this$doy),]
+
+    # check if series is complete
+    for (sd in sdoy){
+        i <- which(blue$doy==sd & blue$year==yr)            
+        b <- raster(blue$filename[i])        
+        w <- raster(this$filename[i])
+        s <- raster(b)        
+        change <- values(b)>=0.18        
+        if(length(change)>0){
+            s[!change] <- w[!change]
+            w0 <- raster(this$filename[i-1])
+            b0 <- raster(blue$filename[i-1])                 
+            w2 <- raster(this$filename[i+1])
+            b2 <- raster(blue$filename[i+1])
+            clear0 <- b0[change]<0.18
+            clear2 <- b2[change]<0.18
+            
+            s[change[clear0 & clear2]] <- (w0[change[clear0 & clear2]]+w2[change[clear0 & clear2]])/2
+            s[change[!clear0 & clear2]] <- w2[change[!clear0 & clear2]]
+            s[change[clear0 & !clear2]] <- w0[change[clear0 & !clear2]]
+            s[change[!clear0 & !clear2]] <- NA
+        } else s <- w
+        fname <- paste(this$product[i], this$acqdate[i], this$zone[i], this$version[i], this$proddate[i], what, "smooth", formatExt(format), sep=".")
+        writeRaster(s,filename=paste(writeto,fname,sep="/"),...)
+        cat(fname,"\n")
+        flush.console()
+    }
+    success <-TRUE     
+    return(success)                       
+}
+
+
+
+modis.smooth <- function(modisfiles, method="simple", ...){
+    if (method=="simple"){
+        return(.simple(modisfiles=modisfiles,...))    
+    } else {
+        stop("Unsupported method")
+    }
+}
+
+#sm <- stack(list.files(path=paste(modispath,"smooth",sep="/"),full.names=TRUE))
+#ns <- stack(list.files(path=paste(modispath,"veg",sep="/"),pattern="evi", full.names=TRUE)[-c(1,46)])
+#wat <- raster(list.files(path=paste(modispath,"veg",sep="/"),pattern="water", full.names=TRUE)[2])
+#cells <- which(wat[]==1)
+
+#rr <- 0
+#for(i in cells){
+#    rw <- rowFromCell(wat,i)
+#    co <- colFromCell(wat,i)
+#    if(rr!=rw){
+#        rr <- rw
+#        ss <- values(sm,rw)
+#        ssn <- values(ns,rw)
+#    }
+#    plot(ss[co,],type="l", col="red")
+#    lines(ssn[co,])
+# Sys.sleep(.5)
+#}
+

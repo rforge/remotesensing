@@ -4,7 +4,28 @@
 # Version 0,1
 # Licence GPL v3
 
+modis.vegindices <- function(modis, indices=c("evi", "ndvi", "ndwi", "lswi", "ndsi"), mask=NULL){
+    reqbands <- c("b01", "b02", "b03", "b04", "b06", "b07")
+    techname <- c("red", "nir", "blue", "green", "swir1", "swir2")
+    
+    if (sum(sub(".clean", "", colnames(modis@imgvals)) %in% reqbands)<6) stop("Incomplete bands") else idx <- match(sub(".clean", "", colnames(modis@imgvals)),reqbands)
+    colnames(modis@imgvals)[idx[!is.na(idx)]] <- techname    
 
+    vegindices <- modis.compute(modis@imgvals,funlist=indices)
+    colnames(vegindices) <- indices
+    if (is.character(mask)){
+        masks <- modis.compute(cbind(modis@imgvals,vegindices),funlist=mask)
+        vegindices <- modis.mask(vegindices,masks)
+        vegindices <- cbind(vegindices,masks)
+        colnames(vegindices) <- c(indices,mask)
+    } 
+    
+    vegindices <- cbind(vegindices, modis.compute(vegindices, funlist=c("flooded1", "flooded2", "flooded3", "drought","persistentwater")))
+    colnames(vegindices) <- paste(colnames(vegindices),"veg",sep=".")
+    rm(masks)
+    gc()        
+    return(vegindices)
+}
 
 modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 	#creation of output director "tif" folder

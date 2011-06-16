@@ -29,6 +29,10 @@ Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not 
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
+modis.Rice <- function(){
+    
+}
+
 modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=NULL){
     
 	# creation of output director "tif" folder
