@@ -4,12 +4,11 @@
 # Licence GPL v3
 
 
-modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'version', 'proddate', 'band', 'format'),...) {
-    filename <- list.files(...)
-    dirs <- list.dirs(...)
-    #remove directories from list
-    filename <- filename[!basename(filename) %in% basename(dirs)]
-	info <- sub(".hdf","",basename(filename))
+modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'version', 'proddate', 'band', 'format'), format="GTiff",...) {
+    
+    filename <- dir(..., pattern=formatExt(format))    
+    
+    info <- sub(".hdf","",basename(filename))
 	
 	x <- unlist(strsplit(info, sep))
 	m <- as.data.frame(matrix(x, ncol=length(modisinfo), byrow=TRUE))

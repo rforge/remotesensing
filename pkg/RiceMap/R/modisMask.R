@@ -99,12 +99,12 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
 	b3 <- raster(b3file)
 	
 	#masks <- data.frame(CloudMask=integer(ncell(rq)), ShadowMask=integer(ncell(rq)), WaterMask=integer(ncell(rq)), SnowMask=integer(ncell(rq)))
-	masks <- data.frame(CloudMask=integer(ncell(rq)), WaterMask=integer(ncell(rq)))
-	masks$CloudMask <- .cloudMask(getValues(b3))
+	masks <- data.frame(cloud.mask=integer(ncell(rq)), water.mask=integer(ncell(rq)))
+	masks$cloud.mask <- .cloudMask(getValues(b3))
 	#masks$ShadowMask <- .cloudShadow(vals)
-    masks$WaterMask <- .waterMask(getValues(rq))
-	masks$SnowMask <- .snowMask(getValues(rq))
-	mask <- masks$CloudMask*masks$WaterMask*masks$SnowMask
+    masks$water.mask <- .waterMask(getValues(rq))
+	masks$snow.mask <- .snowMask(getValues(rq))
+	mask <- masks$cloud.mask*masks$water.mask*masks$snow.mask
     
     #mask <- masks$CloudMask*masks$ShadowMask*masks$WaterMask*masks$SnowMask
     mask[mask==0] <- NA
@@ -117,9 +117,10 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
             dir.create(outdir, recursive=TRUE)
         }
         for(i in 1:length(masks)){
-            band1 <- masks[[i]]
+            band1 <- raster(rq)
+            band1[] <- masks[[i]]
             band1[is.na(band1)] <- 0
-            bfname <- paste(outdir, "/", paste(namecomps[2],namecomps[3],names(masks)[i], sep="_"), ".tif", sep="")
+            bfname <- paste(outdir, "/", paste(namecomps[2],namecomps[3],names(masks)[i], sep="."), ".tif", sep="")
 			band1 <- writeRaster(band1, filename=bfname, overwrite=TRUE, datatype='INT2S', options=c("COMPRESS=LZW", "TFW=YES"))
 		}
     }            
