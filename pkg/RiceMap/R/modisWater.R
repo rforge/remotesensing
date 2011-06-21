@@ -51,7 +51,7 @@ persistentwater <- function(ndvi,lswi){
 	return(res)
 }
 
-drought <- function(NDVI, NDWI) {
-	res <- ((NDVI < 0.5 & NDWI < 0.3)*2) + ((NDVI > 0.6 & NDWI > 0.4)*1)
-	return(res)
-}
+#drought <- function(NDVI, NDWI) {
+#	res <- ((NDVI < 0.5 & NDWI < 0.3)*2) + ((NDVI > 0.6 & NDWI > 0.4)*1)
+#	return(res)
+#}

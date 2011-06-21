@@ -5,13 +5,13 @@
 # Licence GPL v3
 
 
-ricefile.attribs <- function(filename){
+ricefile.attribs <- function(filename, sep="\\."){
     fname <- basename(filename) 
     noExt <- substr(fname, 1, nchar(fname)-4)
     if(length(filename)==1){
-        initattrib <- t(unlist(strsplit(noExt, "_")))    
+        initattrib <- t(unlist(strsplit(noExt, sep)))    
     } else if (length(filename)>1){
-        initattrib <- matrix(unlist(strsplit(noExt, "_")),ncol=3,byrow=TRUE)
+        initattrib <- matrix(unlist(strsplit(noExt, sep)),ncol=4,byrow=TRUE)
     }
     attribs <- cbind(as.numeric(substr(initattrib[,1],2,5)), as.numeric(substr(initattrib[,1],6,8)))
     colnames(attribs) <- c("year", "doy")
@@ -24,9 +24,9 @@ ricefile.attribs <- function(filename){
 }
 
 validationFiles <- function(path, informat="GTiff"){
-    floodfiles <- list.files(path, pattern=paste("flooded",formatExt(informat),sep=""))
-    ndvifiles <- list.files(path, pattern=paste("ndvi.cleaned",formatExt(informat),sep=""))
-    evifiles <- list.files(path, pattern=paste("evi.cleaned",formatExt(informat),sep=""))
+    floodfiles <- list.files(path, pattern=paste("flood",formatExt(informat),sep=".*."))
+    ndvifiles <- list.files(path, pattern=paste("ndvi",formatExt(informat),sep=".*."))
+    evifiles <- list.files(path, pattern=paste("evi",formatExt(informat),sep=".*."))
     if(length(floodfiles)!=length(ndvifiles) & length(floodfiles)!=length(evifiles)) {
         stop("Incomplete data")
     }
@@ -51,7 +51,7 @@ rmColumn <- function(mat, colnum){
     return(mat)
 }
 
-validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff", valscale=10000){
+validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff", valscale=1){
     outpath <- paste(inpath, "../rice_new", sep="/")
     ricepath <- paste(inpath, "../rice", sep="/")
     if (!file.exists(outpath)) dir.create(outpath, recursive=TRUE)
@@ -59,6 +59,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
     if (is.na(filext)){
         stop("Invalid input format")
     }
+    #vfiles <- modisFiles(path=inpath, modisinfo=c("acqdate","zone","band","process","format"))
     vfiles <- validationFiles(inpath,informat)
     if (year=="All"){
         years <- unique(vfiles$year) 
@@ -72,7 +73,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             .rsMessage(paste("Data from last image from previous year not available.\nWill start on first image of year ", y, ".",sep=""), newln=TRUE)
             st <- 1            
         }
-        perhaps <- paste(ricepath, paste("perhapsrice_", vfiles$tile[1], "_", y, filext, sep=""), sep="/")
+        perhaps <- paste(ricepath, paste("perhapsrice_", vfiles$tile[1], "_", y, ".", filext, sep=""), sep="/")
         pr <- raster(perhaps)
             
         counts <- vector(length=length(st:en))
@@ -111,25 +112,34 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             ave611 <- rowMeans(evi12[,6:11], na.rm=TRUE)
             .rsMessage("Determining rice pixels.")
             ricet1 <- max5>=max12
-            ricet2 <- ave611>=0.35
+            ricet2 <- ave611>=0.2
             rice <- fld[fpix] & ricet1 & ricet2
             counts[i-st+1] <- length(which(rice==1))
             rvals <- rep(NA,ncell(fld))
             rvals[fpix] <- as.numeric(rice)
             overall <- rowSums(cbind(overall,rvals), na.rm=TRUE)
             .rsMessage("Writing rice map to disk.")
-            ricegrid <- raster2SGDF(fld,rvals)
-            writeGDAL(ricegrid, paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
+            ricegrid <- setValues(fld,rvals)
+            writeRaster(ricegrid, filename=paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), datatype="INT2S", overwrite=TRUE)
+            #writeGDAL(ricegrid, paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
             .rsMessage(paste("Done.", counts[i-st+1],"rice pixels found.\n"))
             rm(ricegrid,rice, max5, max12, ave611, ricet1, ricet2, rvals,evi12)
             gc(verbose=FALSE)
         }
-        totalrice <- raster2SGDF(fld,overall)
-        writeGDAL(totalrice, paste(outpath,paste(y,"totalrice.tif", sep="_"),sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
+        totalrice <- setValues(fld,overall)
+        writeRaster(totalrice, filename=paste(outpath,paste(y,"totalrice.tif", sep="_"),sep="/"), format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), datatype="INT2S", overwrite=TRUE)
+        #writeGDAL(totalrice, paste(outpath,paste(y,"totalrice.tif", sep="_"),sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
         ricepix <- as.numeric(overall>0)
-        riceofyear <- raster2SGDF(fld, vals=ricepix)
-        writeGDAL(riceofyear, paste(outpath,paste(y,"riceofyear.tif", sep="_"),sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
+        riceofyear <- setValues(fld, ricepix)
+        writeRaster(riceofyear, filename=paste(outpath,paste(y,"riceofyear.tif", sep="_"),sep="/"), format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), datatype="INT2S", overwrite=TRUE)
+        #writeGDAL(riceofyear, paste(outpath,paste(y,"riceofyear.tif", sep="_"),sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
+        if (!is.null(dev.list())) x11()
+        if(require(grDevices)){
+            barplot(counts, names.arg=vfiles$doy[st:en+1], main="Count of identified rice pixels per DOY")
+            savePlot(filename=paste(outpath,paste(y,"npix_riceplot.png", sep="_"),sep="/"), type="png")    
+        } else {
+            .rsMessage(paste("Package grDevices not found. Cannot save barplot.\n"))
+        } 
     }
-    if (!is.null(dev.list())) x11()
-    barplot(counts, names.arg=vfiles$doy[st:en+1])
+    
 }

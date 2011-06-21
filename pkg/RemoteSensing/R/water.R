@@ -17,10 +17,8 @@ nddi <- function(ndvi, ndwi) {
 drought <- function(ndvi, ndwi) {
 # DROUGHT where drought = 1, no drought=0
 	res <- ((ndvi < 0.5 & ndwi < 0.3)*2) + ((ndvi > 0.6 & ndwi > 0.4)*1) - 1
-	return(! res)
+	return(!res)
 }
-
-
 
 ndwi <- function(nir, swir2) {
 # NDWI: Normalized Difference Water Index

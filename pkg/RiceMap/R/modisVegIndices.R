@@ -103,10 +103,10 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
             flush.console()
             
             indices <- list()			
-            indices$ndvi.cleaned <- ndvi(vred,vnir)
-			indices$lswi.cleaned <- lswi(vnir,vswir1)
-			indices$evi.cleaned <- evi(vblue, vred, vnir)
-			indices$ndwi.cleaned <- ndwi(vnir, vswir2)
+            indices$ndvi.veg <- ndvi(vred,vnir)
+			indices$lswi.veg <- lswi(vnir,vswir1)
+			indices$evi.veg <- evi(vblue, vred, vnir)
+			indices$ndwi.veg <- ndwi(vnir, vswir2)
 				
 			# masking of VIs
 			cat (dlab, "masking vegetation indices.   \r")
@@ -127,19 +127,19 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 			#snowmask[snowmask==IntNA] <- NA	
 			#snowmask[snowmask==0] <- NA
 			
-            #indices$ndvi.cleaned <- indices$ndvi.cleaned*bluemask*snowmask
-			#indices$lswi.cleaned <- indices$lswi.cleaned*bluemask*snowmask
-			#indices$evi.cleaned <- indices$evi.cleaned*bluemask*snowmask
-			#indices$ndwi.cleaned <- indices$ndwi.cleaned*bluemask*snowmask
-			#indices$nddi.cleaned <- nddi(indices$ndvi.cleaned, indices$ndwi.cleaned)
+            #indices$ndvi.veg <- indices$ndvi.veg*bluemask*snowmask
+			#indices$lswi.veg <- indices$lswi.veg*bluemask*snowmask
+			#indices$evi.veg <- indices$evi.veg*bluemask*snowmask
+			#indices$ndwi.veg <- indices$ndwi.veg*bluemask*snowmask
+			#indices$nddi.veg <- nddi(indices$ndvi.veg, indices$ndwi.veg)
             
 			# writing of flooded,permanent water and drought
 			cat (dlab, "Computing drought, flooded, and permanent water \r")
             flush.console()
             maps <- list()				
-			maps$flooded <- flooded1(indices$lswi.cleaned,indices$ndvi.cleaned,indices$evi.cleaned)
-			maps$permanent <- persistentwater(indices$ndvi.cleaned,indices$lswi.cleaned)
-			maps$drought <- drought(indices$ndvi.cleaned,indices$ndwi.cleaned)
+			maps$flooded.veg <- flooded1(indices$lswi.veg,indices$ndvi.veg,indices$evi.veg)
+			maps$permanent.veg <- persistentwater(indices$ndvi.veg,indices$lswi.veg)
+			maps$drought.veg <- drought(indices$ndvi.veg,indices$ndwi.veg)
 			
 			cat (dlab, "Writing output files.                           \r")
             flush.console()

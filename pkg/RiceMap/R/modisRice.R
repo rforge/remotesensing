@@ -33,7 +33,13 @@ modis.Rice <- function(){
     
 }
 
-modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=NULL){
+Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
+Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
+Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not forest =0
+Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
+# Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
+
+modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscale=NULL){
     
 	# creation of output director "tif" folder
 	outpath <- paste(inpath,"/../rice",sep="")
@@ -50,11 +56,16 @@ modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=N
         stop(paste("Input format", informat, "not supported."))
     }   
 	
-    if (format != "raster"){
+	if (outformat=="raster"){
+        outext <- ".grd"
+    } else if (outformat=="GTiff"){
         if (!require(rgdal)) stop("rgdal loading failed")
+        outext <- ".tif"
         opts <- c("COMPRESS=LZW", "TFW=YES")
     } else {
-        opts <- ''
+        cat(paste("Unsupported output format '", outformat, "'. Will write files in raster instead.", sep=""))
+        outext <- ".grd"
+        outformat <- "raster"                
     }
 
     # processing of all tiles in a directory
@@ -71,7 +82,7 @@ modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=N
         
 		# file reading
 		pat <- paste(tile, ".*", inext, sep="")
-        m <- modisFilesClean(inpath, pat)
+        m <- modisFiles(path=inpath, modisinfo=c("acqdate","zone","band","process", "format"))
 		m$filename <- paste(inpath, m$filename, sep="/")
         years <- unique(m$year[m$zone==tile])
 		# looping				
@@ -83,7 +94,7 @@ modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=N
 			dlab <- paste("Year ", y, ":", sep="")
 			
 			
-            dates <- unique(batch$date)
+            dates <- unique(batch$acqdate)
 			#dates <- sort(dates)
 			
             if (length(dates) < 46) { 
@@ -118,30 +129,39 @@ modisRice <- function(inpath, informat, format="raster", tiles="all", valscale=N
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]]+ vals
                 }
                 if (indnames[i]=="forest"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 20
+                    # if >= 20 forest
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= (20*(length(dates)/46))
                 }else if (indnames[i]=="shrub"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] == 0
+                    # if ==46 shrub
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] == 46
                     indicators[[indnames[i]]] <- indicators[[indnames[i]]] & !indicators[["forest"]] 
                 }else if (indnames[i]=="flooded"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 0
+                    #if >=40  wetland
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] > 0 & indicators[[indnames[i]]] < 40
+                    indicators$wetland <- indicators[[indnames[i]]] >= 40
                 }else if (indnames[i]=="permanent"){
-                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 10
+                    # if >=20 permanent
+                    indicators[[indnames[i]]] <- indicators[[indnames[i]]] >= 20
                 }
+
             }
-			#indicators$notrice <- (indicators$permanent | indicators$forest | indicators$shrub)
-			indicators$notrice <- (indicators$forest | indicators$shrub)
+			indicators$notrice <- (indicators$forest | indicators$shrub | indicators$permanent | indicators$wetland)
+			#indicators$notrice <- (indicators$forest | indicators$shrub)
 			indicators$perhapsrice <- indicators$flooded & !indicators$notrice
 			
 			cat (dlab, "Writing output files.                           \r")
             flush.console()
             
-             r <- raster(braster)
-             for(i in 1:length(indicators)){
+            r <- raster(braster)
+            for(i in 1:length(indicators)){
                 rnew <- setValues(r, indicators[[i]])
-                filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, sep=""), sep="/")
-				rnew <- writeRaster(rnew, filename=filename, format=format, datatype="INT1S", overwrite=TRUE, options=opts)
+                if (outformat=="raster"){
+                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT2S", NAflag=IntNA, overwrite=TRUE)                                
+                } else if (outformat=="GTiff"){
+                    rnew <- writeRaster(rnew,filename=paste(outpath, paste(names(indicators)[i], "_", tile, "_", y, outext, sep=""), sep="/"), format=outformat, datatype="INT2S", NAflag=IntNA, options=opts, overwrite=TRUE)
+                }
                 rm(rnew)
-            }                                
+            }
             cat (dlab, " -------------------- DONE -------------------- \n")
             flush.console()
             rm(indicators,vals)
