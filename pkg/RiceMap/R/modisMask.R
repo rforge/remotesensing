@@ -93,7 +93,7 @@ modis.mask <- function(modvals, masks){
     return(modvals)
 }
 
-modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
+modisMask <- function(qcfile, b3file, saveRasters=TRUE, outdir=NULL){
     namecomps <- unlist(strsplit(basename(qcfile),"\\."))
     rq <- raster(qcfile)
 	b3 <- raster(b3file)
@@ -117,16 +117,19 @@ modisMask <- function(qcfile, b3file, saveRasters=FALSE, outdir=NULL){
             dir.create(outdir, recursive=TRUE)
         }
         for(i in 1:length(masks)){
-            band1 <- raster(rq)
-            band1[] <- masks[[i]]
-            band1[is.na(band1)] <- 0
+            band1 <- setValues(rq, masks[[i]])
             bfname <- paste(outdir, "/", paste(namecomps[2],namecomps[3],names(masks)[i], sep="."), ".tif", sep="")
-			band1 <- writeRaster(band1, filename=bfname, overwrite=TRUE, datatype='INT2S', options=c("COMPRESS=LZW", "TFW=YES"))
+			ifelse(class(try(writeRaster(band1, filename=bfname, overwrite=TRUE, datatype='INT2S', options=c("COMPRESS=LZW", "TFW=YES"), NAflag=-15), silent=TRUE))=="try-error",
+				writeRaster(band1, filename=bfname, overwrite=TRUE, datatype='INT2S', options=c("COMPRESS=LZW", "TFW=YES"), NAflag=-15), TRUE)
+			rm(band1)
+			gc(verbose=FALSE)
 		}
     }            
     #masks$CloudMask[masks$CloudMask==0] <- NA 
 	#masks$ShadowMask[masks$ShadowMask==0] <- NA 
 	#masks$WaterMask[masks$WaterMask==0] <- NA
 	#masks$SnowMask[masks$SnowMask==0] <- NA
+	rm(masks)
+	gc(verbose=FALSE)
     return(mask)    
 }

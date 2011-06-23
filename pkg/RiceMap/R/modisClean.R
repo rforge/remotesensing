@@ -84,7 +84,7 @@ modisClean <- function(inpath, outformat="raster", tiles="all", verbose=TRUE){
 
 			qfile <- paste(inpath,batch$filename[batch$band=="state_500m"], sep="/")
 			b3file <- paste(inpath,batch$filename[batch$band=="b03"], sep="/")
-			b3 <- raster(b3file)
+			#b3 <- raster(b3file)
 			rq <- raster(qfile)
 			
 			masks <- modisMask(qfile, b3file, saveRasters=TRUE, outdir=outpath)
@@ -113,23 +113,19 @@ modisClean <- function(inpath, outformat="raster", tiles="all", verbose=TRUE){
             
             
             for(i in 1:ncol(vbands)){
-                rnew <- raster(rq)
-                rnew[] <- vbands[,i]    
-                rnew[is.na(rnew[])] <- FltNA
-                if (outformat=="GTiff"){
-                    bfname <- paste(fname, batch$band[i], ".clean.tif", sep="")
-                    rnew <- writeRaster(rnew, filename=bfname, format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), overwrite=TRUE)
-                } else {
-                    rnew <- writeRaster(rnew,filename=paste(fname, batch$band[i], ".clean.grd", sep=""), format=outformat, datatype="FLT4S", overwrite=TRUE)                    
-                }
-                #band1 <- NDSI
+                #rnew <- raster(rq)
+                rnew <- setValues(rq, vbands[,i])
+				
+				bfname <- paste(fname, batch$band[i], ".clean.", formatExt(outformat),sep="")
+                ifelse(class(try(writeRaster(rnew, filename=bfname, format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), overwrite=TRUE, NAflag=FltNA, datatype="FLT4S")))=='try-error',
+					writeRaster(rnew, filename=bfname, format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), overwrite=TRUE, NAflag=FltNA, datatype="FLT4S"), TRUE)
+				#band1 <- NDSI
                 #band1[is.na(band1)] <- FltNA
                 #rnew <- raster2SGDF(rq,vals=band1)    
                 #bfname <- paste(fname, "ndsi.tif", sep="")
                 #if (file.exists(bfname)) file.remove(bfname)
                 #rnew <- writeGDAL(rnew,bfname, options=c("COMPRESS=LZW", "TFW=YES"))
                 rm(rnew)
-                
             } 
 
 			cat (dlab, " -------------------- DONE -------------------- \n")
