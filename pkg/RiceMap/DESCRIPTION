@@ -4,7 +4,7 @@ Title: Mapping rice area with time series of MODIS images
 Version: 0.4
 Date: 13-August-2010
 Depends: raster, RemoteSensing
-Suggests: rgdal, splines, timeSeries
+Suggests: rgdal, timeSeries
 Author: Sonia Asilo, Jorrel Anauria, Andy Nelson, Robert J. Hijmans
 Maintainer: Robert J. Hijmans <r.hijmans@gmail.com> 
 Description: Rice mapping algorithms

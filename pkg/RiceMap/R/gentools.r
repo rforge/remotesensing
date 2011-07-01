@@ -22,3 +22,12 @@ modis.compute <- function(modis, funlist){
     colnames(result) <- funlist
     return(result)
 }
+
+getRequiredBands <- function(funlist, byfun=FALSE){
+	if (byfun) argnames <- list() else argnames <- NULL  
+	for (i in 1:length(funlist)){
+		if (byfun) argnames[[funlist[i]]] <- names(formals(get(funlist[i]))) else argnames <- c(argnames,names(formals(get(funlist[i]))))
+	}
+	if (byfun) names(argnames) <- funlist else argnames <- unique(argnames)
+	return(argnames)
+}

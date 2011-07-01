@@ -4,26 +4,64 @@
 # Version 0,1
 # Licence GPL v3
 
-modis.vegindices <- function(modis, indices=c("evi", "ndvi", "ndwi", "lswi", "ndsi"), mask=NULL){
-    reqbands <- c("b01", "b02", "b03", "b04", "b06", "b07")
-    techname <- c("red", "nir", "blue", "green", "swir1", "swir2")
-    
-    if (sum(sub(".clean", "", colnames(modis@imgvals)) %in% reqbands)<6) stop("Incomplete bands") else idx <- match(sub(".clean", "", colnames(modis@imgvals)),reqbands)
-    colnames(modis@imgvals)[idx[!is.na(idx)]] <- techname    
+#veg64 <-  function(modisdata, indices){
+#	bandnums <- as.numeric(gsub("b","",colnames(modisdata)))
+#	colnames(modisdata) <- bandnames(bandnums)
+#	vegindices <- modis.compute(modisdata,funlist=indices)
+#	colnames(vegindices) <- indices	
+#	return(vegindices)
+#}
 
-    vegindices <- modis.compute(modis@imgvals,funlist=indices)
-    colnames(vegindices) <- indices
-    if (is.character(mask)){
-        masks <- modis.compute(cbind(modis@imgvals,vegindices),funlist=mask)
+#veg32 <- function(){
+#	
+#}
+
+modis.vegindices <- function(modis, modisdate=NULL, indices=c("evi", "ndvi", "ndwi", "lswi", "ndsi"), mask="snow2"){
+	# check if 64-bit 
+	is64 <- version$arch=="x86_64"
+	
+	if(class(modis)=="data.frame"){
+		show.message("You are using a 64-bit system. Good for you!")
+		
+	} else if(!is.null(modisdate)){
+		rbands <- getRequiredBands(indices)
+		outdir <- properPath(paste(modis,"../veg",sep="/"))
+		force.directories(outdir)
+		m <- modisFiles(path=modis, modisinfo=c("acqdate","zone","band","process", "format"), full.names=TRUE)
+		m <- m[m$acqdate==modisdate & m$band %in% bandnumber(rbands),]
+		mstack <- stack(m$filename)
+		modis <- as.data.frame(values(mstack))
+		colnames(modis) <- m$band
+	}
+	bandnums <- as.numeric(gsub("b","",colnames(modis)))
+	colnames(modis) <- bandnames(bandnums)
+	vegindices <- modis.compute(modis,funlist=indices)
+	colnames(vegindices) <- indices	
+	
+    
+	#if (is64){
+	#	result <- veg64(modisdata=modis, indices=indices)
+	#} else {
+	#	
+	#}
+    if (!is.null(mask) | !is.na(mask)){
+		rbands <- getRequiredBands(mask)
+		inmodis <- rbands[rbands %in% colnames(modis)]
+		inveg <- rbands[rbands %in% colnames(vegindices)]
+		maskdata <- cbind(modis[,inmodis],vegindices[,inveg])
+		colnames(maskdata) <- c(inmodis,inveg)
+		rm(modis)
+		gc()
+        masks <- modis.compute(maskdata,funlist=mask)
         vegindices <- modis.mask(vegindices,masks)
         vegindices <- cbind(vegindices,masks)
         colnames(vegindices) <- c(indices,mask)
     } 
     
-    vegindices <- cbind(vegindices, modis.compute(vegindices, funlist=c("flooded1", "flooded2", "flooded3", "drought","persistentwater")))
-    colnames(vegindices) <- paste(colnames(vegindices),"veg",sep=".")
-    rm(masks)
-    gc()        
+    #vegindices <- cbind(vegindices, modis.compute(vegindices, funlist=c("flooded1", "flooded2", "flooded3", "drought","persistentwater")))
+    #colnames(vegindices) <- paste(colnames(vegindices),"veg",sep=".")
+    #rm(masks)
+    #gc()        
     return(vegindices)
 }
 
