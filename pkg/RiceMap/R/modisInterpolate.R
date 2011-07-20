@@ -31,7 +31,7 @@ modisInterpolateVeg <- function(inpath, year, informat="raster"){
             indices[[indnames[j]]] <- getValues(ras)/10000
         }
         		
-        flood <- flooded(indices$lswi,indices$ndvi,indices$evi)
+        flood <- flooded1(indices$lswi,indices$ndvi,indices$evi)
         fld <- raster2SGDF(ras,vals=flood)
         writeGDAL(fld,paste(interppath,paste(base,"flooded.tif",sep=""),sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
 		rm(flood,fld)

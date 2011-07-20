@@ -4,8 +4,8 @@
 # Version 0.0.1
 # Licence GPL v3
 
-modis.compute <- function(modis, funlist){
-    result <- numeric(0)
+modis.compute <- function(modis, funlist ,datatype="numeric"){
+    result <- do.call(datatype,as.list(0))
     for (i in 1:length(funlist)){
         argnames <- names(formals(get(funlist[i])))
         if (sum(argnames %in% colnames(modis))!=length(argnames)) {
@@ -17,7 +17,7 @@ modis.compute <- function(modis, funlist){
             }
             assign(toupper(funlist[i]), do.call(funlist[i],arglist))
         }
-        result <- cbind(result, get(toupper(funlist[i])))        
+        result <- as.data.frame(cbind(result, get(toupper(funlist[i]))))        
     }
     colnames(result) <- funlist
     return(result)

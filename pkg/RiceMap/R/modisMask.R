@@ -7,7 +7,8 @@
 # Cloud Mask
 .cloudMask <- function(b3){
 	b3 <- b3/100
-	res <- (((b3 > 18)*0) + (b3 < 18))
+#	res <- (((b3 > 18)*0) + (b3 < 18))
+	res <- b3 < 18
     return(res)
 }
 
@@ -29,18 +30,17 @@
 
 # Water mask
 .waterMask <- function(pixel) {
-	res <- modis.sqa500c(pixel)
-	res[res < 1 | res == 2 | res >= 3 ] <- 0
-	res[res >= 1] <- 1
+	vals <- modis.sqa500c(pixel)
+	res <- (!(vals == 2 | vals >= 3)) & (vals >= 1)
 	return(res)
 }
 
 #Internal Snow mask
 .snowMask <- function(pixel) {
-	pixel <- modis.sqa500k(pixel)
-	pixel <- pixel + 1
-	pixel[pixel > 1] <- 0
-	return(pixel)
+	vals <- modis.sqa500k(pixel)
+	vals <- vals + 1
+	res <- vals <= 1
+	return(res)
 }
 
 # Blue mask
@@ -52,18 +52,16 @@
 #}
 
 #second snow mask
-snow2 <- function(ndsi, nir) {
-    res <- rep(NA, length(ndsi))
-	res [!((nir > 0.11) & (ndsi > 0.40))] <- 1
-	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
+snow2 <- function(ndsi, nir) {    
+	res <- !((nir > 0.11) & (ndsi > 0.40))
+#	res[(nir > 0.11) & (ndsi > 0.40)] <- 0
 #	res[is.na(res)] <- -15
 	return(res)
 }
 
 snow3 <- function(ndsi, green, nir) {
-	res <- rep(NA, length(ndsi))
-	res [!((nir > 0.10) & (green > 0.10) & (ndsi >= 0.40))]<- 1
-	res[(nir > 0.10) & (green > 0.10) & (ndsi >= 0.40)] <- 0
+	res <- !((nir > 0.10) & (green > 0.10) & (ndsi >= 0.40))
+#	res[(nir > 0.10) & (green > 0.10) & (ndsi >= 0.40)] <- 0
 #	res[is.na(res)] <- -15
 	return(res)
 }
@@ -85,10 +83,9 @@ modis.mask <- function(modvals, masks){
     #
     #
     masks <- as.matrix(masks)
-    for (i in 1:ncol(masks)){
-        vals <- unique(masks[,i])
-        if (sum(vals %in% c(0,1,NA))<length(vals)) stop("Invalid values found. Masks can only be 0, 1 or NA.")
-        if(min(masks[,i], na.rm=TRUE)!=max(masks[,i], na.rm=TRUE) | min(masks[,i], na.rm=TRUE)==0) modvals <- modvals*masks[,i]
+    for (i in 1:ncol(masks)){        
+        if (class(masks[,i])!="logical") stop("Masks should be of logical type.")
+        if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) modvals <- modvals*masks[,i]
     }
     return(modvals)
 }

@@ -4,65 +4,77 @@
 # Version 0,1
 # Licence GPL v3
 
-#veg64 <-  function(modisdata, indices){
-#	bandnums <- as.numeric(gsub("b","",colnames(modisdata)))
-#	colnames(modisdata) <- bandnames(bandnums)
-#	vegindices <- modis.compute(modisdata,funlist=indices)
-#	colnames(vegindices) <- indices	
-#	return(vegindices)
-#}
-
-#veg32 <- function(){
-#	
-#}
-
-modis.vegindices <- function(modis, modisdate=NULL, indices=c("evi", "ndvi", "ndwi", "lswi", "ndsi"), mask="snow2"){
+modis.indices <- function(modis, indices=c("evi", "ndvi", "ndwi", "lswi", "ndsi"), mask="snow2", writeto="./veg", savemask=FALSE, verbose=TRUE, asbrick=FALSE){
+	
+	if(class(modis)!="modis.data") stop("Invalid input data. Should be of class \"modis.data\"")
 	# check if 64-bit 
 	is64 <- version$arch=="x86_64"
+
+	bandnums <- as.numeric(gsub("b","",colnames(modis@imgvals)))
+	colnames(modis@imgvals) <- bandnames(bandnums)
 	
-	if(class(modis)=="data.frame"){
-		show.message("You are using a 64-bit system. Good for you!")
-		
-	} else if(!is.null(modisdate)){
-		rbands <- getRequiredBands(indices)
-		outdir <- properPath(paste(modis,"../veg",sep="/"))
-		force.directories(outdir)
-		m <- modisFiles(path=modis, modisinfo=c("acqdate","zone","band","process", "format"), full.names=TRUE)
-		m <- m[m$acqdate==modisdate & m$band %in% bandnumber(rbands),]
-		mstack <- stack(m$filename)
-		modis <- as.data.frame(values(mstack))
-		colnames(modis) <- m$band
+	if (verbose) show.message(modis@acqdate, ": Computing ", paste(indices, collapse=", "), eol="\r")
+	
+	vegindices <- modis.data(modis)
+	if (is64) {
+		vegindices@imgvals <- modis.compute(modis@imgvals,funlist=indices)
+	} else {
+		for (i in 1:length(indices)){
+			rbands <- getRequiredBands(indices[i])
+			
+			if (i==1) {
+				vegindices@imgvals <- modis.compute(modis@imgvals[,rbands],funlist=indices[i])
+			} else {
+				vegindices@imgvals[,indices[i]] <- modis.compute(modis@imgvals[,rbands],funlist=indices[i])[,indices[i]]
+			}
+		}
 	}
-	bandnums <- as.numeric(gsub("b","",colnames(modis)))
-	colnames(modis) <- bandnames(bandnums)
-	vegindices <- modis.compute(modis,funlist=indices)
-	colnames(vegindices) <- indices	
 	
-    
-	#if (is64){
-	#	result <- veg64(modisdata=modis, indices=indices)
-	#} else {
-	#	
-	#}
-    if (!is.null(mask) | !is.na(mask)){
+    if (is.character(mask)){
 		rbands <- getRequiredBands(mask)
-		inmodis <- rbands[rbands %in% colnames(modis)]
-		inveg <- rbands[rbands %in% colnames(vegindices)]
-		maskdata <- cbind(modis[,inmodis],vegindices[,inveg])
+		inmodis <- rbands[rbands %in% colnames(modis@imgvals)]
+		inveg <- rbands[rbands %in% colnames(vegindices@imgvals)]
+		maskdata <- cbind(modis@imgvals[,inmodis],vegindices@imgvals[,inveg])
 		colnames(maskdata) <- c(inmodis,inveg)
 		rm(modis)
-		gc()
-        masks <- modis.compute(maskdata,funlist=mask)
-        vegindices <- modis.mask(vegindices,masks)
-        vegindices <- cbind(vegindices,masks)
-        colnames(vegindices) <- c(indices,mask)
+		gc(verbose=FALSE)
+        
+		masks <- modis.data(vegindices)
+		if (verbose) show.message(masks@acqdate, ": Computing ", paste(mask, collapse=", "), eol="\r")
+		masks@imgvals <- modis.compute(maskdata,funlist=mask, datatype="logical")
+		
+		
+		if (is64) {
+			if (verbose) show.message(masks@acqdate, ": Applying mask(s). ", eol="\r")
+			vegindices@imgvals <- modis.mask(vegindices@imgvals,masks@imgvals)
+		} else {
+			for (i in 1:ncol(vegindices@imgvals)){
+				if (verbose) show.message(vegindices@acqdate, ": Applying masks to ", colnames(vegindices@imgvals)[i], eol="\r")
+				vegindices@imgvals[,i] <- modis.mask(vegindices@imgvals[,i],masks@imgvals)
+			}
+			gc(verbose=FALSE)
+		}
     } 
-    
-    #vegindices <- cbind(vegindices, modis.compute(vegindices, funlist=c("flooded1", "flooded2", "flooded3", "drought","persistentwater")))
-    #colnames(vegindices) <- paste(colnames(vegindices),"veg",sep=".")
-    #rm(masks)
-    #gc()        
-    return(vegindices)
+	
+	if (is.character(writeto)){
+		outdir <- normalizePath(writeto, mustWork=FALSE)
+		force.directories(writeto, recursive=TRUE)
+		
+		if (verbose) show.message(masks@acqdate, ": Writing vegindices to disk.", eol="\r")
+		vbrick <- modis.brick(vegindices, process="index", writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
+		rm(vbrick)
+		gc(verbose=FALSE)
+		if(savemask){
+			if (verbose) show.message(masks@acqdate, ": Writing mask rasters to disk.", eol="\r")
+			mbrick <- modis.brick(masks, process="index", intlayers=1:ncol(masks@imgvals),writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
+			rm(mbrick)
+			gc(verbose=FALSE)
+		}
+	}
+	if (verbose) show.message(masks@acqdate, ": --------------- DONE COMPUTING INDICES ----------------", eol="\n")
+    rm(masks)
+	gc(verbose=FALSE)            
+	return(vegindices)
 }
 
 modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){

@@ -4,27 +4,6 @@
 # Version 0,1
 # Licence GPL v3
 
-properPath <- function(path, changeBS=TRUE){
-	
-    if (changeBS){
-        path <- gsub("\\\\", "/", path)
-    }
-    # remove trailing slashes
-	lastchar <- substr(path,nchar(path),nchar(path))
-    if (lastchar=="/"){
-        path <- paste(dirname(path),basename(path),sep="/")
-    }
-	# Remove '..'
-	dirs <- unlist(strsplit(path,"/"))
-	#prev <- grep("\\.\\.",dirs)
-	newdirs <- NULL
-	for (i in 1:length(dirs)){		
-		if (dirs[i]!="..") newdirs <- c(newdirs,dirs[i]) else newdirs <- newdirs[-length(newdirs)]
-	}
-	if(length(newdirs)==0) newdirs <- "."
-    return(paste(newdirs, collapse="/"))
-}
-
 raster2SGDF <- function(baseraster, vals=NULL){
 	if (!is.null(vals)) {
 		baseraster <- setValues(baseraster, vals)
@@ -60,18 +39,8 @@ force.directories <- function(path,...){
     return(success)
 }
 
-.rsMessage <- function(msg, newln=FALSE){
-    if (newln){
-        cat(msg, "\n")
-        flush.console()    
-    } else {
-        cat(rep(" ", getOption("width")),"\r", sep="")        
-        cat(msg, "\r")
-        flush.console()
-    }    
-}
-
-show.message <- function(..., eol=NULL){
+show.message <- function(..., eol=""){
+	if (eol=="\r") cat(rep(" ", options("width")),eol,sep="")
 	cat(...,eol,sep="")
 	flush.console()
 }

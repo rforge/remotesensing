@@ -29,15 +29,44 @@ Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not 
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
 
-modis.Rice <- function(){
-    
-}
-
 Flooded <- function (flooded) {sum(flooded, na.rm=T) > 0}	#Flooded= 1  ; not flooded = 0	
 Permanent <- function (permanent) { sum(permanent, na.rm=T) >= 10} # permanent = 1; not permanet = 0
 Forest <- function(ndvi){ sum( ndvi >= 0.7 , na.rm=T) >= 20}	# Forest: 1, ; not forest =0
 Shrub <- function(lswi){ sum(lswi < 0.1, na.rm=T) == 0 } # shrub=1; not shrub = 0
 # Bare <- function(ndvi){ sum(ndvi > 0.1, na.rm=T) < 2 }
+
+modis.rice <- function(modis, writeto="./rice", verbose=TRUE){
+	#check if 64bit
+	is64 <- version$arch=="x86_64"
+	
+	price <- modis.data(modis)
+	#finalize forest
+	forest <- modis@imgvals$forest >= (20*(modis@imgvals$nimgs/46))
+	#finalize shrub
+	shrub <- (modis@imgvals$shrub == 46) & !forest
+	#finalize flooded
+	wetland <- modis@imgvals[,grep("flooded", colnames(modis@imgvals))] >= 40
+	#finalize flooded
+	flooded <- (modis@imgvals[,grep("flooded", colnames(modis@imgvals))] > 0) & !wetland
+	#finalize permanent
+	permanent <- modis@imgvals$persistentwater >= 20
+	
+	notrice <- (forest | shrub | permanent | wetland)
+	#indicators$notrice <- (indicators$forest | indicators$shrub)
+	perhapsrice <- flooded & !notrice
+	
+	price@imgvals <- as.data.frame(cbind(forest,shrub,wetland,flooded,permanent,notrice,perhapsrice)) 
+	if(is.character(writeto)) {
+		outdir <- normalizePath(writeto, mustWork=FALSE)
+		force.directories(writeto, recursive=TRUE)
+		modis.brick(price, process="rice", intlayers=1:ncol(price@imgvals), writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)	
+		modis.brick(modis, process="rice", intlayers=1:ncol(modis@imgvals), writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
+	}
+	
+	rm(perhapsrice,notrice,forest,shrub,permanent,wetland,modis)
+	gc(verbose=FALSE)
+	return(price)
+}
 
 modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscale=NULL){
     

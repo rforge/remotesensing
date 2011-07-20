@@ -51,6 +51,80 @@ rmColumn <- function(mat, colnum){
     return(mat)
 }
 
+modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=TRUE){
+	
+	force.directories(writeto, recursive=TRUE)
+	outdir <- normalizePath(writeto, mustWork=FALSE)
+	
+	if(class(modis)!="modis.data") stop("Invalid input data. 'modis' Should be of class \"modis.data\"")
+	
+	floodpath <- paste(modisroot, "identify", sep="/")
+	idfs <- modisFiles(path=floodpath, modisinfo=c("product","acqdate","zone","version","proddate","band","process", "format"), full.names=TRUE)	
+	flds <- idfs[grep("flood",idfs$band),]
+	# Gets the index of the last image (DOY 361) of the previous year
+	fld0 <- grep(paste("A",yr-1,"361",sep=""),flds$acqdate) 
+	if (length(fld0)<1) {
+		warning("Missing last flood image from year ", yr-1)
+		fld0 <- min(grep(yr,flds$year))
+	}	
+	flds <- flds[fld0:max(grep(yr,flds$year)),]
+	
+	evipath <- paste(modisroot, "veg", sep="/")
+	infs <- modisFiles(path=evipath, modisinfo=c("product","acqdate","zone","version","proddate","band","process", "format"), full.names=TRUE)	
+	evis <- infs[infs$band=="evi",]
+	# Gets the index of the 12th image (DOY 89) of the next year
+	eny12 <- grep(yr+1,evis$year)
+	if (length(eny12)<12) warning("12 images from year ", yr+1, " incomplete.")
+	en <- max(eny12)	
+	evis <- evis[min(grep(yr,flds$year)):en,]
+		
+	vpix <- which(modis@imgvals$perhapsrice==1)
+	
+	ricefreq <- rep(NA,nrow(modis@imgvals))
+	rppdoy <- integer(0)
+	
+	for (i in 1:nrow(flds)){
+		fraster <- raster(flds$filename[i])
+		fldvals <- as.integer(fraster[])
+		fpix <- vpix[which(fldvals[vpix]==1)]
+		evivals <- values(stack(evis$filename[0:11+i]))[fpix,]			
+			
+		if (verbose) show.message(flds$acqdate[i], ": Identifying rice pixels", eol="\r")			
+		
+		max5 <- maxEVI(evivals[,1:5])
+		max12 <- maxEVI(evivals[,1:12])
+		ave611 <- rowMeans(evivals[, 6:11], na.rm=TRUE)
+		truerice <- (max5*2 >= max12) & (ave611>0.35)
+		rppdoy <- c(rppdoy, sum(truerice))
+		ricefreq[fpix] <- rowSums(cbind(ricefreq[fpix], truerice), na.rm=TRUE)
+		
+		validatedrice <- modis.data(modis)
+		validatedrice@acqdate <- flds$acqdate[i]
+		rice <- rep(NA,ncell(fraster))
+		rice[fpix] <- truerice
+		validatedrice@imgvals <- as.data.frame(rice)
+		if (verbose) show.message(flds$acqdate[i], ": Writing rice raster.", eol="\r")
+		modis.brick(validatedrice, process="validate", intlayers=1,writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)	
+		rm(rice,validatedrice)
+		gc(verbose=FALSE)
+		if (verbose) show.message(flds$acqdate[i], ": Done", eol="\n")
+	}
+	validatedrice <- modis.data(modis)	
+	rice <- ricefreq > 0
+	validatedrice@imgvals <- as.data.frame(cbind(ricefreq,rice))
+	modis.brick(validatedrice, process="validate", intlayers=1:2, writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
+	
+	if (!is.null(dev.list())) x11()
+	if(require(grDevices)){
+		barplot(rppdoy, names.arg=flds$doy[fld0:max(grep(yr,flds$year))], main="Count of identified rice pixels per DOY")
+		savePlot(filename=paste(writeto,paste(yr,"npix_riceplot.png", sep="_"),sep="/"), type="png")    
+	} else {
+		show.message(paste("Package grDevices not found. Cannot save barplot."), eol="\n")
+	}
+	if (verbose) show.message("------------- MODIS RICE VALIDATE DONE! -------------", eol="\n")
+	return(outdir)
+}
+
 validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff", valscale=1){
     outpath <- paste(inpath, "../rice_new", sep="/")
     ricepath <- paste(inpath, "../rice", sep="/")
@@ -59,8 +133,8 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
     if (is.na(filext)){
         stop("Invalid input format")
     }
-    #vfiles <- modisFiles(path=inpath, modisinfo=c("acqdate","zone","band","process","format"))
-    vfiles <- validationFiles(inpath,informat)
+    vfiles <- modisFiles(path=inpath, modisinfo=c("product","acqdate","zone","version", "proddate", "band","process","format"))
+    #vfiles <- validationFiles(inpath,informat)
     if (year=="All"){
         years <- unique(vfiles$year) 
     } else {
@@ -70,7 +144,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
         st <- which(vfiles$year==y & vfiles$doy==1)-1
         en <- which(vfiles$year==y & vfiles$doy==361)-1
         if (st<1){
-            .rsMessage(paste("Data from last image from previous year not available.\nWill start on first image of year ", y, ".",sep=""), newln=TRUE)
+            show.message(paste("Data from last image from previous year not available.\nWill start on first image of year ", y, ".",sep=""), eol="\n")
             st <- 1            
         }
         perhaps <- paste(ricepath, paste("perhapsrice_", vfiles$tile[1], "_", y, ".", filext, sep=""), sep="/")
@@ -79,11 +153,11 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
         counts <- vector(length=length(st:en))
         for (i in st:en){
             if(i==(nrow(vfiles)-12)){
-                .rsMessage("Succeeding files not found.")
+                show.message("Succeeding files not found.", eol="\n")
                 break
             }
-            .rsMessage(paste("Processing DOY", vfiles$doy[i+1], "of", y), newln=TRUE)
-            .rsMessage("Isolating flooded pixels.")
+            show.message(paste("Processing DOY", vfiles$doy[i+1], "of", y), eol="\n")
+            show.message("Isolating flooded pixels.", eol="\r")
             fld <- raster(paste(inpath,vfiles$floodfiles[i],sep="/"))
             if (file.exists(perhaps)){
                 mfld <- pr[]*fld[]
@@ -102,15 +176,15 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             if(i==st){
                 overall <- rep(NA,ncell(fld))
             }
-            .rsMessage(paste("Reading EVI values: Files", i+1, "to", i+12))
+            show.message(paste("Reading EVI values: Files", i+1, "to", i+12), eol="\r")
             evi12 <- getValues(stack(paste(inpath,vfiles$evifiles[i+(1:12)],sep="/")))[fpix,]
             evi12[evi12==-9999] <- NA
             evi12 <- evi12/valscale
-            .rsMessage("Calculating statistics.")
+            show.message("Calculating statistics.", eol="\r")
             max5 <- maxEVI(evi12[,1:5])*2
             max12 <- maxEVI(evi12)
             ave611 <- rowMeans(evi12[,6:11], na.rm=TRUE)
-            .rsMessage("Determining rice pixels.")
+            show.message("Determining rice pixels.", eol="\r")
             ricet1 <- max5>=max12
             ricet2 <- ave611>=0.2
             rice <- fld[fpix] & ricet1 & ricet2
@@ -118,11 +192,11 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             rvals <- rep(NA,ncell(fld))
             rvals[fpix] <- as.numeric(rice)
             overall <- rowSums(cbind(overall,rvals), na.rm=TRUE)
-            .rsMessage("Writing rice map to disk.")
+            show.message("Writing rice map to disk.", eol="\r")
             ricegrid <- setValues(fld,rvals)
             writeRaster(ricegrid, filename=paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), format=outformat, options=c("COMPRESS=LZW", "TFW=YES"), datatype="INT2S", overwrite=TRUE)
             #writeGDAL(ricegrid, paste(outpath, paste(vfiles$tile[i+1], "_", y, "_", gsub(" ", 0, format(vfiles$doy[i+1], width=3)), "_rice.tif", sep=""), sep="/"), options=c("COMPRESS=LZW", "TFW=YES"), type="Int16")
-            .rsMessage(paste("Done.", counts[i-st+1],"rice pixels found.\n"))
+            show.message(paste("Done.", counts[i-st+1],"rice pixels found."), eol="\n")
             rm(ricegrid,rice, max5, max12, ave611, ricet1, ricet2, rvals,evi12)
             gc(verbose=FALSE)
         }
@@ -138,7 +212,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
             barplot(counts, names.arg=vfiles$doy[st:en+1], main="Count of identified rice pixels per DOY")
             savePlot(filename=paste(outpath,paste(y,"npix_riceplot.png", sep="_"),sep="/"), type="png")    
         } else {
-            .rsMessage(paste("Package grDevices not found. Cannot save barplot.\n"))
+            show.message(paste("Package grDevices not found. Cannot save barplot."), eol="\n")
         } 
     }
     
