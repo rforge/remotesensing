@@ -84,12 +84,13 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	rppdoy <- integer(0)
 	
 	for (i in 1:nrow(flds)){
+		if (verbose) show.message(flds$acqdate[i], ": Aquiring evi and flood data.", eol="\r")			
 		fraster <- raster(flds$filename[i])
 		fldvals <- as.integer(fraster[])
 		fpix <- vpix[which(fldvals[vpix]==1)]
 		evivals <- values(stack(evis$filename[0:11+i]))[fpix,]			
 			
-		if (verbose) show.message(flds$acqdate[i], ": Identifying rice pixels", eol="\r")			
+		if (verbose) show.message(flds$acqdate[i], ": Identifying rice pixels.", eol="\r")			
 		
 		max5 <- maxEVI(evivals[,1:5])
 		max12 <- maxEVI(evivals[,1:12])
@@ -107,20 +108,17 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 		modis.brick(validatedrice, process="validate", intlayers=1,writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)	
 		rm(rice,validatedrice)
 		gc(verbose=FALSE)
-		if (verbose) show.message(flds$acqdate[i], ": Done", eol="\n")
+		if (verbose) show.message(flds$acqdate[i], ": Done \n", eol="\r")
 	}
 	validatedrice <- modis.data(modis)	
 	rice <- ricefreq > 0
 	validatedrice@imgvals <- as.data.frame(cbind(ricefreq,rice))
 	modis.brick(validatedrice, process="validate", intlayers=1:2, writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
 	
-	if (!is.null(dev.list())) x11()
-	if(require(grDevices)){
-		barplot(rppdoy, names.arg=flds$doy[fld0:max(grep(yr,flds$year))], main="Count of identified rice pixels per DOY")
-		savePlot(filename=paste(writeto,paste(yr,"npix_riceplot.png", sep="_"),sep="/"), type="png")    
-	} else {
-		show.message(paste("Package grDevices not found. Cannot save barplot."), eol="\n")
-	}
+	png(filename=paste(outdir,paste(yr,"npix_riceplot.png", sep="_"),sep="/"), width=1024, height=768)    
+	barplot(rppdoy, names.arg=flds$doy[fld0:max(grep(yr,flds$year))], main="Counts of identified rice pixels per DOY")
+	dev.off()	
+	
 	if (verbose) show.message("------------- MODIS RICE VALIDATE DONE! -------------", eol="\n")
 	return(outdir)
 }
