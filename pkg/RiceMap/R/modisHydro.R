@@ -8,6 +8,12 @@ dvel <- function(evi, lswi){
     return(evi-lswi)
 }
 
+ndwi7 <- function(red, swir2){
+	n7 <- rep(NA, length(red))
+	n7 <- (red - swir2) / (red + swir2)
+	return(n7)
+}
+
 flooded1 <- function(lswi, ndvi, evi) { 
 #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
 #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 
@@ -41,6 +47,9 @@ flooded3 <- function(evi,lswi){
     return(flood)     
 }
 
+flooded4 <- function(ndwi7){
+	return(ndwi7 > 0)	
+}
 persistentwater <- function(ndvi,lswi){ 
 #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
 #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 

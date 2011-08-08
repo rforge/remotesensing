@@ -58,18 +58,19 @@ bandnumber <- function(bandname, ref="ricemap", asString=TRUE){
 	return(result)
 } 
 
-withRetry <- function(expr, retries=50, pause=1){
+withRetry <- function(expr, retries=10, initpause=30, failtime=10){
 	tries <- 0
 	success <- FALSE
-	while(success==FALSE & tries<retries){
+	while(success==FALSE & (tries<retries | failtime>(initpause*tries))){
 		items <- try(expr,silent=TRUE)
 		if (class(items)=="try-error"){
 			tries <- tries+1
-			message("Timeout? trying again in 10 secs...")
-			Sys.sleep(pause)
+			show.message("Timeout? trying again in ", (initpause*tries) ," secs...", eol="\n")
+			Sys.sleep(initpause*tries)
 		} else {
 			success <- TRUE
-		}
+		}		
 	}
+	if (!success) items <- success
 	return(items)
 }
