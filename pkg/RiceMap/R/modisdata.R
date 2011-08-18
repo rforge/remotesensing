@@ -35,6 +35,15 @@ setMethod("modis.data", signature(x="modis.data"),
 
 )
 
+setMethod("modis.data", signature(x="RasterStack"),
+		function(x){
+			m <- new("modis.data", product="", acqdate="", zone="", version="", 
+					proddate="", projection=projection(x), extent=extent(x), ncols=ncol(x), nrows=nrow(x), imgvals=as.data.frame(values(x)))
+			return(m)			
+		}
+
+)
+
 modis.brick <- function(modis, process=NULL, intlayers=NULL, writeto=NULL, intNA=-15, fltNA=-9999.0, format="GTiff", skipx=FALSE, ...){
     mraster <- raster(modis@extent, ncols=modis@ncols, nrows=modis@nrows, crs=modis@projection)
     
