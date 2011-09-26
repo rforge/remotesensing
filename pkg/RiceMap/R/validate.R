@@ -64,7 +64,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	# Gets the index of the last image (DOY 361) of the previous year
 	fld0 <- grep(paste("A",yr-1,"361",sep=""),flds$acqdate) 
 	if (length(fld0)<1) {
-		warning("Missing last flood image from year ", yr-1)
+		show.message("WARNING: Missing last flood image from year ", yr-1,eol="\n")
 		fld0 <- min(grep(yr,flds$year))
 	}	
 	flds <- flds[fld0:max(grep(yr,flds$year)),]
@@ -74,7 +74,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	evis <- infs[infs$band=="evi",]
 	# Gets the index of the 12th image (DOY 89) of the next year
 	eny12 <- grep(yr+1,evis$year)
-	if (length(eny12)<12) warning("12 images from year ", yr+1, " incomplete.")
+	# if (length(eny12)<12) show.message("WARNING: 12 images from year ", yr+1, " incomplete.",eol="\n")
 	en <- max(eny12)	
 	evis <- evis[min(grep(yr,flds$year)):en,]
 		
@@ -84,17 +84,44 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	rppdoy <- integer(0)
 	
 	for (i in 1:nrow(flds)){
-		if (verbose) show.message(flds$acqdate[i], ": Aquiring evi and flood data.", eol="\r")			
+		if (verbose) show.message(flds$acqdate[i], ": Aquiring flood data.", eol="\r")
+		fdoy <- flds$doy[i]
+		pdoys <- ((0:45)*8+1)
+		did <- which(fdoy==pdoys)
+		if (did>34 & did<46){
+			pdoy1 <- pdoys[(did+1):46]
+			eid1 <- which(evis$doy %in% pdoy1 & evis$year==flds$year[i])	
+			pdoy2 <- pdoys[1:(did-34)]
+			eid2 <- which(evis$doy %in% pdoy2 & evis$year==(flds$year[i]+1))
+			eid <- c(eid1,eid2)
+			pdoy <- c(pdoy1,pdoy2)
+		}  else if (did==46) {	
+			pdoy <- pdoys[1:12]
+			eid <- which(evis$doy %in% pdoy  & evis$year==flds$year[i]+1)
+		} else {
+			pdoy <- pdoys[did:(did+12)]
+			eid <- which(evis$doy %in% pdoy & evis$year==flds$year[i])
+		}
+
+		dne <- pdoy[which(!pdoy %in% evis$doy[eid])]
+		
+		if (length(dne)>0) show.message(flds$acqdate[i], ": Warning - Incomplete data. Missing DOY(s) ", (paste(dne,collapse=", ")),eol="\n")
+		
+		
 		fraster <- raster(flds$filename[i])
 		fldvals <- as.integer(fraster[])
 		fpix <- vpix[which(fldvals[vpix]==1)]
-		evivals <- values(stack(evis$filename[0:11+i]))[fpix,]			
-			
-		if (verbose) show.message(flds$acqdate[i], ": Identifying rice pixels.", eol="\r")			
+		if (verbose) show.message(flds$acqdate[i], ": Retrieving evis.", eol="\r")
+		evivals <- values(stack(evis$filename[eid]))[fpix,]			
+		colnames(evivals) <- evis$doy[eid]
 		
-		max5 <- maxEVI(evivals[,1:5])
-		max12 <- maxEVI(evivals[,1:12])
-		ave611 <- rowMeans(evivals[, 6:11], na.rm=TRUE)
+		if (verbose) show.message(flds$acqdate[i], ": Identifying rice pixels.", eol="\r")			
+		i5 <- which(colnames(evivals) %in% pdoy[1:5])
+		i12 <- which(colnames(evivals) %in% pdoy)
+		i611 <- which(colnames(evivals) %in% pdoy[6:11])
+		max5 <- maxEVI(evivals[,i5])
+		max12 <- maxEVI(evivals[,i12])
+		ave611 <- rowMeans(evivals[, i611], na.rm=TRUE)
 		truerice <- (max5*2 >= max12) & (ave611>0.35)
 		rppdoy <- c(rppdoy, sum(truerice))
 		ricefreq[fpix] <- rowSums(cbind(ricefreq[fpix], truerice), na.rm=TRUE)
@@ -106,7 +133,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 		validatedrice@imgvals <- as.data.frame(rice)
 		if (verbose) show.message(flds$acqdate[i], ": Writing rice raster.", eol="\r")
 		modis.brick(validatedrice, process="validate", intlayers=1,writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)	
-		rm(rice,validatedrice)
+		rm(rice,validatedrice,evivals,fldvals,fpix)
 		gc(verbose=FALSE)
 		if (verbose) show.message(flds$acqdate[i], ": Done \n", eol="\r")
 	}

@@ -45,7 +45,8 @@ setMethod("modis.data", signature(x="RasterStack"),
 )
 
 modis.brick <- function(modis, process=NULL, intlayers=NULL, writeto=NULL, intNA=-15, fltNA=-9999.0, format="GTiff", skipx=FALSE, ...){
-    mraster <- raster(modis@extent, ncols=modis@ncols, nrows=modis@nrows, crs=modis@projection)
+	force.directories(writeto, recursive=TRUE)
+	mraster <- raster(modis@extent, ncols=modis@ncols, nrows=modis@nrows, crs=modis@projection)
     
     if(is.character(writeto)){                
         fname <- gsub("\\.\\.", "\\.", paste(modis@product, modis@acqdate, modis@zone, modis@version, modis@proddate, colnames(modis@imgvals), process, formatExt(format), sep="."))        
