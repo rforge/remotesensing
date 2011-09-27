@@ -4,35 +4,52 @@
 # Version 1, August 2011
 
 modis.download <- function(tile, ftp_dir, savedir, redownload=FALSE, verbose=TRUE){
-	success <- 0
-	if (verbose) show.message(paste("Acquiring file list in", ftp_dir), eol="\n")
-	force.directories(savedir)
+	result <- NULL # NULL data is the default result of failure
+	if (verbose)  {
+		show.message(paste("Acquiring file list in", ftp_dir), eol="\n")
+		show.message(paste("Saving files to ", savedir), eol="\n")
+	}
+	force.directories(savedir,recursive=TRUE)
 	files <- withRetry(unlist(strsplit(getURL(ftp_dir, .opts=curlOptions(ftplistonly=TRUE)),"\n")))
 	if (length(files)>0){
 		BLOCK1 <- gsub("\r", "", files[grep(paste(tile,"hdf",sep=".*."),files)])
 		BLOCK1 <-  BLOCK1[-grep("xml",BLOCK1)]
 		
-		if (length(BLOCK1)!=0){
-			dfile <- paste(dldir, BLOCK1, sep="/")
-			if (file.exists(dfile) & !redownload) {
+		if (length(BLOCK1)!=0){ 
+			hdffile <- paste(savedir, BLOCK1, sep="/")
+			if (file.exists(hdffile) & !redownload) {
+				# File already present in local savedir
 				if (verbose) show.message(paste(BLOCK1, " Exists. ", sep=""), eol="\n")
-				success <- dfile	
+				result <- c(hdffile)	
 			} else {
-				if (verbose) show.message(paste("Downloading ", BLOCK1, sep=""), eol="\n")		
-				flag <- withRetry(download.file(paste(ftp_dir, BLOCK1,sep="/"), destfile=dfile, method='internal', mode='wb',quiet=TRUE),retries=49)
+				# File not yet downloaded - attempt to get it!
+				if (verbose) show.message(paste("Downloading ", ftp_dir, BLOCK1,sep=""), eol="\n")		
+				items <- withRetry(download.file(paste(ftp_dir, BLOCK1,sep=""), destfile=hdffile, method='internal', mode='wb',quiet=TRUE),retries=49,verbose=verbose)
 				
-				if(class(flag)!="logical") success <- dfile	else unlink(dfile)			
+				if(length(items)>0) {
+					show.message(paste(hdffile," successfully downloaded!",sep=""), eol="\n")
+					result <- c(hdffile)
+				} else {
+					show.message(paste(ftp_dir, BLOCK1," seen but could not be downloaded?",sep=""), eol="\n")
+					unlink(hdffile) 
+				}
 			}
 			
 		} else {
-			show.message(paste(tile, "not found in", ftp_dir), eol="\n")
-			success <- 1
+			show.message(paste(tile, "not found in", ftp_dir), eol="\n") 
+			
 		}
 	}	
-	return(success)
+	return(result)
 }
 
 modis.hdf2tif <- function(hdffile, outdir, MRT_HOME=normalizePath(Sys.getenv("MRT_HOME"),winslash="/"), rm.hdf=FALSE){
+	
+	if(!is.character(hdffile)) {
+		show.message(paste(hdffile," is not a valid HDF file name character string?",sep=""), eol="\n")
+		return(FALSE)
+	}	
+	
 	force.directories(outdir)
 	success <- FALSE
 	if (MRT_HOME=="") {
@@ -54,3 +71,4 @@ modis.hdf2tif <- function(hdffile, outdir, MRT_HOME=normalizePath(Sys.getenv("MR
 	}	
 	return(success)
 }
+

@@ -58,11 +58,11 @@ bandnumber <- function(bandname, ref="ricemap", asString=TRUE){
 	return(result)
 } 
 
-withRetry <- function(expr, retries=10, initpause=30, failtime=10){
+withRetry <- function(expr, retries=10, initpause=30, failtime=10,verbose=FALSE){
 	tries <- 0
 	success <- FALSE
 	while(success==FALSE & (tries<retries | failtime>(initpause*tries))){
-		items <- try(expr,silent=TRUE)
+		items <- try(expr,silent= !verbose) 
 		if (class(items)=="try-error"){
 			tries <- tries+1
 			show.message("Timeout? trying again in ", (initpause*tries) ," secs...", eol="\n")
@@ -71,6 +71,6 @@ withRetry <- function(expr, retries=10, initpause=30, failtime=10){
 			success <- TRUE
 		}		
 	}
-	if (!success) items <- success
+	if (!success) items <-c() # return an empty vector if the expr fails to return anything or times out to the limit 
 	return(items)
 }
