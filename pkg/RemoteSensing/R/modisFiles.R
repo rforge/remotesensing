@@ -8,12 +8,18 @@ modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'ver
     
     filename <- dir(..., pattern=formatExt(format))    
     
+	if (length(filename)<1) {
+		message("No files found matching ", formatExt(format))
+		return(vector())
+	}
+	
     info <- sub(".hdf","",basename(filename))
 	
 	x <- unlist(strsplit(info, sep))
 	m <- as.data.frame(matrix(x, ncol=length(modisinfo), byrow=TRUE), stringsAsFactors=FALSE)
 	if (ncol(m) != length(modisinfo)) { 
-        stop('oops, non standard filenames found') 
+		message("Non-standard filenames found ")
+        return(vector()) 
     }
     colnames(m) <- modisinfo
     year <- as.numeric(substr(m$acqdate,2,5))
