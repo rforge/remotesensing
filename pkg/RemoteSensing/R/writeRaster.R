@@ -4,6 +4,17 @@
 # Licence GPL v3
 
 
+setMethod('writeRaster', signature(x='SatelliteImage', filename='character'), 
+function(x, filename, ...) {
+
+	xr <- callNextMethod(x, filename, ...)
+	# now write Sat metadata
+
+	return(xr)  # for now; a RasterBrick 
+}	
+)
+
+
 setMethod('writeRaster', signature(x='Landsat', filename='character'), 
 function(x, filename, ...) {
 
