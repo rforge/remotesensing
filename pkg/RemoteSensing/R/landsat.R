@@ -10,20 +10,28 @@
 	return(meta)
 }
 
-getLandsatCPF <- function(sensor, filename) {
+getLandsatCPF <- function(MTLfile) {
 #Read the Landsat calibration paramter file (CPF) via ftp
-	if (sensor == "ETM+")   
-		ftpdir <- "ftp://edclpdsftp.cr.usgs.gov/pub/data/CPF/ETM/"
-	else  
-		ftpdir <- "ftp://edclpdsftp.cr.usgs.gov/pub/data/CPF/TM/" 
+# Modifications performed by Matteo Mattiuzzi 23.01.2012
 	
-	n <- nchar(filename)
-	cpf_filename <- paste(substr(filename, 1, n-3), ".", substr(filename,n-1,n), sep="")
-	download.file(paste(ftpdir, cpf_filename, sep=""), filename)
-	cpf <- .readMetadata(filename)
+	metainfo <- RemoteSensing:::.readMetadata(MTLfile)
+	cpf_filename <- metainfo[metainfo[,1]=="CPF_FILE_NAME",2]
+	sensor <- metainfo[metainfo[,1]=="SENSOR_ID",2]
+	
+	if (sensor == "ETM+") {
+		ftpdir <- "ftp://edclpdsftp.cr.usgs.gov/pub/data/CPF/ETM/"
+	} else {  
+		ftpdir <- "ftp://edclpdsftp.cr.usgs.gov/pub/data/CPF/TM/TM_CPF/" 
+	}
+	
+	n <- nchar(cpf_filename)
+	cpf_filename <- paste(substr(cpf_filename, 1, n-3), ".", substr(cpf_filename,n-1,n), sep="")
+	download.file(paste(ftpdir, cpf_filename, sep=""), cpf_filename)
+
+	cpf <- RemoteSensing:::.readMetadata(cpf_filename)
+	unlink(cpf_filename)
 	return(cpf)
 }
-
 
 #parse Landsat metadata file and extract needed parameters
 landsat <- function(filename) {
