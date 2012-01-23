@@ -86,10 +86,12 @@ setMethod("initialize", "LandsatMSS",
 setClass('LandsatTM', contains='Landsat',
 	representation (
 		thermal = 'RasterLayer',
-		thermal_callibrated = 'logical'
+		thermal_callibrated = 'logical',
+		thermal_callibration = 'character'
 	),
 	prototype (
-		thermal_callibrated = FALSE
+		thermal_callibrated = FALSE,
+		thermal_callibration = ''
 	)
 )
 
@@ -111,10 +113,12 @@ setClass('LandsatETMp', contains='Landsat',
 	representation (
 		thermal = 'RasterStackBrick',
 		panchromatic = 'RasterLayer',
-		thermal_callibrated = 'logical'
+		thermal_callibrated = 'logical',
+		thermal_callibration = 'character'
 	),
 	prototype (
-		thermal_callibrated = FALSE
+		thermal_callibrated = FALSE,
+		thermal_callibration = ''
 	)	
 )
 
