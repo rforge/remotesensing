@@ -10,11 +10,11 @@
 	return(meta)
 }
 
-getLandsatCPF <- function(MTLfile) {
+getLandsatCPF <- function(filename) {
 #Read the Landsat calibration paramter file (CPF) via ftp
 # Modifications performed by Matteo Mattiuzzi 23.01.2012
 	
-	metainfo <- RemoteSensing:::.readMetadata(MTLfile)
+	metainfo <- .readMetadata(filename)
 	cpf_filename <- metainfo[metainfo[,1]=="CPF_FILE_NAME",2]
 	sensor <- metainfo[metainfo[,1]=="SENSOR_ID",2]
 	
@@ -28,7 +28,7 @@ getLandsatCPF <- function(MTLfile) {
 	cpf_filename <- paste(substr(cpf_filename, 1, n-3), ".", substr(cpf_filename,n-1,n), sep="")
 	download.file(paste(ftpdir, cpf_filename, sep=""), cpf_filename)
 
-	cpf <- RemoteSensing:::.readMetadata(cpf_filename)
+	cpf <- .readMetadata(cpf_filename)
 	unlink(cpf_filename)
 	return(cpf)
 }
