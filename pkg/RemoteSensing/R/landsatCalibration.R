@@ -36,12 +36,14 @@ dn2rad <- function(x, filename='', ...) {
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
 	}
-	radiance 	<- calc(x, function(x){ (x * gain + bias) }, filename=filename, ... )
+	radiance 	<- calc(x, function(x){ t(t(x) * gain + bias) }, filename=filename, forcefun=TRUE,... )
 
-	x@callibrated <- TRUE
+	radiance       <- stack(radiance) # is stacking needed?
+	x@layers       <- radiance@layers
+	x@callibrated  <- TRUE
 	x@callibration <- 'radiance'
-	
-	return(radiance)
+	x@unit         <- 'W/m2 sr um' # right unit?
+	return(x)
 }
 
 
@@ -70,18 +72,18 @@ dn2ref  <- function( x, filename='', ... ) {
 		stop('length(gain) != nlayers(x)')
 	}
 	
-	ESUN	<- .esun(x@spacecraft, x@sensor)[layerNames(x)]
-	doy 	<- as.integer(format(as.Date(x@acquisition_date),"%j"))
+	ESUN	<- .esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
+	doy 	<- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
 	ds		<- getDS(doy)
-	xfac 	<- (pi * ds * ds) / (ESUN * cos ((90 - x@sun_elevation)* pi/180))
+	xfac 	<- (pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation)* pi/180))
+		
+	reflectance <- calc(x, function(x){ t(((t(x) * gain + bias)) * xfac) }, filename=filename, forcefun=TRUE, ... ) 
+	reflectance <- stack(reflectance) # is stacking needed?
+	x@layers <- reflectance@layers
 
-	radiance <- calc(x, function(x){ (x * gain + bias) * xfac }, filename=filename, ... )
-	
-	radiance <- stack(radiance)
-	x@layers <- radiance@layers
-
-	x@callibrated <- TRUE
+	x@callibrated  <- TRUE
 	x@callibration <- 'reflectance'
+	x@unit         <- 'factor' # right unit?
 	
 	return(x)
 }
@@ -94,9 +96,9 @@ dn2temp <- function(x, filename='', ...) {
 		stop('only available for Landsat objects')	
 	}
 
-	if (x@sensor == "ETM+") {
+	if (x@sensor@name == "ETM+") {
 		b <- c("BAND61","BAND62")
-	} else if (x@sensor  == "TM") {
+	} else if (x@sensor@name  == "TM") {
 		b <- "BAND6"  
 	} else {
 		stop('not done yet')
@@ -111,26 +113,29 @@ dn2temp <- function(x, filename='', ...) {
 		if (spacecraft == "Landsat4" & sensor == "TM") { K <-  c(671.62, 1284.3) }
 		else if (spacecraft == "Landsat5" & sensor == "TM") { K <-  c(607.76, 1260.56) }
 		else if (spacecraft == "Landsat7") { K <- c(666.09, 1282.71 ) }
-		else K<- NA
+		else K <- NA
 		return (K)
 	}
 
-	K <- K_landsat(x@spacecraft, x@sensor)
+	K <- K_landsat(x@sensor@spacecraft, x@sensor@name)
 
 	gb		<- .getGainBias(x)
 	gain	<- gb[, "gain"][b]
 	bias	<- gb[, "bias"][b]
 
-	# radiance	
-	temp <- calc(x@thermal, function(x){ (x * gain + bias) } )
 
-	temp <- calc(temp, fun=function(x){ K[2] / (log ((K[1] / x) + 1.0)) }, filename=filename, ...)
-	if (x@sensor == "ETM+") {
+	# radiance	
+	# temp <- calc(x@thermal, function(x){ (x * gain + bias) }) # inserted in the next step avoid traffic
+	temp <- calc(x@thermal, fun=function(x){ K[2] / (log ((K[1] / (t(t(x)*gain+bias))) + 1.0)) }, filename=filename, forcefun=TRUE, ...)
+	
+	if (x@sensor@name == "ETM+") {
 		temp <- stack(temp)
 	} 
 	
 	x@thermal <- temp
 	x@thermal_callibrated <- TRUE
+	x@thermal_callibration <- 'LST' # ?
+	x@thermal@unit <- 'K'
 	
 	return(x)
 }
@@ -256,11 +261,11 @@ dn2temp <- function(x, filename='', ...) {
 
 
 .getGainBias <- function(x) {
-	if (is.na(x@lmax[1])) {
-		gb <- .GainBias(x@spacecraft, x@sensor, x@acquisition_date, x@product_creation_date) 
+	if (is.na(x@sensor@lmax[1])) {
+		gb <- .GainBias(x@sensor@spacecraft, x@sensor@name, x@sensor@acquisition_date, x@sensor@product_creation_date) 
 	} else {
-		gain 	<- (x@lmax - x@lmin) / (x@qcalmax - x@qcalmin)
-		bias 	<- x@lmin - gain * x@qcalmin
+		gain 	<- (x@sensor@lmax - x@sensor@lmin) / (x@sensor@qcalmax - x@sensor@qcalmin)
+		bias 	<- x@sensor@lmin - gain * x@sensor@qcalmin
 		gb	<- cbind(gain,bias)
 	}
 	return(gb)
@@ -324,7 +329,7 @@ dn2temp <- function(x, filename='', ...) {
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
 	xfac <- (pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
 	#reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
-	reflectance <- calc(radiance, fun = function(x) {x*xfac})
+	reflectance <- calc(radiance, fun = function(x) {t(t(x)*xfac)}, forcefun=TRUE)
 	#reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)
 	return (reflectance)
 }
