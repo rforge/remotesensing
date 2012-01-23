@@ -28,26 +28,37 @@ dn2rad(x, filename='', ...)
 A callibrated Landsat object.
 }
 
-\author{Alice Laborte, Yann Chemin, Robert Hijmans}
+\author{Alice Laborte, Yann Chemin, Robert Hijmans, Matteo Mattiuzzi}
 
 \examples{
+\dontrun{
 metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
 
 #Create Landsat object
 img <- landsat(metafile)
 
-#calculate reflectance and save output as a RasterStack (ref.stk);
-#individual bands are stored as RasterLayers ref_BAND1, ref_BAND2, etc
-ref <- dn2ref(img, filename="reflection.tif")
+# calculate reflectance
+ref <- dn2ref(img)
+# calculate reflectance and save output as a RasterBrick;
+ref <- dn2ref(img,"ref.img")
+# unlink("ref.img")
 
 # true color:
 # plotRGB(ref, 3,2,1, scale=0.36)
 # false color:
 # plotRGB(ref, 4,3,2, scale=0.45)
 
-#calculate temperature from thermal bands 
-temp <- dn2temp(img, "temp")
+# calculate temperature (LST) from thermal bands 
+temp <- dn2temp(img)
+# plot(temp@thermal)
 
+# or for the generation of a fully callibrated image
+# ref <- dn2ref(img)
+calib <- dn2temp(ref)
+calib # reflectance bands
+calib@thermal # LST bands
+
+}
 
 }
 

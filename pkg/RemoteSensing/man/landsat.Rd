@@ -27,11 +27,11 @@ getLandsatCPF(filename)
 \author{Alice Laborte}
 
 \examples{
-dontrun{
+\dontrun{
 metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
 
 cpf <- getLandsatCPF(metafile)
-cpf[1:10,]
+head(cpf)
 #read Landsat metadata file and get parameters
 img <- landsat(metafile)
 }

@@ -29,7 +29,7 @@ RasterLayer
 \author{Alice Laborte}
 
 \examples{
-
+\dontrun{
 #create Landsat object from metadata file (that has the necessary parameters)
 metafile <- system.file("external/L71129046_04620080329_MTL.txt", package="RemoteSensing")
 img <- landsat(metafile)
@@ -41,6 +41,7 @@ img <- dn2temp(img)
 
 #mask out clouds
 masked <- removeClouds(img)
+}
 }
 
 \keyword{spatial}
