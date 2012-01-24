@@ -16,7 +16,8 @@ setClass('Sensor',
 		specmid = 'numeric',
 		speccol = 'character',
 		layer = 'integer',
-
+		band_filenames = 'character', # is this ok here? (MAT)
+		
 		#acquisition info
 		acquisition_date = 'character',
 		acquisition_time = 'character',
@@ -25,6 +26,7 @@ setClass('Sensor',
 
 		product_creation_date = 'character',		
 		zone = 'character'
+
 	)
 )
 

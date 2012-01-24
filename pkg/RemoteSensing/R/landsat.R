@@ -44,21 +44,20 @@ landsat <- function(filename) {
 	pars 			<- .readMetadata(filename)
 	pathname		<- dirname(filename)
 	
-	spacecraft	   			<- pars[pars[,1]=="SPACECRAFT_ID",2]
-	sensor	        	   	<- pars[pars[,1]=="SENSOR_ID",2]
-	acquisition_date		<- pars[pars[,1]=="ACQUISITION_DATE",2]
-	scene_center_scan_time  <- pars[pars[,1]=="SCENE_CENTER_SCAN_TIME",2]
-	product_creation_date	<- pars[pars[,1]=="PRODUCT_CREATION_TIME",2]
-	sun_elevation 			<- as.numeric(pars[pars[,1]=="SUN_ELEVATION",2])
-	sun_azimuth 			<- as.numeric(pars[pars[,1]=="SUN_AZIMUTH",2])
-	cpf_filename			<- pars[pars[,1]=="CPF_FILE_NAME",2]
+	spacecraft              <- pars[pars[,1]=="SPACECRAFT_ID",2]
+	sensor                  <- pars[pars[,1]=="SENSOR_ID",2]
+	acquisition_date        <- pars[pars[,1]=="ACQUISITION_DATE",2]
+	product_creation_date   <- pars[pars[,1]=="PRODUCT_CREATION_TIME",2]
+	sun_elevation           <- as.numeric(pars[pars[,1]=="SUN_ELEVATION",2])
+	sun_azimuth             <- as.numeric(pars[pars[,1]=="SUN_AZIMUTH",2])
+	cpf_filename            <- pars[pars[,1]=="CPF_FILE_NAME",2]
 	meta_filename           <- pars[pars[, 1] == "METADATA_L1_FILE_NAME", 2]
-	starting_row			<- pars[pars[,1]=="STARTING_ROW",2]
-	ending_row				<- pars[pars[,1]=="ENDING_ROW",2]
-	zone			        <- paste("p",pars[pars[,1]=="WRS_PATH",2],"r", 
+	starting_row            <- pars[pars[,1]=="STARTING_ROW",2]
+	ending_row              <- pars[pars[,1]=="ENDING_ROW",2]
+	zone                    <- paste("p",pars[pars[,1]=="WRS_PATH",2],"r", 
 						ifelse(starting_row==ending_row,starting_row,paste(starting_row,"-",ending_row, sep="")),sep="")
-	bandcomb       			<- pars[pars[,1]=="BAND_COMBINATION",2]
-	n_bands            		<- as.integer(nchar(bandcomb))
+	bandcomb                <- pars[pars[,1]=="BAND_COMBINATION",2]
+	n_bands                 <- as.integer(nchar(bandcomb))
 
 		
 	bandn    <- rep(NA,n_bands)
@@ -82,8 +81,8 @@ landsat <- function(filename) {
 		band_filenames[i]  	<- paste(pathname, '/', pars[pars[,1]==paste( bandn[i], "_FILE_NAME", sep=""),2], sep='')
 	}
 	
-	# cpf <- getLandsatCPF(metafile)
-	#acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2] # what is this value?
+	# cpf <- getLandsatCPF(metafile) # this works now!
+	# acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2] # what is this value?
 	
 	if (sensor == "ETM+") {			
 		img <- new("LandsatETMp")	
@@ -116,14 +115,18 @@ landsat <- function(filename) {
     img@sensor@cpf_filename <- cpf_filename
     img@sensor@metafile <- meta_filename
     #img@sensor@acquisition_time <- acquisition_time # please check above
-    img@sensor@acquisition_time <- scene_center_scan_time # is this ok?
-    #img@sensor@band_filenames <- pars[grep(pars[,1],pattern="^BAND._FILE_NAME$"),2] # missing slot in class sensor, should this be a part of class sensor or mayby better to class LandsatTM/LandsatETMp?
+#	if (sensor=="ETM+") {
+	img@sensor@acquisition_time  <- pars[pars[,1]=="SCENE_CENTER_SCAN_TIME",2]
+#	} 
+
+	img@sensor@band_filenames <- pars[grep(pars[,1],pattern="^BAND.*_FILE_NAME$"),2] # ALL BANDS!!!?
     img@sensor@zone <- zone
     img@sensor@lmax <- lmax
     img@sensor@lmin <- lmin
     img@sensor@qcalmax <- qcalmax
     img@sensor@qcalmin <- qcalmin
 	
+	img@callibration <- "none"
 	img@unit <- "DN" # ?
 	img@thermal@unit <- "DN" # ?
 	img@layers <- lapply(img@layers, function(x){ NAvalue(x) <- 0; return(x)} )
