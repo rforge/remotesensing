@@ -5,7 +5,7 @@
 # Licence GPL v3
 
 
-modis.clean <- function(modfiles, modisdate, masklist=c("cloud","snow", "water"), bands=c("b01", "b02", "b03", "b04", "b05", "b06", "b07"), scalemultiplier=0.0001, savemask=TRUE, writeto=NA, verbose=TRUE){
+modis.clean <- function(modfiles, modisdate, masklist=c("cloud","snow", "water"), bands=c("b01", "b02", "b03", "b04", "b05", "b06", "b07"), scalemultiplier=0.0001, savemask=TRUE, writeto="./clean", verbose=TRUE){
 	# check if 64-bit 
 	is64 <- version$arch=="x86_64"
 	

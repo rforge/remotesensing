@@ -6,9 +6,8 @@
 
 # Cloud Mask
 .cloudMask <- function(b3){
-	b3 <- b3/100
 #	res <- (((b3 > 18)*0) + (b3 < 18))
-	res <- b3 < 18
+	res <- b3 < 0.18
     return(res)
 }
 
@@ -85,7 +84,12 @@ modis.mask <- function(modvals, masks){
     masks <- as.matrix(masks)
     for (i in 1:ncol(masks)){        
         if (class(masks[,i])!="logical") stop("Masks should be of logical type.")
-        if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) modvals <- modvals*masks[,i]
+        #if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) modvals <- modvals*masks[,i]
+        if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) {
+            m <- masks[,i]
+            m[is.na(m)] <- FALSE
+            modvals[!m,] <- NA
+        }
     }
     return(modvals)
 }
