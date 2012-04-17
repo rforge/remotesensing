@@ -7,55 +7,58 @@
 
 modis.clean <- function(modfiles, modisdate, masklist=c("cloud","snow", "water"), bands=c("b01", "b02", "b03", "b04", "b05", "b06", "b07"), scalemultiplier=0.0001, savemask=TRUE, writeto="./clean", verbose=TRUE){
 	# check if 64-bit 
-	is64 <- version$arch=="x86_64"
+	#is64 <- version$arch=="x86_64"
 	
     # get only files with acqdate=modisdate
 	files <- modfiles[modfiles$acqdate==modisdate,]
 	
-	# COMPUTE MASKS
-	if (verbose) show.message(modisdate, ": Identifying ", paste(masklist, collapse=", "), eol="\r")
-	rbands <- getRequiredBands(masklist)
-	mstack <- stack(files$filename[files$band %in% rbands])
-
+    if (verbose) show.message(modisdate, ": Reading MODIS images. ", eol="\r")
+	#pbands <- files[files$band %in% bands,] 	
+	pstack <- suppressMessages(stack(files$filename))
+	NAvalue(pstack) <- -28672
+	stkvals <- as.data.frame(values(pstack))
+	colnames(stkvals) <- files$band
+    #rescale all bands except state_500m
+    stkvals[,files$band %in% bands] <- stkvals[,files$band %in% bands]*scalemultiplier
+	
+    # Create modis.data object for mask
 	mdata <- new("modis.data")
 	mdata@product <- files$product[1]
 	mdata@acqdate <-  files$acqdate[1]
 	mdata@zone <- files$zone[1]
 	mdata@version <- files$version[1]
 	mdata@proddate <- files$proddate[1]
-	mdata@projection <- projection(mstack)
-	mdata@extent <- extent(mstack)
-	mdata@ncols <- ncol(mstack)
-	mdata@nrows <- nrow(mstack)
-	
+	mdata@projection <- projection(pstack)
+	mdata@extent <- extent(pstack)
+	mdata@ncols <- ncol(pstack)
+	mdata@nrows <- nrow(pstack)
+	# Duplicate mask storage for results 
 	bdata <- mdata
 	
-	NAvalue(mstack) <- -28672
+	# COMPUTE MASKS
+	if (verbose) show.message(modisdate, ": Identifying ", paste(masklist, collapse=", "), eol="\r")
+	rbands <- getRequiredBands(masklist)
+	mdata@imgvals <- modis.compute(stkvals[,files$band %in% rbands], funlist=masklist, datatype="logical")
 	
-	stkvals <- values(mstack)
-	colnames(stkvals) <- rbands
-	stkvals[,rbands %in% bands] <- stkvals[,rbands %in% bands]*scalemultiplier 
-	mdata@imgvals <- modis.compute(as.data.frame(stkvals), funlist=masklist, datatype="logical")
-	rm(stkvals)
-	gc(verbose=FALSE)
-	
-	pbands <- files[files$band %in% bands,] 	
-	pstack <- stack(pbands$filename)
-	NAvalue(pstack) <- -28672
-	bdata@imgvals <-as.data.frame(values(pstack)*scalemultiplier)
-	colnames(bdata@imgvals) <- pbands$band
-	
-	if (is64){
-		if (verbose) show.message(modisdate, ": Applying masks", eol="\r")
-		bdata@imgvals <- modis.mask(bdata@imgvals,mdata@imgvals)
-		gc(verbose=FALSE)
-	} else {
-		for (i in 1:ncol(bdata@imgvals)){
-			if (verbose) show.message(modisdate, ": Applying masks to ", colnames(bdata@imgvals)[i], eol="\r")
-			bdata@imgvals[,i] <- modis.mask(bdata@imgvals[,i],mdata@imgvals)
-		}
-		gc(verbose=FALSE)
+    # Mask specified bands
+	#if (is64){   # if 64-bit do simultaneous
+	#	if (verbose) show.message(modisdate, ": Applying masks", eol="\r")
+	#	bdata@imgvals <- modis.mask(as.data.frame(stkvals[,files$band %in% bands]),mdata@imgvals)
+	#} else {    #  if 32-bit do by band
+    cname <- vector()
+    masked <- vector()
+	for (i in 1:nrow(files)){            
+          if (!files$band[i] %in% bands) next
+          cname <- c(cname,files$band[i])
+		if (verbose) show.message(modisdate, ": Applying masks to ", files$band[i], eol="\r")
+          masked <- cbind(masked,modis.mask(stkvals[,files$band[i]],mdata@imgvals))                        
 	}
+    colnames(masked) <- cname
+    bdata@imgvals <- as.data.frame(masked)
+	#}
+
+    rm(masked,stkvals,pstack)
+	gc(verbose=FALSE)
 	
 	if (is.character(writeto)){
 		outdir <- normalizePath(writeto, mustWork=FALSE)
@@ -67,30 +70,17 @@ modis.clean <- function(modfiles, modisdate, masklist=c("cloud","snow", "water")
 		if(savemask){
 			if (verbose) show.message(modisdate, ": Writing mask rasters to disk.", eol="\r")
 			modis.brick(mdata, process="clean", intlayers=1:ncol(mdata@imgvals),writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
-			#for (i in 1:ncol(masks)){
-			#	praster <- setValues(raster(mstack),masks[,i])
-			#	fname <- paste(pbands$acqdate[i], pbands$zone[i], colnames(masks)[i], "clean", pbands$format[i], sep=".")
-			#	fname <- as.character(paste(outdir,fname,sep="/"))
-			#	writeRaster(praster,filename=fname,format="GTiff", options="COMPRESS=LZW", NAflag=-15, overwrite=TRUE, datatype="INT2S")
-			#}
 		}
-		#for (i in 1:ncol(mdata@imgvals)){
-			
-		#	praster <- setValues(raster(pstack),bandsval[,i])
-		#	fname <- as.character(paste(outdir, paste(pbands$acqdate[i], pbands$zone[i], colnames(bandsval)[i], "clean", pbands$format[i], sep="."),sep="/"))
-		#	writeRaster(praster,filename=fname,format="GTiff", options="COMPRESS=LZW", NAflag=-9999.0, overwrite=TRUE)
-		#}
 	}
 
-	if (verbose) 			show.message(modisdate, ": -------------------- DONE CLEANING --------------------", eol="\n")
-    rm(mstack,pstack,mdata)
+	if (verbose) show.message(modisdate, ": -------------------- DONE CLEANING --------------------", eol="\n")
+    rm(mdata)
 	gc(verbose=FALSE)	
 	return(bdata)
-	
 }
 
 modisClean <- function(inpath, outformat="raster", tiles="all", verbose=TRUE){
-    
+                                                                                                                    
     m <- modisFiles(path=inpath)
             
     # processing of all tiles in a directory

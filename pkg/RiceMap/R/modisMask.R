@@ -78,18 +78,11 @@ snow <- function(state_500m){
 }
 
 modis.mask <- function(modvals, masks){
-    # check mask values
-    #
-    #
     masks <- as.matrix(masks)
-    for (i in 1:ncol(masks)){        
-        if (class(masks[,i])!="logical") stop("Masks should be of logical type.")
-        #if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) modvals <- modvals*masks[,i]
-        if(sum(masks[,i],na.rm=TRUE)<nrow(masks)) {
-            m <- masks[,i]
-            m[is.na(m)] <- FALSE
-            modvals[!m,] <- NA
-        }
+    m <- rowSums(masks, na.rm=TRUE)
+    mm <- which(m<ncol(masks)) 
+    if (is.null(ncol(modvals))) modvals[mm] <- NA else {
+        for (i in 1:ncol(modvals)) modvals[mm,i] <- NA
     }
     return(modvals)
 }
