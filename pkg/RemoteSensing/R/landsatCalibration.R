@@ -36,6 +36,14 @@ dn2rad <- function(x, filename='', ...) {
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
 	}
+	
+    if (strsplit(filename,"\\.")[[1]][1]=='default'){
+	    fname <- strsplit(filename,"\\.")[[1]]
+	    ftype <- fname[length(fname)]
+	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
+	    cat("Using default 'filename'", filename, "\n")
+	}
+
 	radiance 	<- calc(x, function(x){ t(t(x) * gain + bias) }, filename=filename, forcefun=TRUE,... )
 
 	radiance       <- stack(radiance) # is stacking needed?
@@ -64,18 +72,25 @@ dn2ref  <- function( x, filename='', ... ) {
 		return ( 1.0 + 0.01672 * sin( 2 * pi * ( doy - 93.5 ) / 365 ) )
 	}
 	
-	gb 		<- .getGainBias(x)
+	gb 		<- RemoteSensing:::.getGainBias(x)
 	gain	<- gb[, "gain"][layerNames(x)]
 	bias	<- gb[, "bias"][layerNames(x)]
 
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
 	}
+		
+	ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
+	doy     <- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
+	ds      <- getDS(doy)
+	xfac    <- (pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation)* pi/180))
 	
-	ESUN	<- .esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
-	doy 	<- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
-	ds		<- getDS(doy)
-	xfac 	<- (pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation)* pi/180))
+	if (strsplit(filename,"\\.")[[1]][1]=='default'){
+	    fname <- strsplit(filename,"\\.")[[1]]
+	    ftype <- fname[length(fname)]
+	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
+	    cat("Using default 'filename'", filename, "\n")
+	}
 		
 	reflectance <- calc(x, function(x){ t(((t(x) * gain + bias)) * xfac) }, filename=filename, forcefun=TRUE, ... ) 
 	reflectance <- stack(reflectance) # is stacking needed?
@@ -123,9 +138,15 @@ dn2temp <- function(x, filename='', ...) {
 	gain	<- gb[, "gain"][b]
 	bias	<- gb[, "bias"][b]
 
+	if (strsplit(filename,"\\.")[[1]][1]=='default'){
+	    fname <- strsplit(filename,"\\.")[[1]]
+	    ftype <- fname[length(fname)]
+	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
+	    cat("Using default 'filename'", filename, "\n")
+	}
+
 
 	# radiance	
-	# temp <- calc(x@thermal, function(x){ (x * gain + bias) }) # inserted in the next step avoid traffic
 	temp <- calc(x@thermal, fun=function(x){ K[2] / (log ((K[1] / (t(t(x)*gain+bias))) + 1.0)) }, filename=filename, forcefun=TRUE, ...)
 	
 	if (x@sensor@name == "ETM+") {
