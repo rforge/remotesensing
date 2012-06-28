@@ -12,7 +12,6 @@
 
 getLandsatCPF <- function(filename) {
 #Read the Landsat calibration paramter file (CPF) via ftp
-# Modifications performed by Matteo Mattiuzzi 23.01.2012
 	
 	metainfo <- .readMetadata(filename)
 	
@@ -39,9 +38,8 @@ getLandsatCPF <- function(filename) {
 
 #parse Landsat metadata file and extract needed parameters
 landsat <- function(filename) {
-	# Modifications performed by Matteo Mattiuzzi 23.01.2012
 	
-	pars 			<- .readMetadata(filename)
+	pars 			<- RemoteSensing:::.readMetadata(filename)
 	pathname		<- dirname(filename)
 	
 	spacecraft              <- pars[pars[,1]=="SPACECRAFT_ID",2]
@@ -128,7 +126,7 @@ landsat <- function(filename) {
 	
 	img@callibration <- "none"
 	img@unit <- "DN" # ?
-	img@thermal@unit <- "DN" # ?
+	#img@thermal@unit <- "DN" #  slot not available!
 	img@layers <- lapply(img@layers, function(x){ NAvalue(x) <- 0; return(x)} )
 	
 	return (img)
