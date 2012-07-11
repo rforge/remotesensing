@@ -40,7 +40,7 @@ dn2rad <- function(x, filename='', ...) {
     if (strsplit(filename,"\\.")[[1]][1]=='default'){
 	    fname <- strsplit(filename,"\\.")[[1]]
 	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
+	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
 	    cat("Using default 'filename'", filename, "\n")
 	}
 
@@ -88,7 +88,7 @@ dn2ref  <- function( x, filename='', ... ) {
 	if (strsplit(filename,"\\.")[[1]][1]=='default'){
 	    fname <- strsplit(filename,"\\.")[[1]]
 	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
+	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
 	    cat("Using default 'filename'", filename, "\n")
 	}
 		
@@ -141,7 +141,7 @@ dn2temp <- function(x, filename='', ...) {
 	if (strsplit(filename,"\\.")[[1]][1]=='default'){
 	    fname <- strsplit(filename,"\\.")[[1]]
 	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(img@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
+	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
 	    cat("Using default 'filename'", filename, "\n")
 	}
 

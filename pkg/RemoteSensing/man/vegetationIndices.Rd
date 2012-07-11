@@ -58,6 +58,7 @@ wdvi(red, nir, slslope = 1)
 \author{Yann Chemin}
 
 \examples{
+\dontrun{
 #MODIS NDVI processing example
 #Create RasterLayer objects
 red <- raster( system.file("external/MOD09A1_b1.tif", package="RemoteSensing"))
@@ -75,6 +76,7 @@ plot(NDVI, col=grey(0:255/255))
 #add Philippines country boundary
 #phl <- getData('gadm', country="PHL", level=0)
 #plot(phl, add=T, border="red")
+}
 }
 
 \keyword{spatial}
