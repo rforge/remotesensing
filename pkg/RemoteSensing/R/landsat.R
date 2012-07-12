@@ -124,9 +124,14 @@ landsat <- function(filename) {
     img@sensor@qcalmax <- qcalmax
     img@sensor@qcalmin <- qcalmin
 	
-	img@callibration <- "none"
-	img@unit <- "DN" # ?
-	#img@thermal@unit <- "DN" #  slot not available!
+	img@calibrated  <- FALSE	
+	img@calibration <- "none"
+	img@unit <- "DN"
+
+	img@thermal_calibrated  <- FALSE	
+	img@thermal_calibration <- "none"
+	img@thermal_unit <- "DN"
+	
 	img@layers <- lapply(img@layers, function(x){ NAvalue(x) <- 0; return(x)} )
 	
 	return (img)

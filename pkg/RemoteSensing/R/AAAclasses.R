@@ -16,7 +16,7 @@ setClass('Sensor',
 		specmid = 'numeric',
 		speccol = 'character',
 		layer = 'integer',
-		band_filenames = 'character', # is this ok here? (MAT)
+		band_filenames = 'character',
 		
 		#acquisition info
 		acquisition_date = 'character',
@@ -33,12 +33,14 @@ setClass('Sensor',
 setClass('SatelliteImage', contains=c('RasterStack', 'VIRTUAL'), 
 	representation (
 		sensor = 'Sensor',
-		callibrated = 'logical',
-		callibration = 'character'
+		calibrated = 'logical',
+		calibration = 'character',
+		unit = 'character'
 	),
 	prototype (
-		callibrated = FALSE,
-		callibration = ''
+		calibrated = FALSE,
+		calibration = '',
+	    unit = ''
 	)
 )
 
@@ -88,12 +90,14 @@ setMethod("initialize", "LandsatMSS",
 setClass('LandsatTM', contains='Landsat',
 	representation (
 		thermal = 'RasterLayer',
-		thermal_callibrated = 'logical',
-		thermal_callibration = 'character'
+		thermal_calibrated = 'logical',
+		thermal_calibration = 'character',
+		thermal_unit = 'character'
 	),
 	prototype (
-		thermal_callibrated = FALSE,
-		thermal_callibration = ''
+		thermal_calibrated = FALSE,
+		thermal_calibration = '',
+		thermal_unit = ''
 	)
 )
 
@@ -115,12 +119,14 @@ setClass('LandsatETMp', contains='Landsat',
 	representation (
 		thermal = 'RasterStackBrick',
 		panchromatic = 'RasterLayer',
-		thermal_callibrated = 'logical',
-		thermal_callibration = 'character'
+		thermal_calibrated = 'logical',
+		thermal_calibration = 'character',
+		thermal_unit = 'character'
 	),
 	prototype (
-		thermal_callibrated = FALSE,
-		thermal_callibration = ''
+		thermal_calibrated = FALSE,
+		thermal_calibration = '',
+		thermal_unit = ''
 	)	
 )
 

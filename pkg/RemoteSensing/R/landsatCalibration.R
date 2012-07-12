@@ -25,8 +25,8 @@ dn2rad <- function(x, filename='', ...) {
 #Conversion of DN to radiance 
 #  \item{gain}{band-specific rescaling gain factor, W / (m2 * sr * micrometer) /DN }
 #  \item{bias}{band-specific rescaling bias factor, W / (m2 * sr * micrometer) }
-	if (x@callibrated) {
-		stop('This object has already been callibrated')
+	if (x@calibrated) {
+		stop('This object has already been calibrated')
 	}
 
 	gb		<- .getGainBias(x)
@@ -37,20 +37,22 @@ dn2rad <- function(x, filename='', ...) {
 		stop('length(gain) != nlayers(x)')
 	}
 	
-    if (strsplit(filename,"\\.")[[1]][1]=='default'){
-	    fname <- strsplit(filename,"\\.")[[1]]
-	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
-	    cat("Using default 'filename'", filename, "\n")
+	if (filename!=''){
+	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
+    	    fname <- strsplit(filename,"\\.")[[1]]
+	        ftype <- fname[length(fname)]
+	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
+	        cat("Using default filename:", filename, "\n")
+	    }
 	}
 
 	radiance 	<- calc(x, function(x){ t(t(x) * gain + bias) }, filename=filename, forcefun=TRUE,... )
 
-	radiance       <- stack(radiance) # is stacking needed?
-	x@layers       <- radiance@layers
-	x@callibrated  <- TRUE
-	x@callibration <- 'radiance'
-	x@unit         <- 'W/m2 sr um' # right unit?
+	# radiance      <- stack(radiance)
+	x@layers      <- radiance@layers
+	x@calibrated  <- TRUE
+	x@calibration <- 'radiance'
+	x@unit        <- 'W/m2 sr um' # right unit?
 	return(x)
 }
 
@@ -58,8 +60,8 @@ dn2rad <- function(x, filename='', ...) {
 #Conversion of DN to reflectance
 dn2ref  <- function( x, filename='', ... ) {
 
-	if (x@callibrated) {
-		stop('This object has already been callibrated')
+	if (x@calibrated) {
+		stop('This object has already been calibrated')
 	}
 
 
@@ -85,19 +87,21 @@ dn2ref  <- function( x, filename='', ... ) {
 	ds      <- getDS(doy)
 	xfac    <- (pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation)* pi/180))
 	
-	if (strsplit(filename,"\\.")[[1]][1]=='default'){
-	    fname <- strsplit(filename,"\\.")[[1]]
-	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
-	    cat("Using default 'filename'", filename, "\n")
+	if (filename!=''){
+	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
+    	    fname <- strsplit(filename,"\\.")[[1]]
+	        ftype <- fname[length(fname)]
+	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
+	        cat("Using default filename:", filename, "\n")
+	    }
 	}
 		
 	reflectance <- calc(x, function(x){ t(((t(x) * gain + bias)) * xfac) }, filename=filename, forcefun=TRUE, ... ) 
 	reflectance <- stack(reflectance) # is stacking needed?
 	x@layers <- reflectance@layers
 
-	x@callibrated  <- TRUE
-	x@callibration <- 'reflectance'
+	x@calibrated  <- TRUE
+	x@calibration <- 'reflectance'
 	x@unit         <- 'factor' # right unit?
 	
 	return(x)
@@ -119,8 +123,8 @@ dn2temp <- function(x, filename='', ...) {
 		stop('not done yet')
 	}
 
-	if (x@thermal_callibrated) {
-		stop('This object has already been callibrated')
+	if (x@thermal_calibrated) {
+		stop('This object has already been calibrated')
 	}
 	
 	K_landsat <- function(spacecraft, sensor) {
@@ -138,11 +142,13 @@ dn2temp <- function(x, filename='', ...) {
 	gain	<- gb[, "gain"][b]
 	bias	<- gb[, "bias"][b]
 
-	if (strsplit(filename,"\\.")[[1]][1]=='default'){
-	    fname <- strsplit(filename,"\\.")[[1]]
-	    ftype <- fname[length(fname)]
-	    filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
-	    cat("Using default 'filename'", filename, "\n")
+	if (filename!=''){
+	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
+    	    fname <- strsplit(filename,"\\.")[[1]]
+	        ftype <- fname[length(fname)]
+	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
+	        cat("Using default filename:", filename, "\n")
+	    }
 	}
 
 
@@ -154,9 +160,9 @@ dn2temp <- function(x, filename='', ...) {
 	} 
 	
 	x@thermal <- temp
-	x@thermal_callibrated <- TRUE
-	x@thermal_callibration <- 'LST' # ?
-	x@thermal@unit <- 'K'
+	x@thermal_calibrated <- TRUE
+	x@thermal_calibration <- 'LST' # ?
+	x@thermal_unit <- 'K'
 	
 	return(x)
 }
