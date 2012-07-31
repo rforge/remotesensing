@@ -29,19 +29,19 @@ dn2rad <- function(x, filename='', ...) {
 		stop('This object has already been calibrated')
 	}
 
-	gb		<- .getGainBias(x)
-	gain	<- gb[, "gain"][layerNames(x)]
-	bias	<- gb[, "bias"][layerNames(x)]
+	gb      <- RemoteSensing:::.getGainBias(x)
+	gain    <- gb[, "gain"][layerNames(x)]
+	bias    <- gb[, "bias"][layerNames(x)]
 
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
 	}
 	
 	if (filename!=''){
-	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
-    	    fname <- strsplit(filename,"\\.")[[1]]
-	        ftype <- fname[length(fname)]
-	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep="")
+	    if (strsplit(tolower(basename(filename)),"\\.")[[1]][1]=='default'){
+    	    ftype <- strsplit(basename(filename),"\\.")[[1]]
+	        ftype <- ftype[length(ftype)]
+	        filename <- file.path(dirname(filename),paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_rad.",ftype,sep=""))
 	        cat("Using default filename:", filename, "\n")
 	    }
 	}
@@ -64,20 +64,19 @@ dn2ref  <- function( x, filename='', ... ) {
 		stop('This object has already been calibrated')
 	}
 
-
 	if (! inherits(x, 'Landsat')) {
 		stop('only available for Landsat objects')	
 	}
 
 	getDS <- function(doy) {
 		# ds = earth to sun distance in astronomical units}
-		return ( 1.0 + 0.01672 * sin( 2 * pi * ( doy - 93.5 ) / 365 ) )
+		return ( 1.0 + 0.01672 * sin( 2 * base:::pi * ( doy - 93.5 ) / 365 ) )
 	}
 	
-	gb 		<- RemoteSensing:::.getGainBias(x)
-	gain	<- gb[, "gain"][layerNames(x)]
-	bias	<- gb[, "bias"][layerNames(x)]
-
+	gb   <- RemoteSensing:::.getGainBias(x)
+	gain <- gb[,"gain"][layerNames(x)]
+	bias <- gb[,"bias"][layerNames(x)]
+	
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
 	}
@@ -85,24 +84,24 @@ dn2ref  <- function( x, filename='', ... ) {
 	ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
 	doy     <- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
 	ds      <- getDS(doy)
-	xfac    <- (pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation)* pi/180))
+	xfac    <- (base:::pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation) * base:::pi/180))
 	
 	if (filename!=''){
-	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
-    	    fname <- strsplit(filename,"\\.")[[1]]
-	        ftype <- fname[length(fname)]
-	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep="")
+	    if (strsplit(tolower(basename(filename)),"\\.")[[1]][1]=='default'){
+    	    ftype <- strsplit(basename(filename),"\\.")[[1]]
+	        ftype <- ftype[length(ftype)]
+	        filename <- file.path(dirname(filename),paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_ref.",ftype,sep=""))
 	        cat("Using default filename:", filename, "\n")
 	    }
 	}
 		
 	reflectance <- calc(x, function(x){ t(((t(x) * gain + bias)) * xfac) }, filename=filename, forcefun=TRUE, ... ) 
-	reflectance <- stack(reflectance) # is stacking needed?
+	reflectance <- stack(reflectance)
 	x@layers <- reflectance@layers
 
 	x@calibrated  <- TRUE
 	x@calibration <- 'reflectance'
-	x@unit         <- 'factor' # right unit?
+	x@unit        <- 'factor'
 	
 	return(x)
 }
@@ -143,14 +142,13 @@ dn2temp <- function(x, filename='', ...) {
 	bias	<- gb[, "bias"][b]
 
 	if (filename!=''){
-	    if (strsplit(filename,"\\.")[[1]][1]=='default'){
-    	    fname <- strsplit(filename,"\\.")[[1]]
-	        ftype <- fname[length(fname)]
-	        filename <- paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_temp.",ftype,sep="")
+	    if (strsplit(tolower(basename(filename)),"\\.")[[1]][1]=='default'){
+    	    ftype <- strsplit(basename(filename),"\\.")[[1]]
+	        ftype <- ftype[length(ftype)]
+	        filename <- file.path(dirname(filename),paste(paste(strsplit(x@sensor@metafile,"_")[[1]][1:2],sep="_",collapse="_"),"_LST.",ftype,sep=""))
 	        cat("Using default filename:", filename, "\n")
 	    }
 	}
-
 
 	# radiance	
 	temp <- calc(x@thermal, fun=function(x){ K[2] / (log ((K[1] / (t(t(x)*gain+bias))) + 1.0)) }, filename=filename, forcefun=TRUE, ...)
@@ -354,7 +352,7 @@ dn2temp <- function(x, filename='', ...) {
 ..rad2ref <- function(radiance, ds, sun_elevation, ESUN) {
 # not used?
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
-	xfac <- (pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
+	xfac <- (base:::pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* base:::pi/180))
 	#reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
 	reflectance <- calc(radiance, fun = function(x) {t(t(x)*xfac)}, forcefun=TRUE)
 	#reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)

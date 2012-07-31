@@ -39,12 +39,13 @@ img <- landsat(metafile)
 
 # calculate reflectance
 ref <- dn2ref(img)
-## calculate reflectance and save output as a RasterBrick;
+## calculate reflectance and save output as a tmp RasterBrick;
 require(rgdal)
-# whith default name
-ref <- dn2ref(img,filename='default.tif')
-ref <- dn2ref(img,filename='default.img')
-# list.files()
+# whith filename='default.XXX' name
+ref <- dn2ref(img,filename='default.tif') # to current directory
+ref <- dn2ref(img,filename='default.img') # to current directory
+ref <- dn2ref(img,filename='/path/to/default.tif') # to specified directory
+
 # with user specified name
 ref <- dn2ref(img,"ref.img")
 # unlink("ref.img")
@@ -54,7 +55,8 @@ ref <- dn2ref(img,"ref.img")
 # false color:
 # plotRGB(ref, 4,3,2, scale=0.45)
 
-# calculate temperature (LST) from thermal bands 
+# calculate temperature (LST) from thermal bands
+# here you can also apply the filename='default.tif'
 temp <- dn2temp(img)
 # plot(temp@thermal)
 
