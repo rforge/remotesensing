@@ -1,7 +1,7 @@
 Package: RemoteSensing
 Type: Package
 Title: Remote Sensing 
-Version: 0.4.6
+Version: 0.4.7
 Date: 12-July-2012
 Depends: raster (>= 1.4-0), methods
 Suggests: bitops
