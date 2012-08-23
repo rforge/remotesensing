@@ -3,6 +3,7 @@
 # Date : 21 May 2010
 # Version 0,1
 # Licence GPL v3
+# DEPRECATE
 
 raster2SGDF <- function(baseraster, vals=NULL){
 	if (!is.null(vals)) {
@@ -21,7 +22,8 @@ rescale <- function(x, oldmin, oldmax, newmin, newmax){
 formatExt <- function(myformat){
     ext <- rep(NA, length(myformat))
     ext[tolower(myformat)=="raster"] <- "grd"
-    ext[tolower(myformat)=="gtiff"] <- "tif"
+    ext[tolower(myformat)=="gtiff"] <- "tif" 
+    ext[tolower(myformat)=="hdf"] <- "hdf"
     return(ext)    
 }
 
