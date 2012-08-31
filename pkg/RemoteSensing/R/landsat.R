@@ -37,7 +37,8 @@ getLandsatCPF <- function(filename) {
 }
 
 # parse Landsat metadata file and extract needed parameters
-landsat <- function(filename) {
+landsat <- function(filename) 
+{
     
     pars     <- RemoteSensing:::.readMetadata(filename)
     pathname <- dirname(filename)
@@ -45,7 +46,7 @@ landsat <- function(filename) {
     
     if (newMTL)
     {
-        spacecraft            <- pars[pars[,1]=="SPACECRAFT_ID",2] # old 
+        spacecraft            <- pars[pars[,1]=="SPACECRAFT_ID",2] 
         sensor                <- pars[pars[,1]=="SENSOR_ID",2]
         acquisition_date      <- pars[pars[,1]=="DATE_ACQUIRED",2]
         product_creation_date <- pars[pars[,1]=="FILE_DATE",2]
@@ -56,46 +57,8 @@ landsat <- function(filename) {
         row                   <- sprintf("%03d",as.numeric(pars[pars[,1]=="WRS_ROW",2]))
         path                  <- sprintf("%03d",as.numeric(pars[pars[,1]=="WRS_PATH",2]))
         zone                  <- paste("p",path,"r",row,sep="")
-        
         acquisition_time      <- pars[pars[,1]=="SCENE_CENTER_TIME",2]
         band_filenames        <- pars[grep(pars[,1],pattern="^FILE_NAME_BAND_.*$"),2]
-        
-        if (sensor=="ETM")
-        {
-            bandcomb <- "123456678"
-        } else if (sensor=="TM")
-        {
-            bandcomb <- "1234567"
-        } else if (sensor=="MSS")
-        {
-            bandcomb <- "4567"
-        }
-
-          n_bands <- as.integer(nchar(bandcomb))
-
-          bandn    <- rep(NA,n_bands)
-           for (i in 1:n_bands) {
-               bandn[i] <- paste("BAND_", substr(bandcomb,i,i), sep="")
-           }
-        
-        if (sensor == "ETM") {                        
-            bandn[6] <- "BAND_6_VCID_1"
-            bandn[7] <- "BAND_6_VCID_2"
-        }
-
-        lmax <- lmin <- qcalmax <- qcalmin  <- rep(NA, n_bands)
-        
-        for (i in 1:n_bands) 
-        {
-            lmax[i]           <- as.numeric(pars[pars[,1]==paste("RADIANCE_MAXIMUM_", bandn[i], sep=""),2])
-            lmin[i]           <- as.numeric(pars[pars[,1]==paste("RADIANCE_MINIMUM_", bandn[i], sep=""),2])
-            qcalmax[i]        <- as.numeric(pars[pars[,1]==paste("QUANTIZE_CAL_MAX_", bandn[i], sep=""),2])
-            qcalmin[i]        <- as.numeric(pars[pars[,1]==paste("QUANTIZE_CAL_MIN_", bandn[i], sep=""),2])
-            band_filenames[i] <- paste(pathname, '/', band_filenames[i], sep='')
-        }
-        
-        names(lmax) <- names(lmin) <- names(qcalmax) <- names(qcalmin) <- names(band_filenames) <- bandn    
-
     } else
     {
         spacecraft            <- toupper(pars[pars[,1]=="SPACECRAFT_ID",2]) 
@@ -103,6 +66,8 @@ landsat <- function(filename) {
         spacecraft            <- paste(substr(spacecraft,1,namedim-1),substr(spacecraft,namedim,namedim),sep="_")
         
         sensor                <- pars[pars[,1]=="SENSOR_ID",2]
+        sensor                <- gsub(pattern="\\+",replacement="",x=sensor)
+        
         acquisition_date      <- pars[pars[,1]=="ACQUISITION_DATE",2]
         product_creation_date <- pars[pars[,1]=="PRODUCT_CREATION_TIME",2]
         sun_elevation         <- as.numeric(pars[pars[,1]=="SUN_ELEVATION",2])
@@ -114,52 +79,69 @@ landsat <- function(filename) {
         path                  <- sprintf("%03d",as.numeric(pars[pars[,1]=="WRS_PATH",2]))
         row                   <- sprintf("%03d", as.numeric(ifelse(starting_row==ending_row,starting_row,paste(starting_row,"-",ending_row, sep=""))))
         zone                  <- paste("p",path, "r",row,sep="")
-        bandcomb              <- pars[pars[,1]=="BAND_COMBINATION",2]
-        
         acquisition_time      <- pars[pars[,1]=="SCENE_CENTER_SCAN_TIME",2]
         band_filenames        <- pars[grep(pars[,1],pattern="^BAND.*_FILE_NAME$"),2]
-
-        n_bands <- as.integer(nchar(bandcomb))
-
-        bandn <- rep(NA,n_bands)
-        for (i in 1:n_bands)
-        {
-            bandn[i] <- paste("BAND", substr(bandcomb,i,i), sep="")
-        }
-        
-        if (sensor == "ETM+")
-        {                        
-            bandn[6] <- "BAND61"
-            bandn[7] <- "BAND62"
-        }
-        lmax <- lmin <- qcalmax <- qcalmin <- rep(NA, n_bands)
-        names(lmax) <- names(lmin) <- names(qcalmax) <- names(qcalmin) <- names(band_filenames) <- bandn    
-       
-        for (i in 1:n_bands) {
-            lmax[i]             <- as.numeric(pars[pars[,1]==paste("LMAX_", bandn[i], sep=""),2])
-            lmin[i]             <- as.numeric(pars[pars[,1]==paste("LMIN_", bandn[i], sep=""),2])
-            qcalmax[i]          <- as.numeric(pars[pars[,1]==paste("QCALMAX_", bandn[i], sep=""),2])
-            qcalmin[i]          <- as.numeric(pars[pars[,1]==paste("QCALMIN_", bandn[i], sep=""),2])
-            band_filenames[i]   <- paste(pathname, '/', band_filenames[i], sep='')
-        }
-
     }
+
+    bandcomb <- if (sensor=="ETM")
+    {
+        "123456678"
+    } else if (sensor=="TM")
+    {
+        "1234567"
+    } else if (sensor=="MSS")
+    {
+        "4567"
+    }
+    n_bands <- as.integer(nchar(bandcomb))
+
+    bandn    <- rep(NA,n_bands)
+    bandnOLD <- rep(NA,n_bands)
+
+    for (i in 1:n_bands)
+    {
+       bandn[i]    <- paste("BAND_", substr(bandcomb,i,i), sep="")
+       bandnOLD[i] <- paste("BAND",  substr(bandcomb,i,i), sep="")
+    }
+        
+    if (sensor == "ETM") 
+    {                        
+        bandn[6] <- "BAND_6_VCID_1"
+        bandn[7] <- "BAND_6_VCID_2"
+
+        bandnOLD[6] <- "BAND61"
+        bandnOLD[7] <- "BAND62"
+    }
+
+    lmax <- lmin <- qcalmax <- qcalmin  <- rep(NA, n_bands)
+    band_filenames <- paste(pathname, band_filenames, sep='/')
+
+    if(newMTL)        
+    {
+        for (i in 1:n_bands) 
+        {
+            lmax[i] <- as.numeric(pars[pars[,1]==paste("RADIANCE_MAXIMUM_",bandn[i], sep=""),2])
+            lmin[i] <- as.numeric(pars[pars[,1]==paste("RADIANCE_MINIMUM_",bandn[i], sep=""),2])
+            qcalmax[i] <- as.numeric(pars[pars[,1]==paste("QUANTIZE_CAL_MAX_",bandn[i], sep=""),2])
+            qcalmin[i] <- as.numeric(pars[pars[,1]==paste("QUANTIZE_CAL_MIN_",bandn[i], sep=""),2])
+        }
+    } else
+    {
+        for (i in 1:n_bands) 
+        {
+            lmax[i] <- as.numeric(pars[pars[,1]==paste("LMAX_",bandnOLD[i],sep=""),2])
+            lmin[i] <- as.numeric(pars[pars[,1]==paste("LMIN_",bandnOLD[i],sep=""),2])
+            qcalmax[i] <- as.numeric(pars[pars[,1]==paste("QCALMAX_",bandnOLD[i],sep=""),2])
+            qcalmin[i] <- as.numeric(pars[pars[,1]==paste("QCALMIN_",bandnOLD[i],sep=""),2])
+        }
+    }
+        
+    names(lmax) <- names(lmin) <- names(qcalmax) <- names(qcalmin) <- names(band_filenames) <- bandn    
 
     # cpf <- getLandsatCPF(metafile) # this works now!
     # acquisition_time <- cpf[cpf[,1]=="Turn_Around_Time",2] # what is this value?
     
-    if (sensor == "ETM+")
-    {            
-        sensor <- "ETM" 
-        img <- new("LandsatETMp")    
-        img <- addLayer(img,  as.list( band_filenames[c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7")] ) )
-        layerNames(img) <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
-        img@thermal <- stack( as.list( band_filenames[ c("BAND61", "BAND62") ] ) )
-        layerNames(img@thermal) <- c("BAND_6_VCID_1", "BAND_6_VCID_2")
-        img@panchromatic <- raster(band_filenames["BAND8"])
-        layerNames(img@panchromatic) <- "BAND_8"
-    
-    } else if (sensor == "ETM")
+    if (sensor == "ETM")
     {            
         img <- new("LandsatETMp")    
         mainbands <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
@@ -173,40 +155,41 @@ landsat <- function(filename) {
     } else if (sensor == "TM")
     {
         img <- new("LandsatTM")
-        img <- addLayer(img,  as.list( band_filenames[c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND7")] ) )
-        layerNames(img) <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
-        img@thermal <- raster(band_filenames["BAND6"]) 
+        mainbands <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
+        img <- addLayer(img,  as.list( band_filenames[mainbands] ) )
+        layerNames(img) <- mainbands
+        img@thermal <- raster(band_filenames["BAND_6"]) 
         layerNames(img@thermal) <- "BAND_6"
     }  else 
     {    
         stop('this function only works for the ETM+ and TM sensors, other sensors to be done later...')
     }            
     
-    img@sensor@spacecraft               <- spacecraft
-    img@sensor@name                     <- sensor
-    img@sensor@product_creation_date    <- product_creation_date
-    img@sensor@acquisition_date         <- acquisition_date
-    img@sensor@sun_elevation            <- sun_elevation
-    img@sensor@sun_azimuth              <- sun_azimuth
-    img@sensor@cpf_filename             <- cpf_filename
-    img@sensor@metafile                 <- meta_filename
-    img@sensor@acquisition_time         <- acquisition_time
-    img@sensor@band_filenames           <- band_filenames
-    img@sensor@zone                     <- zone
-    img@sensor@lmax                     <- lmax
-    img@sensor@lmin                     <- lmin
-    img@sensor@qcalmax                  <- qcalmax
-    img@sensor@qcalmin                  <- qcalmin
+    img@sensor@spacecraft <- spacecraft
+    img@sensor@name <- sensor
+    img@sensor@product_creation_date <- product_creation_date
+    img@sensor@acquisition_date <- acquisition_date
+    img@sensor@sun_elevation <- sun_elevation
+    img@sensor@sun_azimuth <- sun_azimuth
+    img@sensor@cpf_filename <- cpf_filename
+    img@sensor@metafile <- meta_filename
+    img@sensor@acquisition_time <- acquisition_time
+    img@sensor@band_filenames <- band_filenames
+    img@sensor@zone <- zone
+    img@sensor@lmax <- lmax
+    img@sensor@lmin <- lmin
+    img@sensor@qcalmax <- qcalmax
+    img@sensor@qcalmin <- qcalmin
     
-    img@calibrated                      <- FALSE    
-    img@calibration                     <- "none"
-    img@unit                            <- "DN"
+    img@calibrated <- FALSE    
+    img@calibration <- "none"
+    img@unit <- "DN"
 
-    img@thermal_calibrated              <- FALSE    
-    img@thermal_calibration             <- "none"
-    img@thermal_unit                    <- "DN"
+    img@thermal_calibrated <- FALSE    
+    img@thermal_calibration <- "none"
+    img@thermal_unit <- "DN"
     
-    img@layers                          <- lapply(img@layers, function(x){ NAvalue(x) <- 0; return(x)} )
+    img@layers <- lapply(img@layers, function(x){ NAvalue(x) <- 0; return(x)} )
     
     return (img)
  }

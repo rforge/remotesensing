@@ -68,17 +68,16 @@ dn2ref  <- function( x, filename='', ... ) {
 		stop('only available for Landsat objects')	
 	}
 
-	getDS <- function(doy) {
-		# ds = earth to sun distance in astronomical units}
-		return ( 1.0 + 0.01672 * sin( 2 * base:::pi * ( doy - 93.5 ) / 365 ) )
-	}
-	
 	gb   <- RemoteSensing:::.getGainBias(x)
 	gain <- gb[,"gain"][layerNames(x)]
 	bias <- gb[,"bias"][layerNames(x)]
 	
 	if (length(gain) != nlayers(x)) {
 		stop('length(gain) != nlayers(x)')
+	}
+	getDS <- function(doy) {
+		# ds = earth to sun distance in astronomical units}
+		return ( 1.0 + 0.01672 * sin( 2 * base:::pi * ( doy - 93.5 ) / 365 ) )
 	}
 		
 	ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
