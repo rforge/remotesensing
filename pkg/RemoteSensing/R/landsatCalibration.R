@@ -48,7 +48,7 @@ dn2rad <- function(x, filename='', ...) {
 
 	radiance 	<- calc(x, function(x){ t(t(x) * gain + bias) }, filename=filename, forcefun=TRUE,... )
 
-	# radiance      <- stack(radiance)
+	radiance      <- stack(radiance)
 	x@layers      <- radiance@layers
 	x@calibrated  <- TRUE
 	x@calibration <- 'radiance'
@@ -114,10 +114,10 @@ dn2temp <- function(x, filename='', ...) {
 		stop('only available for Landsat objects')	
 	}
 
-	if (x@sensor@name == "ETM+") {
-		b <- c("BAND61","BAND62")
+	if (x@sensor@name == "ETM") {
+		b <- c("BAND_6_VCID_1","BAND_6_VCID_2")
 	} else if (x@sensor@name  == "TM") {
-		b <- "BAND6"  
+		b <- "BAND_6"  
 	} else {
 		stop('not done yet')
 	}
@@ -128,9 +128,9 @@ dn2temp <- function(x, filename='', ...) {
 	
 	K_landsat <- function(spacecraft, sensor) {
 	#Landsat thermal calibration constants K1, K2
-		if (spacecraft == "Landsat4" & sensor == "TM") { K <-  c(671.62, 1284.3) }
-		else if (spacecraft == "Landsat5" & sensor == "TM") { K <-  c(607.76, 1260.56) }
-		else if (spacecraft == "Landsat7") { K <- c(666.09, 1282.71 ) }
+		if (spacecraft == "LANDSAT_4" & sensor == "TM") { K <-  c(671.62, 1284.3) }
+		else if (spacecraft == "LANDSAT_5" & sensor == "TM") { K <-  c(607.76, 1260.56) }
+		else if (spacecraft == "LANDSAT_7") { K <- c(666.09, 1282.71 ) }
 		else K <- NA
 		return (K)
 	}
@@ -153,7 +153,7 @@ dn2temp <- function(x, filename='', ...) {
 	# radiance	
 	temp <- calc(x@thermal, fun=function(x){ K[2] / (log ((K[1] / (t(t(x)*gain+bias))) + 1.0)) }, filename=filename, forcefun=TRUE, ...)
 	
-	if (x@sensor@name == "ETM+") {
+	if (x@sensor@name == "ETM") {
 		temp <- stack(temp)
 	} 
 	
@@ -173,41 +173,41 @@ dn2temp <- function(x, filename='', ...) {
 	chk <- TRUE
 	
 	if (sensor == "MSS" ) {
-		if (spacecraft == "Landsat1") {
+		if (spacecraft == "LANDSAT_1") {
 			lmin  <- c(0.0, 0.0, 0.0, 0.0)
 			lmax <- c(248.0, 200.0, 176.0, 153.0) 
-		} else if (spacecraft == "Landsat2") {
-			if ( prod_creation_date < as.Date("07/16/1975", "%m/%d/%Y")) {
+		} else if (spacecraft == "LANDSAT_2") {
+			if ( prod_creation_date < as.Date("1975-07-16")) {
 				lmin  <- c(10.0, 7.0, 7.0, 5.0)
 				lmax <- c(210.0, 156.0, 140.0, 138.0) 
 			} else {
 				lmin  <- c(8.0, 6.0, 6.0, 4.0)
 				lmax <- c(263.0, 176.0, 152.0, 130.0) 
 			}
-		} else if (spacecraft == "Landsat3") {
-			if (prod_creation_date < as.Date("06/01/1978", "%m/%d/%Y")) {
+		} else if (spacecraft == "LANDSAT_3") {
+			if (prod_creation_date < as.Date("1978-06-01", "%m/%d/%Y")) {
 				lmin  <- c(4.0, 3.0, 3.0, 1.0)
 				lmax <- c(220.0, 175.0, 145.0, 147.0) 
 			} else {
 				lmin  <- c(4.0, 3.0, 3.0, 1.0)
 				lmax <- c(259.0, 179.0, 149.0, 128.0) 
 			}
-		} else if (spacecraft == "Landsat4") {
-			if (acquisition_date < as.Date("08/26/1982", "%m/%d/%Y")) {
+		} else if (spacecraft == "LANDSAT_4") {
+			if (acquisition_date < as.Date("1982-08-26")) {
 				lmin  <- c(2.0, 4.0, 4.0, 3.0)
 				lmax <- c(250.0, 180.0, 150.0, 133.0) 
-			} else if (acquisition_date < as.Date("04/01/83","%m/%d/%Y")) {
+			} else if (acquisition_date < as.Date("1983-04-01")) {
 				lmin  <- c(2.0, 4.0, 4.0, 3.0)
 				lmax <- c(230.0, 180.0, 130.0, 133.0) 
 			} else {
 				lmin  <- c(4.0, 4.0, 5.0, 4.0)
 				lmax <- c(238.0, 164.0, 142.0, 116.0) 
 			}
-		} else if (spacecraft == "Landsat5") {
-			if (acquisition_date < as.Date("04/06/1984", "%m/%d/%Y")) {
+		} else if (spacecraft == "LANDSAT_5") {
+			if (acquisition_date < as.Date("1984-04-06")) {
 				lmin  <- c(4.0, 3.0, 4.0, 2.0)
 				lmax <- c(240.0, 170.0, 150.0, 127.0) 
-			} else if (acquisition_date < as.Date("11/8/1984", "%m/%d/%Y")) {
+			} else if (acquisition_date < as.Date("1984-11-08")) {
 				lmin  <- c(3.0, 3.0, 4.0, 3.0)
 				lmax <- c(268.0, 179.0, 159.0, 123.0)
 			} else {
@@ -218,27 +218,27 @@ dn2temp <- function(x, filename='', ...) {
 			stop('MSS image with unknown spacecraft')
 		}
 		
-		if (spacecraft %in% c("Landsat1", "Landsat2", "Landsat3") & acquisition_date < as.Date("02/01/1979","%m/%d/%Y")) {
+		if (spacecraft %in% c("LANDSAT_1", "LANDSAT_2", "LANDSAT_3") & acquisition_date < as.Date("1979-02-01")) {
 			qcalmax <- c(127, 127, 127, 63)
-		} else if (spacecraft == "Landsat4" & prod_creation_date < as.Date("10/22/1982", "%m/%d/%Y")) {
+		} else if (spacecraft == "LANDSAT_4" & prod_creation_date < as.Date("1982-10-22")) {
 			qcalmax <- c(127, 127, 127, 63)
 		} else { 
 			qcalmax <- c(127, 127, 127, 127)
 		}
 		gain <- (lmax - lmin) / qcalmax
 		bias <- lmin
-		bandnames <- c("BAND1","BAND2","BAND3","BAND4")
+		bandnames <- c("BAND_1","BAND_2","BAND_3","BAND_4")
 		
 		
 	} else if (sensor == "TM") {
 	
-		if (spacecraft == "Landsat4") {
+		if (spacecraft == "LANDSAT_4") {
 
-			if (prod_creation_date < as.Date("08/01/1983", "%m/%d/%Y")) {
+			if (prod_creation_date < as.Date("1983-08-01")) {
 				lmin  <- c(-1.52, -2.84, -1.17, -1.51, -0.37, 2, -0.15) 
 				lmax <- c(158.42, 308.17, 234.63, 224.32, 32.42, 15.64, 17.0) 
 			
-			} else if (prod_creation_date < as.Date("1/15/1984", "%m/%d/%Y")) {
+			} else if (prod_creation_date < as.Date("1984-01-15")) {
 				lmin  <- c(0.0, 0.0, 0.0, 0.0, 0.0, 4.84, 0.0) 
 				lmax <- c(142.86, 291.25, 225.0, 214.29, 30.0, 12.4, 15.93) 
 			
@@ -251,15 +251,15 @@ dn2temp <- function(x, filename='', ...) {
 			gain <- (lmax - lmin) / qcalmax
 			bias <- lmin
 			
-		} else if (spacecraft == "Landsat5") {
+		} else if (spacecraft == "LANDSAT_5") {
 		
-			if (prod_creation_date < as.Date("05/04/2003", "%m/%d/%Y")) {
+			if (prod_creation_date < as.Date("2003-05-04")) {
 				gain <- c(0.602431, 1.175100, 0.805765, 0.814549, 0.108078, 0.055158, 0.056980)
 				bias <- c(-1.52, -2.84, -1.17, -1.51, -0.37, 1.2378, -0.15) 
-			} else if (prod_creation_date < as.Date("04/01/2007", "%m/%d/%Y"))  {
+			} else if (prod_creation_date < as.Date("2007-04-01"))  {
 				gain <- c(0.762824, 1.442510, 1.039880, 0.872588, 0.119882, 0.055158, 0.065294)
 				bias <- c(-1.52, -2.84, -1.17, -1.51, -0.37, 1.2378, -0.15) 
-			} else if (acquisition_date < as.Date("12/31/1991", "%m/%d/%Y")) {
+			} else if (acquisition_date < as.Date("1991-12-31")) {
 				gain <- c(0.668706, 1.317020, 1.039880, 0.872588, 0.119882, 0.055158, 0.065294)
 				bias <- c(-1.52, -2.84, -1.17, -1.51, -0.37, 1.2378, -0.15) 
 			} else {
@@ -270,13 +270,13 @@ dn2temp <- function(x, filename='', ...) {
 			stop('TM image with unknown spacecraft')
 		}
 		
-		bandnames <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7")
+		bandnames <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_6","BAND_7")
 		
 	} else if (sensor == "Aster") {
 	
 		gain <- c(0.676, 0.708, 0.862, 0.2174, 0.0696, 0.0625, 0.0597, 0.0417, 0.0318)
 		bias <- c(-0.676, -0.708, -0.862, -0.2174, -0.0696, -0.0625, -0.0597, -0.0417, -0.0318)
-		bandnames <- c("BAND1","BAND2","BAND3","BAND4","BAND5","BAND6","BAND7","BAND8","BAND9")
+		bandnames <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_6","BAND_7","BAND_8","BAND_9")
 		
 	} 
 	result <- cbind(gain,bias)
@@ -301,42 +301,42 @@ dn2temp <- function(x, filename='', ...) {
 .esun <- function(spacecraft, sensor) {
 # Calculate the sun exo-atmospheric irridiance [W/m2/sr].  This is used for processing surface reflectance.
 
-# spacecraft Landsat1
-#	sensor MSS		(band1, band2, band3, band4)
-#spacecraft Landsat2
-#	sensor MSS		(band1, band2, band3, band4)
-#spacecraft Landsat3
-#	sensor MSS		(band1, band2, band3, band4)
-#spacecraft Landsat4
-#	sensor MSS		(band1, band2, band3, band4)
-#	sensor TM		(band_id band1, band2, band3, band4, band5, NA,band7)
-#spacecraft Landsat5
-#	sensor MSS		(band1, band2, band3, band4)
-#	sensor TM		(band1, band2, band3, band4, band5, NA,band7)
-#spacecraft Landsat7
-#	sensor ETM+		(band1, band2, band3, band4, band5, NA,NA,band7, band8)
+# spacecraft LANDSAT_1
+#	sensor MSS		(BAND_1, BAND_2, BAND_3, BAND_4)
+#spacecraft LANDSAT_2
+#	sensor MSS		(BAND_1, BAND_2, BAND_3, BAND_4)
+#spacecraft LANDSAT_3
+#	sensor MSS		(BAND_1, BAND_2, BAND_3, BAND_4)
+#spacecraft LANDSAT_4
+#	sensor MSS		(BAND_1, BAND_2, BAND_3, BAND_4)
+#	sensor TM		(BAND__id BAND_1, BAND_2, BAND_3, BAND_4, BAND_5, NA,BAND_7)
+#spacecraft LANDSAT_5
+#	sensor MSS		(BAND_1, BAND_2, BAND_3, BAND_4)
+#	sensor TM		(BAND_1, BAND_2, BAND_3, BAND_4, BAND_5, NA,BAND_7)
+#spacecraft LANDSAT_7
+#	sensor ETM		(BAND_1, BAND_2, BAND_3, BAND_4, BAND_5, NA,NA,BAND_7, BAND_8)
 #spacecraft Terra
-#	sensor Aster		(band1, band2, band3, band4, band5, NA,band7, band8, band9)
+#	sensor Aster		(BAND_1, BAND_2, BAND_3, BAND_4, BAND_5, NA,BAND_7, BAND_8, BAND_9)
 	
 	if (sensor == "MSS") {
-		if (spacecraft == "Landsat1") { ESUN <- c(1852.0, 1584.0, 1276.0, 904.0) }
-		else if (spacecraft == "Landsat2") { ESUN <- c(1856.0, 1559.0, 1269.0, 906.0) }
-		else if (spacecraft == "Landsat3") { ESUN <- c(1860.0, 1571.0, 1289.0, 910.0) }
-		else if (spacecraft == "Landsat4") { ESUN <- c(1851.0, 1593.0, 1260.0, 878.0) }
-		else if (spacecraft == "Landsat5") { ESUN <- c(1849.0, 1595.0, 1253.0, 870.0)  }
-		names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4")
+		if (spacecraft == "LANDSAT_1") { ESUN <- c(1852.0, 1584.0, 1276.0, 904.0) }
+		else if (spacecraft == "LANDSAT_2") { ESUN <- c(1856.0, 1559.0, 1269.0, 906.0) }
+		else if (spacecraft == "LANDSAT_3") { ESUN <- c(1860.0, 1571.0, 1289.0, 910.0) }
+		else if (spacecraft == "LANDSAT_4") { ESUN <- c(1851.0, 1593.0, 1260.0, 878.0) }
+		else if (spacecraft == "LANDSAT_5") { ESUN <- c(1849.0, 1595.0, 1253.0, 870.0)  }
+		names(ESUN)	<- c("BAND_1","BAND_2","BAND_3","BAND_4")
 		
 	} else if (sensor == "TM")  {
-		if (spacecraft == "Landsat4") { 
+		if (spacecraft == "LANDSAT_4") { 
 			ESUN <- c(1957.0, 1825.0, 1557.0, 1033.0, 214.9, NA, 80.72)  
 		}
-		else if (spacecraft == "Landsat5") { ESUN <- c(1957.0, 1826.0, 1554.0, 1036.0, 215.0, NA, 80.67)  }
-		names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4", "BAND5","BAND6","BAND7")
+		else if (spacecraft == "LANDSAT_5") { ESUN <- c(1957.0, 1826.0, 1554.0, 1036.0, 215.0, NA, 80.67)  }
+		names(ESUN)	<- c("BAND_1","BAND_2","BAND_3","BAND_4", "BAND_5","BAND_6","BAND_7")
 		
-	} else if (sensor == "ETM+")    { 
-		if (spacecraft == "Landsat7")  { 
+	} else if (sensor == "ETM")    { 
+		if (spacecraft == "LANDSAT_7")  { 
 			ESUN <- c(1969.0, 1840.0, 1551.0, 1044.0, 225.7, NA, NA, 82.07, 1368.00) 
-			names(ESUN)	<- c("BAND1","BAND2","BAND3","BAND4", "BAND5","BAND61","BAND62","BAND7","BAND8")
+			names(ESUN)	<- c("BAND_1","BAND_2","BAND_3","BAND_4", "BAND_5","BAND_6_VCID_1","BAND_6_VCID_2","BAND_7","BAND_8")
 		}
 	}
 	#else	if (sensor == "Aster")  {

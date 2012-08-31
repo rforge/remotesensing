@@ -25,7 +25,7 @@ dn2rad(x, filename='', ...)
 }
 
 \value{
-A callibrated Landsat object.
+A calibrated Landsat object.
 }
 
 \author{Alice Laborte, Yann Chemin, Robert Hijmans, Matteo Mattiuzzi}
@@ -60,7 +60,7 @@ ref <- dn2ref(img,"ref.img")
 temp <- dn2temp(img)
 # plot(temp@thermal)
 
-# or for the generation of a fully callibrated image
+# or for the generation of a fully calibrated image
 ref   <- dn2ref(img)
 calib <- dn2temp(ref)
 calib # reflectance bands
