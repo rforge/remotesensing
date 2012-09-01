@@ -20,7 +20,7 @@ dn2rad(x, filename='', ...)
 \arguments{
   \item{x}{Satellite image object inherting from class 'Landsat'}
   \item{filename}{Optional. Filename for output file of radiance, reflectance or temperature values. 
-  If not provided these may be stored in a temporary file. You can also provide \code{filename='default.tif'}, this will substitute 'default' with filename using metadata in the specified format}
+  If not provided these may be stored in a temporary file. You can also provide \code{filename='default.tif'}, this will substitute 'default' with filename using the scene ID.}
   \item{...}{Additional arguments to writeRaster, such as the file format, and \code{overwrite=TRUE}}
 }
 

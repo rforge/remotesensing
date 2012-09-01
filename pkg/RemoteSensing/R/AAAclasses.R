@@ -6,7 +6,8 @@ setClass('Sensor',
 	representation (
 		name = 'character',
 		spacecraft = 'character',
-		metafile = 'character',	
+		scene_id = 'character',
+        metafile = 'character',	
 		
 		# spectral info
 		specid = 'character',

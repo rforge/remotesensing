@@ -46,7 +46,8 @@ landsat <- function(filename)
     
     if (newMTL)
     {
-        spacecraft            <- pars[pars[,1]=="SPACECRAFT_ID",2] 
+	LandsatSceneID        <- pars[pars[,1]=="LANDSAT_SCENE_ID",2] 
+	spacecraft            <- pars[pars[,1]=="SPACECRAFT_ID",2] 
         sensor                <- pars[pars[,1]=="SENSOR_ID",2]
         acquisition_date      <- pars[pars[,1]=="DATE_ACQUIRED",2]
         product_creation_date <- pars[pars[,1]=="FILE_DATE",2]
@@ -61,6 +62,7 @@ landsat <- function(filename)
         band_filenames        <- pars[grep(pars[,1],pattern="^FILE_NAME_BAND_.*$"),2]
     } else
     {
+	LandsatSceneID        <- strsplit(pars[pars[,1]=="BAND1_FILE_NAME",2],"_")[[1]][1]
         spacecraft            <- toupper(pars[pars[,1]=="SPACECRAFT_ID",2]) 
         namedim               <- nchar(spacecraft)
         spacecraft            <- paste(substr(spacecraft,1,namedim-1),substr(spacecraft,namedim,namedim),sep="_")
@@ -164,7 +166,7 @@ landsat <- function(filename)
     {    
         stop('this function only works for the ETM+ and TM sensors, other sensors to be done later...')
     }            
-    
+    img@sensor@scene_id <- LandsatSceneID
     img@sensor@spacecraft <- spacecraft
     img@sensor@name <- sensor
     img@sensor@product_creation_date <- product_creation_date
