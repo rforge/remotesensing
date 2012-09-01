@@ -5,7 +5,7 @@ Version: 0.4.9
 Date: 01-September-2012
 Depends: raster (>= 1.4-0), methods
 Suggests: bitops
-Author: Yann Chemin, Alice Laborte and Robert J. Hijmans
+Author: Matteo Mattiuzzi, Yann Chemin, Alice Laborte and Robert J. Hijmans
 Maintainer: Robert Hijmans <r.hijmans@gmail.com> 
 Description: Sattelite image analysis algorithms
 License: GPL (>=3)
