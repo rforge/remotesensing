@@ -89,7 +89,7 @@ dn2ref  <- function( x, filename='', ... )
         return ( 1.0 + 0.01672 * sin( 2 * base:::pi * ( doy - 93.5 ) / 365 ) )
     }
         
-    ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[layerNames(x)]
+    ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[names(x)]
     doy     <- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
     ds      <- getDS(doy)
     xfac    <- (base:::pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation) * base:::pi/180))

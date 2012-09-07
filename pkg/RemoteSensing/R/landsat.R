@@ -148,20 +148,20 @@ landsat <- function(filename)
         img <- new("LandsatETMp")    
         mainbands <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
         img <- addLayer(img,  as.list( band_filenames[mainbands] ) )
-        layerNames(img) <- mainbands
+        names(img) <- mainbands
         img@thermal <- stack( as.list( band_filenames[ c("BAND_6_VCID_1", "BAND_6_VCID_2") ] ) )
-        layerNames(img@thermal) <-  c("BAND_6_VCID_1", "BAND_6_VCID_2") 
+        names(img@thermal) <-  c("BAND_6_VCID_1", "BAND_6_VCID_2") 
         img@panchromatic <- raster(band_filenames["BAND_8"])
-        layerNames(img@panchromatic) <- "BAND_8"
+        names(img@panchromatic) <- "BAND_8"
     
     } else if (sensor == "TM")
     {
         img <- new("LandsatTM")
         mainbands <- c("BAND_1","BAND_2","BAND_3","BAND_4","BAND_5","BAND_7")
         img <- addLayer(img,  as.list( band_filenames[mainbands] ) )
-        layerNames(img) <- mainbands
+        names(img) <- mainbands
         img@thermal <- raster(band_filenames["BAND_6"]) 
-        layerNames(img@thermal) <- "BAND_6"
+        names(img@thermal) <- "BAND_6"
     }  else 
     {    
         stop('this function only works for the ETM+ and TM sensors, other sensors to be done later...')
