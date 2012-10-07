@@ -123,7 +123,7 @@ modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME
 			if (rm.hdf) unlink(hdffile)
 		}
 		
-	} 
+	} else success <- TRUE
 	
 	if (res.files){
 		success <- xoutput
