@@ -60,6 +60,23 @@ bandnumber <- function(bandname, ref="ricemap", asString=TRUE){
 	return(result)
 } 
 
+validFolders <- function(styear=2000, enyear=as.numeric(format(Sys.Date(),"%Y"))){
+	valid <- vector()
+	for (y in styear:enyear){
+		st <- ifelse(y==2000,paste(y,"2","18",sep="-"),paste(y,"1","1",sep="-"))
+		valid <- c(valid,format(seq(from=as.Date(st), to=as.Date(paste(y,"12","31",sep="-")), by=8),"%Y.%m.%d"))
+	}
+	return(valid)
+}
+
+subFolderFromDoy <- function(doy,year){
+	valid <- validFolders()
+	dirdate <- format(as.Date(paste(doy, year),"%j %Y"),"%Y.%m.%d")
+	dirdate[dirdate %in% valid] 
+	return(dirdate[dirdate %in% valid])
+}
+
+
 withRetry <- function(expr, retries=10, initpause=30, failtime=10,verbose=FALSE){
 	tries <- 0
 	success <- FALSE
