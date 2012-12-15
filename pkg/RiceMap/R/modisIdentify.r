@@ -49,9 +49,18 @@ modis.composite <- function(composite, features=NULL){
 		composite@proddate <- ""
 		composite@imgvals$nimgs <- 1 
 	} else {
-		composite@imgvals <- composite@imgvals+cbind(features@imgvals,1)					
+		features@imgvals$nimgs <- 1
+		if(sum(colnames(features@imgvals)==colnames(composite@imgvals))!=ncol(composite@imgvals)) stop("Invalid features column")
+				
+		for (i in 1:ncol(composite@imgvals)){
+			x <- composite@imgvals[,i]
+			y <- features@imgvals[,i]
+			nas <- is.na(x) & is.na(y)
+			x[is.na(x)] <- 0
+			y[is.na(y)] <- 0
+			composite@imgvals[,i] <- x+y
+			composite@imgvals[nas,i] <- NA
+		}
 	}
-	rm(features)
-	gc(verbose=FALSE)
 	return(composite)
 }

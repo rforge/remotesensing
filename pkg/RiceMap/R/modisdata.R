@@ -35,6 +35,35 @@ setMethod("modis.data", signature(x="modis.data"),
 
 )
 
+setMethod("modis.data", signature(x="data.frame"),
+		function(x, cached=FALSE, cache.path="./cache"){
+			mstack <- stack(x$filename)
+			NAvalues(mstack) <- -26872
+			
+			m <- new("modis.data", product=x$product[1], acqdate=x$acqdate[1], zone=x$zone[1], version=x$version[1], 
+					proddate=x$proddate, projection=projection(mstack), extent=extent(mstack), ncols=ncol(mstack), nrows=nrow(mstack), imgvals=data.frame())
+			
+			if (cached){
+				if(!force.directories(cache.path)) stop("cannot write to path")
+				st <- Sys.time()
+				m@imgvals <- data.frame(row=numeric(0),cache.file=character(0))
+				for (i in 1:2400){
+					message("reading row ", i, "\r", appendLF=FALSE)
+					tocache <- as.data.frame(values(mstack,i))
+					save(tocache,file=paste(cache.path,"/",deparse(substitute(x)),"_",i,".RData",sep=""))
+					m@imgvals[i,] <- NA
+					m@imgvals$row[i] <- i
+					m@imgvals$cache.file[i] <- paste(cache.path,"/",deparse(substitute(x)),"_",i,".RData",sep="")
+				}				
+				Sys.time()-st
+			} else {
+				m@imgvals <- as.data.frame(values(mstack))
+			}
+			return(m)			
+		}
+
+)
+
 setMethod("modis.data", signature(x="RasterStack"),
 		function(x){
 			m <- new("modis.data", product="", acqdate="", zone="", version="", 
