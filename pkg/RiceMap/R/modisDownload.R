@@ -83,7 +83,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 	return(result)
 }
 
-modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE,...){
+modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), ...){
 	
 	success <- FALSE
 	
@@ -95,7 +95,7 @@ modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME
 	xoutput <- dir(outdir, pattern=sub(".hdf","",basename(hdffile)), ...)
 	
 	# Skip if exists.
-	if (length(xoutput)!=7){
+	if (length(xoutput)<sum(spectral_subset)){
 		
 		if(!is.character(hdffile)) {
 			message(hdffile," is not a valid HDF file name character string?", appendLF=TRUE)
@@ -109,7 +109,7 @@ modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME
 			
 			filename <- paste(MRT, "/modisconfig.prm", sep="")
 			mrtconfig <- c(paste('INPUT_FILENAME = ', hdffile, sep=""), 
-					'SPECTRAL_SUBSET = ( 1 1 1 1 0 1 1 0 0 0 0 1 0 )',
+					'SPECTRAL_SUBSET = ( ', paste(spectral_subset, collapse=" "),' )',
 					paste('OUTPUT_FILENAME = ', outdir,"/", sub(".hdf","",basename(hdffile)),'.tif', sep=""), 
 					'RESAMPLING_TYPE = NEAREST_NEIGHBOR', 
 					'OUTPUT_PROJECTION_TYPE = SIN',
