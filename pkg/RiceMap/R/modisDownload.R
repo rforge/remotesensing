@@ -83,7 +83,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 	return(result)
 }
 
-modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), ...){
+modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), options=vector(),...){
 	
 	success <- FALSE
 	
@@ -113,7 +113,8 @@ modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME
 					paste('OUTPUT_FILENAME = ', outdir,"/", sub(".hdf","",basename(hdffile)),'.tif', sep=""), 
 					'RESAMPLING_TYPE = NEAREST_NEIGHBOR', 
 					'OUTPUT_PROJECTION_TYPE = SIN',
-					'OUTPUT_PROJECTION_PARAMETERS = ( 6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )')
+					'OUTPUT_PROJECTION_PARAMETERS = ( 6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )',
+					options)
 			writeLines(mrtconfig,filename)
 			success <- system(paste(MRT, '/resample -p ', MRT, '/modisconfig.prm', sep=""))
 			if (success==0) {
