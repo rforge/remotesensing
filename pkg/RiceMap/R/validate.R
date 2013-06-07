@@ -59,7 +59,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	if(class(modis)!="modis.data") stop("Invalid input data. 'modis' Should be of class \"modis.data\"")
 	
 	floodpath <- paste(modisroot, "identify", sep="/")
-	idfs <- modisFiles(path=floodpath, modisinfo=c("product","acqdate","zone","version","proddate","band","process", "format"), full.names=TRUE)	
+	idfs <- modisFiles(path=floodpath, modisinfo=c("product","acqdate","zone","version","proddate","band","process"), full.names=TRUE)	
 	flds <- idfs[grep("flood",idfs$band),]
 	# Gets the index of the last image (DOY 361) of the previous year
 	fld0 <- grep(paste("A",yr-1,"361",sep=""),flds$acqdate) 
@@ -70,7 +70,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	flds <- flds[fld0:max(grep(yr,flds$year)),]
 	
 	evipath <- paste(modisroot, "veg", sep="/")
-	infs <- modisFiles(path=evipath, modisinfo=c("product","acqdate","zone","version","proddate","band","process", "format"), full.names=TRUE)	
+	infs <- modisFiles(path=evipath, modisinfo=c("product","acqdate","zone","version","proddate","band","process"), full.names=TRUE)	
 	evis <- infs[infs$band=="evi",]
 	# Gets the index of the 12th image (DOY 89) of the next year
 	eny12 <- grep(yr+1,evis$year)
@@ -142,7 +142,7 @@ modis.validate <- function(modis, modisroot, yr, writeto="./realrice", verbose=T
 	validatedrice@imgvals <- as.data.frame(cbind(ricefreq,rice))
 	modis.brick(validatedrice, process="validate", intlayers=1:2, writeto=outdir, options="COMPRESS=LZW", overwrite=TRUE)
 	
-	png(filename=paste(outdir,paste(yr,"npix_riceplot.png", sep="_"),sep="/"), width=1024, height=768)    
+	png(filename=paste(outdir,paste(yr,"npix_riceplot.png", sep="_"),sep="/"), type="cairo", width=1024, height=768)    
 	barplot(rppdoy, names.arg=flds$doy[fld0:max(grep(yr,flds$year))], main="Counts of identified rice pixels per DOY")
 	dev.off()	
 	
@@ -158,7 +158,7 @@ validateRice <- function(inpath, year="All", informat="GTiff", outformat="GTiff"
     if (is.na(filext)){
         stop("Invalid input format")
     }
-    vfiles <- modisFiles(path=inpath, modisinfo=c("product","acqdate","zone","version", "proddate", "band","process","format"))
+    vfiles <- modisFiles(path=inpath, modisinfo=c("product","acqdate","zone","version", "proddate", "band","process"))
     #vfiles <- validationFiles(inpath,informat)
     if (year=="All"){
         years <- unique(vfiles$year) 

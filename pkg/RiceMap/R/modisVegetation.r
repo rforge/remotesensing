@@ -8,6 +8,7 @@ forest <- function(ndvi){
 	return(ndvi>=0.7)
 }
 
+# TODO: verify if > or <
 shrub <- function(lswi){
 	return(lswi<0.1)
 }

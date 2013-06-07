@@ -33,6 +33,7 @@ extFormat <- function(filext){
 	formt[tolower(filext)=="grd"] <- "raster"
 	return(formt)
 }
+
 force.directories <- function(path,...){
     
     if(!file.exists(path)){

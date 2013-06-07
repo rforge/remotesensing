@@ -44,7 +44,7 @@ modis.rice <- function(modis, writeto="./rice", verbose=TRUE){
 	forest <- modis@imgvals$forest >= (20*(modis@imgvals$nimgs/46))
 	#finalize shrub
 	shrub <- (modis@imgvals$shrub == 46) & !forest
-	#finalize flooded
+	#finalize wetland
 	wetland <- modis@imgvals[,grep("flooded", colnames(modis@imgvals))] >= 40
 	#finalize flooded
 	flooded <- (modis@imgvals[,grep("flooded", colnames(modis@imgvals))] > 0) & !wetland

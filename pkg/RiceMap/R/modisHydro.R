@@ -50,6 +50,8 @@ flooded3 <- function(evi,lswi){
 flooded4 <- function(ndwi7){
 	return(ndwi7 > 0)	
 }
+
+# TODO verify ndvi > 0.10 or ndvi < 0.10
 persistentwater <- function(ndvi,lswi){ 
 #Xiao X., Boles S., Liu J., Zhuang D., Frokling S., Li C., Salas W., Moore III B. (2005). 
 #Mapping paddy rice agriculture in southern China using multi-temporal MODIS images. 

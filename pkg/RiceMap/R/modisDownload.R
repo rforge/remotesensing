@@ -3,8 +3,8 @@
 # License GPL3
 # Version 1, August 2011
 
-modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.ftp="ftp://e4ftl01.cr.usgs.gov/MOLT/", redownload=FALSE, verbose=TRUE, checkurl=TRUE, ...){
-
+modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", smart=TRUE, verbose=TRUE, checkurl=TRUE, ...){
+	if(!require(RCurl)) stop("Package RCurl not found")
 	#Initialize required objects
 	result <- vector() # Empty vector will contain
 	
@@ -17,65 +17,101 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 		acqdates <- format(as.Date(paste(years[i], doy), "%Y %j"), "%Y.%m.%d")
 		#subfolders <- as.Date(validFolders()[1], "%Y.%m.%d")
 		
-		
 		for (j in 1:length(acqdates)){
-			# Check if acqdate is valid 
-			# TODO: verify validFolders result are in ftp site
 			if (!acqdates[j] %in% validff){
 				if (verbose) message(acqdates[j], " is not a valid subfolder in modis ftp site. Skipping...", appendLF=TRUE)
 				next
 			}
 			
-			xstfile <- dir(savedir, pattern=paste(product,paste(years[i],sprintf("%0.3d",doy[j]),sep=""),tile,sep=".*."), full.names=TRUE)
-			if (length(xstfile)>0 & !redownload) {
-				# File already present in local savedir
-				if (verbose) message(xstfile, " exists locally. Skipping download.", appendLF=TRUE)
-				result <- c(result,xstfile)
-				next
-			}
-			
-			product.ftp <- paste(modis.ftp, product, ".005", "/", acqdates[j], "/", sep="") # MODIS FTP URL for specified product
+			product.site <- paste(modis.site, product, ".005", "/", acqdates[j], "/", sep="") # MODIS FTP URL for specified product
 						
 			if (checkurl){
-				if (verbose) message("Checking if ", acqdates[j], " is a valid subfolder in ", dirname(product.ftp), appendLF=TRUE)
-				if(!url.exists(product.ftp)) {
-					message(product.ftp, "does not exist. Skipping.", appendLF=TRUE)
+				if (verbose) message("Checking if ", acqdates[j], " is a valid subfolder in ", dirname(product.site), appendLF=TRUE)
+				if(!url.exists(product.site)) {
+					message(product.site, "does not exist. Skipping.", appendLF=TRUE)
 					next
 				}
 			} 
-			if (verbose)  {
-				message("Acquiring file list in ", product.ftp, appendLF=TRUE)		
-			}
+			if (verbose) message("Acquiring file list in ", product.site, appendLF=TRUE)		
 			
-			# get list of files in product.ftp 
-			files <- getURL(product.ftp, .opts=curlOptions(ftplistonly=TRUE))	
+			# get list of files in product.site 
+			files <- getURL(product.site, .opts=curlOptions(ftplistonly=TRUE))	
 			# parse list by line
 			files <- unlist(strsplit(files,"\n")) 
 			
-			# if product.ftp has files from specified tile
+			# if product.site has files from specified tile
 			if (length(files)>0){
 				# get hdf filename for specified tile 
-				hdffile <- gsub("\r", "", files[grep(paste(tile,"hdf",sep=".*."),files)])
-				#remove xml from file list
-				hdffile <-  hdffile[-grep("xml",hdffile)]
-				
-				# if tile is found on product.ftp
-				if (length(hdffile)!=0){ 
-					
+				tilefiles <- gsub("\r", "", files[grep(paste(tile,"hdf",sep=".*."),files)])
+								
+				# if tile is found on product.site
+				if (length(tilefiles)==2){ 
+					# extract filenames from html
+					hdffile <- substr(tilefiles[1], regexpr(product,tilefiles[1]), regexpr("hdf",tilefiles[1])+2)
+					xmlfile <- substr(tilefiles[2], regexpr(product,tilefiles[2]), regexpr("xml",tilefiles[2])+2)
+										
+					if (file.exists(paste(savedir,hdffile, sep="/")) & smart) {
+						# File already present in local savedir
+						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
+						
+						if (verbose) message("Checking integrity...", appendLF=FALSE)
+						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
+						
+						# Validating existing file
+						if (system("cksum --version", show.output.on.console=FALSE)==0){
+							cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
+							cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
+							chk <- xml[grep("Checksum>",xml)]
+							idx <- unlist(gregexpr("[[:digit:]]", chk))
+							chk <- substr(chk, min(idx), max(idx))						
+						} else {
+							cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
+							chk <- xml[grep("FileSize>",xml)]
+							idx <- unlist(gregexpr("[[:digit:]]", chk))
+							chk <- as.numeric(substr(chk, min(idx), max(idx)))
+						}
+						
+						if(chk==cksum) {
+							message(" SUCCESS!", appendLF=TRUE)
+							result <- c(result,paste(savedir,hdffile,sep="/"))
+							next
+						} else {
+							message(" FAILED! Redownload in progress.", appendLF=TRUE)
+							unlink(paste(savedir,hdffile, sep="/")) 
+						}
+					} 
+															
 					# File not yet downloaded - attempt to get it!
-					if (verbose) message("Downloading ", product.ftp, hdffile, appendLF=TRUE)		
-					items <- download.file(paste(product.ftp, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
+					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
+					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
+					
+					# check integrity
+					if (verbose) message("Checking integrity...", appendLF=FALSE)
+					xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
+					if (system("cksum --version", show.output.on.console=FALSE)==0){
+						cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
+						cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
+						chk <- xml[grep("Checksum>",xml)]
+						idx <- unlist(gregexpr("[[:digit:]]", chk))
+						chk <- substr(chk, min(idx), max(idx))						
+					} else {
+						cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
+						chk <- xml[grep("FileSize>",xml)]
+						idx <- unlist(gregexpr("[[:digit:]]", chk))
+						chk <- as.numeric(substr(chk, min(idx), max(idx)))
+					}
 					
 					# Verify successful download
-					if(length(items)>0) {
-						message(hdffile," successfully downloaded!", appendLF=TRUE)
+					if(chk==cksum) {
+						message(" SUCCESS!", appendLF=TRUE)
 						result <- c(result,paste(savedir,hdffile,sep="/"))
 					} else {
-						message(product.ftp, hdffile," found but could not be downloaded.", appendLF=TRUE)
-						unlink(hdffile) 
+						message("FAILED. Try to redownload later.", appendLF=TRUE)
+						unlink(paste(savedir,hdffile, sep="/")) 
 					}
+					
 				} else {
-					message(tile, " not found in ", product.ftp, appendLF=TRUE) 
+					message(tile, " not found in ", product.site, appendLF=TRUE) 
 				}
 			}				
 		}		
