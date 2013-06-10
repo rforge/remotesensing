@@ -5,6 +5,7 @@
 
 modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", smart=TRUE, verbose=TRUE, checkurl=TRUE, ...){
 	if(!require(RCurl)) stop("Package RCurl not found")
+	cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
 	#Initialize required objects
 	result <- vector() # Empty vector will contain
 	
@@ -56,7 +57,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 						
 						if (verbose) message("Checking integrity...", appendLF=FALSE)
 						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-						cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
+						
 						# Validating existing file
 						if (class(cksumver)!="try-error"){
 							cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
@@ -88,7 +89,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 					# check integrity
 					if (verbose) message("Checking integrity...", appendLF=FALSE)
 					xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-					if (system("cksum --version", show.output.on.console=FALSE)==0){
+					if (class(cksumver)!="try-error"){
 						cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
 						cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
 						chk <- xml[grep("Checksum>",xml)]
