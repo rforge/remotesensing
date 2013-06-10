@@ -56,9 +56,9 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 						
 						if (verbose) message("Checking integrity...", appendLF=FALSE)
 						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-						
+						cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
 						# Validating existing file
-						if (system("cksum --version", show.output.on.console=FALSE)==0){
+						if (class(cksumver)!="try-error"){
 							cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
 							cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
 							chk <- xml[grep("Checksum>",xml)]
