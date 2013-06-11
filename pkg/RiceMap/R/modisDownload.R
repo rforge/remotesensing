@@ -80,7 +80,11 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 							message(" FAILED! Redownload in progress.", appendLF=TRUE)
 							unlink(paste(savedir,hdffile, sep="/")) 
 						}
-					} 
+					} else if (file.exists(paste(savedir,hdffile, sep="/"))){
+						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
+						result <- c(result,paste(savedir,hdffile,sep="/"))
+						next
+					}
 															
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
