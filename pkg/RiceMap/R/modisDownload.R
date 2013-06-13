@@ -65,6 +65,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 							chk <- xml[grep("Checksum>",xml)]
 							idx <- unlist(gregexpr("[[:digit:]]", chk))
 							chk <- substr(chk, min(idx), max(idx))						
+							if (grepl("\\|", chk)) chk <- unlist(strsplit(cksum[length(chk)], "\\|"))[1]
 						} else {
 							cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
 							chk <- xml[grep("FileSize>",xml)]
