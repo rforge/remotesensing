@@ -73,31 +73,33 @@ setMethod("modis.data", signature(x="RasterStack"),
 
 )
 
-modis.brick <- function(modis, process=NULL, writeto=NULL, format="GTiff", skipx=FALSE, infosep=".", multiband=FALSE, ...){
-	if (multiband & nrow(modis@imgvals)>500000) {
-		message("Warning: Large amount of data detected. Your computer might freeze or crash if you don't have enough memory.")
-	}
-	
+modis.brick <- function(modis, process=NULL, intlayers=NULL, writeto=NULL, intNA=-15, fltNA=-9999.0, format="GTiff", skipx=FALSE, ...){
 	force.directories(writeto, recursive=TRUE)
 	mraster <- raster(modis@extent, ncols=modis@ncols, nrows=modis@nrows, crs=modis@projection)
-	if (!is.null(process)) {
-		fname <- paste(writeto, paste(modis@product, modis@acqdate, modis@zone, modis@version, modis@proddate, process, sep=infosep),sep="/")
-	} else fname <- paste(writeto, paste(modis@product, modis@acqdate, modis@zone, modis@version, modis@proddate, sep=infosep),sep="/")
-	
+    
+    if(is.character(writeto)){                
+        fname <- gsub("\\.\\.", "\\.", paste(modis@product, modis@acqdate, modis@zone, modis@version, modis@proddate, colnames(modis@imgvals), process, formatExt(format), sep="."))        
+        fname <- as.character(paste(writeto,fname,sep="/"))          
+    } else mbrick <- brick(mraster)
+
 	for(i in 1:ncol(modis@imgvals)){
-		mraster <- addLayer(mraster, setValues(mraster,modis@imgvals[,i]))
-    }
-	names(mraster) <- colnames(modis@imgvals)
-	
-	if(is.character(writeto) & multiband) {
-		writeRaster(mraster,filename=fname, format=format, bylayer=FALSE, ...)
-	} else if (is.character(writeto) & !multiband){
-		writeRaster(mraster,filename=fname, format=format, bylayer=TRUE, ...)
-		forrename <- dir(writeto, pattern=basename(fname),full.names=TRUE)
-		for(i in 1:length(forrename)){
-			idx <- as.numeric(sub(paste(basename(fname),"_",sep=""),"",sub(extension(forrename[i]),"",basename(forrename[i]))))
-			file.rename(forrename[i],paste(writeto, "/", basename(fname),"_", names(mraster)[idx],extension(forrename[i]),sep=""))
+		if(skipx & file.exists(fname[i])) next
+        mraster <- setValues(mraster,modis@imgvals[,i])
+        
+        if(!is.null(intlayers) & is.numeric(intlayers)){
+            dataType(mraster) <- ifelse(i %in% intlayers,"INT1U","FLT4S")                
+        } else if(!is.null(intlayers)){
+			show.message("Ignoring intlayers. Should be 1:ncol(modis@imgvals) instead of", paste(intlayers, collapse=","), eol="\n")
 		}
-	} else 	mraster <- TRUE  
-    return(mraster)
+        
+        if(is.character(writeto)) {            
+            if (dataType(mraster)== "INT1U"){
+                writeRaster(mraster,filename=fname[i], format=format, NAflag=intNA, ...)
+            } else {
+                writeRaster(mraster,filename=fname[i], format=format, NAflag=fltNA, ...)
+            }
+        } else  mbrick <- addLayer(mbrick,mraster)
+    }
+	if(is.character(writeto)) mbrick <- TRUE else mbrick@layernames <- colnames(modis@imgvals)
+    return(mbrick)
 }
