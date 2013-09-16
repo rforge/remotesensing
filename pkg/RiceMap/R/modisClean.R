@@ -76,7 +76,9 @@ modis.clean <- function(modfiles, modisdate, masklist=c("cloud","snow", "water")
 }
 
 modis.clean2 <- function(modfiles, modisdate, masklist=c("cloud","snow", "water"), bands=c("b01", "b02", "b03", "b04", "b05", "b06", "b07"), scalemultiplier=0.0001, savemask=TRUE, writeto="./clean", verbose=TRUE){
-	require(mvbutils)
+	if (!require(mvbutils)){
+		stop("Cleaning MODIS bands with cache support needs mvbutils package. Kindly install it first.")
+	}
 	# get only files with acqdate=modisdate
 	files <- modfiles[modfiles$acqdate==modisdate,]
 	

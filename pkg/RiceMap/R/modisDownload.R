@@ -3,9 +3,17 @@
 # License GPL3
 # Version 1, August 2011
 
-modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", smart=TRUE, verbose=TRUE, checkurl=TRUE, ...){
+modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", smart=TRUE, verbose=TRUE, checkurl=TRUE, integrity=TRUE, ...){
 	if(!require(RCurl)) stop("Package RCurl not found")
-	cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
+	
+	if (smart){
+		integrity <- TRUE	
+	} 
+	
+	if (integrity) {
+		cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
+	}
+	
 	#Initialize required objects
 	result <- vector() # Empty vector will contain
 	
@@ -50,43 +58,43 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 					# extract filenames from html
 					hdffile <- substr(tilefiles[1], regexpr(product,tilefiles[1]), regexpr("hdf",tilefiles[1])+2)
 					xmlfile <- substr(tilefiles[2], regexpr(product,tilefiles[2]), regexpr("xml",tilefiles[2])+2)
-										
-					if (file.exists(paste(savedir,hdffile, sep="/")) & smart) {
-						# File already present in local savedir
-						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
-						
-						if (verbose) message("Checking integrity...", appendLF=FALSE)
-						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-						
-						# Validating existing file
+					
+					if (integrity) {
+						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))					
 						if (class(cksumver)!="try-error"){
-							cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
-							cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
 							chk <- xml[grep("Checksum>",xml)]
 							idx <- unlist(gregexpr("[[:digit:]]", chk))
 							chk <- substr(chk, min(idx), max(idx))						
 							if (grepl("\\|", chk)) chk <- unlist(strsplit(cksum[length(chk)], "\\|"))[1]
 						} else {
-							cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
 							chk <- xml[grep("FileSize>",xml)]
 							idx <- unlist(gregexpr("[[:digit:]]", chk))
 							chk <- as.numeric(substr(chk, min(idx), max(idx)))
+						}						
+					}
+										
+					if (file.exists(paste(savedir,hdffile, sep="/")) & smart) {
+						# File already present in local savedir
+						if (verbose) {
+							message(hdffile, " exists locally.", appendLF=TRUE)
+							message("Checking integrity...", appendLF=FALSE)
 						}
-						
-						if(chk==cksum) {
-							message(" SUCCESS!", appendLF=TRUE)
-							result <- c(result,paste(savedir,hdffile,sep="/"))
-							next
-						} else {
-							message(" FAILED! Redownload in progress.", appendLF=TRUE)
-							unlink(paste(savedir,hdffile, sep="/")) 
-						}
+											
 					} else if (file.exists(paste(savedir,hdffile, sep="/"))){
 						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
 						result <- c(result,paste(savedir,hdffile,sep="/"))
 						next
 					}
-															
+					
+					if(chk==cksum) {
+						message(" SUCCESS!", appendLF=TRUE)
+						result <- c(result,paste(savedir,hdffile,sep="/"))
+						next
+					} else {
+						message(" FAILED! Redownload in progress.", appendLF=TRUE)
+						unlink(paste(savedir,hdffile, sep="/")) 
+					}
+					
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
 					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)

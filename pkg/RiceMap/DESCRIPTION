@@ -1,9 +1,9 @@
 Package: RiceMap
 Type: Package
 Title: Mapping rice area with time series of MODIS images
-Version: 0.4.10
-Date: 13-August-2010
-Depends: raster, bitops, RemoteSensing, methods
+Version: 1.0.1
+Date: 24-June-2013
+Depends: raster, bitops, RemoteSensing, methods, RCurl, mvbutils
 Suggests: rgdal, timeSeries
 Author: Sonia Asilo, Jorrel Aunario, Andy Nelson, Robert J. Hijmans
 Maintainer: Robert J. Hijmans <r.hijmans@gmail.com> 

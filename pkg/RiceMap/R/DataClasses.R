@@ -12,6 +12,7 @@ setClass ("modis.data",
         extent = "Extent",
         ncols = "numeric",
         nrows = "numeric" ,
+		cached = "logical",
         imgvals = "data.frame"),
     prototype(
         product = "",
@@ -22,7 +23,8 @@ setClass ("modis.data",
         projection = "",
         extent = extent(1,10,1,10),
         ncols = 2400,
-        nrows = 2400, 
+        nrows = 2400,
+		cached = FALSE,
         imgvals = NULL),
     package="RiceMap"
 )
