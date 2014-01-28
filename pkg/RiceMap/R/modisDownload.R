@@ -86,15 +86,6 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 						next
 					}
 					
-					if(chk==cksum) {
-						message(" SUCCESS!", appendLF=TRUE)
-						result <- c(result,paste(savedir,hdffile,sep="/"))
-						next
-					} else {
-						message(" FAILED! Redownload in progress.", appendLF=TRUE)
-						unlink(paste(savedir,hdffile, sep="/")) 
-					}
-					
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
 					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
