@@ -13,12 +13,6 @@ raster2SGDF <- function(baseraster, vals=NULL){
 	return(baseraster)
 }
 
-
-rescale <- function(x, oldmin, oldmax, newmin, newmax){
-	y <- newmin + (newmax * ((x-oldmin)/(oldmax-oldmin)))
-	return(y)
-}
-
 formatExt <- function(myformat){
     ext <- rep(NA, length(myformat))
     ext[tolower(myformat)=="raster"] <- "grd"
@@ -32,20 +26,6 @@ extFormat <- function(filext){
 	formt[tolower(filext)=="tif"] <- "GTiff"
 	formt[tolower(filext)=="grd"] <- "raster"
 	return(formt)
-}
-
-force.directories <- function(path,...){
-    
-    if(!file.exists(path)){
-        success <- dir.create(path,...)  
-    } else success <- TRUE
-    return(success)
-}
-
-show.message <- function(..., eol=""){
-	if (eol=="\r") cat(rep(" ", options("width")),eol,sep="")
-	cat(...,eol,sep="")
-	flush.console()
 }
 
 bandnames <- function(bandnum, ref="ricemap"){
@@ -75,22 +55,4 @@ subFolderFromDoy <- function(doy,year){
 	dirdate <- format(as.Date(paste(doy, year),"%j %Y"),"%Y.%m.%d")
 	dirdate[dirdate %in% valid] 
 	return(dirdate[dirdate %in% valid])
-}
-
-
-withRetry <- function(expr, retries=10, initpause=30, failtime=10,verbose=FALSE){
-	tries <- 0
-	success <- FALSE
-	while(success==FALSE & (tries<retries | failtime>(initpause*tries))){
-		items <- try(expr,silent= !verbose) 
-		if (class(items)=="try-error"){
-			tries <- tries+1
-			show.message("Timeout? trying again in ", (initpause*tries) ," secs...", eol="\n")
-			Sys.sleep(initpause*tries)
-		} else {
-			success <- TRUE
-		}		
-	}
-	if (!success) items <-c() # return an empty vector if the expr fails to return anything or times out to the limit 
-	return(items)
 }

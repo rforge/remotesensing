@@ -3,24 +3,49 @@
 # License GPL3
 # Version 1, August 2011
 
-modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", smart=TRUE, verbose=TRUE, checkurl=TRUE, integrity=TRUE, ...){
-	if(!require(RCurl)) stop("Package RCurl not found")
-	
-	if (smart){
-		integrity <- TRUE	
-	} 
-	
-	if (integrity) {
-		cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)
+dl.fast <- 0
+dl.smart <- 1
+dl.renew <- 2
+
+modis.integrity <- function(localfile, xml){
+	cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)	
+	if (class(cksumver)=="try-error"){
+		cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
+		chk <- xml[grep("FileSize>",xml)]
+		idx <- unlist(gregexpr("[[:digit:]]", chk))
+		chk <- as.numeric(substr(chk, min(idx), max(idx)))
+	} else {
+		cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
+		cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
+		chk <- xml[grep("Checksum>",xml)]						
+		idx <- unlist(gregexpr("[[:digit:]]", chk))
+		chk <- substr(chk, min(idx), max(idx))
+		if (grepl("\\|", chk)) chk <- unlist(strsplit(cksum[length(chk)], "\\|"))[1]
 	}
+	return(cksum==chk)
+}
+
+modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", dl.mode=dl.smart, checkurl=TRUE, integrity=TRUE, skip.exists=TRUE, verbose=TRUE, ...){
 	
 	#Initialize required objects
-	result <- vector() # Empty vector will contain
-	
 	if (!force.directories(savedir,recursive=TRUE)){ # Ensure the path exists on disk
 		stop("Unable to create save directory. Kindly ensure you have the necessary permissions to use \n", savedir)
 	}
-	validff <- validFolders()
+	
+	validff <- validFolders()	
+	result <- vector() # Empty vector will contain full filename
+	
+	
+	if (dl.mode==dl.fast) {
+		skip.exists <- TRUE
+		checkurl <- FALSE
+		integrity <- FALSE
+	} else if (dl.mode==dl.smart) {
+		integrity <- TRUE
+	} else if (dl.mode==dl.renew) {
+		skip.exists <- FALSE			
+	}
+	
 	for (i in 1:length(years)){
 		# Generate ACQDATE based on year and doy
 		acqdates <- format(as.Date(paste(years[i], doy), "%Y %j"), "%Y.%m.%d")
@@ -35,7 +60,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 			product.site <- paste(modis.site, product, ".005", "/", acqdates[j], "/", sep="") # MODIS FTP URL for specified product
 						
 			if (checkurl){
-				if (verbose) message("Checking if ", acqdates[j], " is a valid subfolder in ", dirname(product.site), appendLF=TRUE)
+				if (verbose) message("Checking if ", acqdates[j], " is available in ", dirname(product.site), appendLF=TRUE)
 				if(!url.exists(product.site)) {
 					message(product.site, "does not exist. Skipping.", appendLF=TRUE)
 					next
@@ -59,63 +84,53 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 					hdffile <- substr(tilefiles[1], regexpr(product,tilefiles[1]), regexpr("hdf",tilefiles[1])+2)
 					xmlfile <- substr(tilefiles[2], regexpr(product,tilefiles[2]), regexpr("xml",tilefiles[2])+2)
 					
-					if (integrity) {
-						xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))					
-						if (class(cksumver)!="try-error"){
-							chk <- xml[grep("Checksum>",xml)]
-							idx <- unlist(gregexpr("[[:digit:]]", chk))
-							chk <- substr(chk, min(idx), max(idx))						
-							if (grepl("\\|", chk)) chk <- unlist(strsplit(cksum[length(chk)], "\\|"))[1]
-						} else {
-							chk <- xml[grep("FileSize>",xml)]
-							idx <- unlist(gregexpr("[[:digit:]]", chk))
-							chk <- as.numeric(substr(chk, min(idx), max(idx)))
-						}						
-					}
-										
-					if (file.exists(paste(savedir,hdffile, sep="/")) & smart) {
+					if (integrity) xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
+					
+					if (file.exists(paste(savedir,hdffile, sep="/")) & skip.exists) {
+						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
+						result <- c(result,paste(savedir,hdffile,sep="/"))
+						next
 						# File already present in local savedir
+						
+					} else if (file.exists(paste(savedir,hdffile, sep="/")) & integrity){
+						
+						
 						if (verbose) {
 							message(hdffile, " exists locally.", appendLF=TRUE)
 							message("Checking integrity...", appendLF=FALSE)
 						}
-											
-					} else if (file.exists(paste(savedir,hdffile, sep="/"))){
-						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
-						result <- c(result,paste(savedir,hdffile,sep="/"))
-						next
+						
+						if(modis.integrity(localfile=paste(savedir,hdffile, sep="/"),xml=xml)) {
+							message(" SUCCESS!", appendLF=TRUE)
+							result <- c(result,paste(savedir,hdffile,sep="/"))
+							next
+						} else {
+							message("FAILED. Removing old file.", appendLF=TRUE)
+							unlink(paste(savedir,hdffile, sep="/")) 
+						}
+					} else if (file.exists(paste(savedir,hdffile, sep="/")) ){
+						message("Removing old file.", appendLF=TRUE)
+						unlink(paste(savedir,hdffile, sep="/"))
 					}
+					
 					
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
 					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
 					
 					# check integrity
-					if (verbose) message("Checking integrity...", appendLF=FALSE)
-					xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-					if (class(cksumver)!="try-error"){
-						cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
-						cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
-						chk <- xml[grep("Checksum>",xml)]						
-						idx <- unlist(gregexpr("[[:digit:]]", chk))
-						chk <- substr(chk, min(idx), max(idx))
-						if (grepl("\\|", chk)) chk <- unlist(strsplit(cksum[length(chk)], "\\|"))[1]
-					} else {
-						cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
-						chk <- xml[grep("FileSize>",xml)]
-						idx <- unlist(gregexpr("[[:digit:]]", chk))
-						chk <- as.numeric(substr(chk, min(idx), max(idx)))
-					}
-					
-					# Verify successful download
-					if(chk==cksum) {
-						message(" SUCCESS!", appendLF=TRUE)
-						result <- c(result,paste(savedir,hdffile,sep="/"))
-					} else {
-						message("FAILED. Try to redownload later.", appendLF=TRUE)
-						unlink(paste(savedir,hdffile, sep="/")) 
-					}
-					
+					if (integrity){
+						if (verbose) message("Checking integrity...", appendLF=FALSE)
+						# Verify successful download
+						if(modis.integrity(localfile=paste(savedir,hdffile, sep="/"),xml=xml)) {
+							message(" SUCCESS!", appendLF=TRUE)
+							result <- c(result,paste(savedir,hdffile,sep="/"))
+							next
+						} else {
+							message("FAILED. Try to redownload later.", appendLF=TRUE)
+							unlink(paste(savedir,hdffile, sep="/")) 
+						}
+					}					
 				} else {
 					message(tile, " not found in ", product.site, appendLF=TRUE) 
 				}
