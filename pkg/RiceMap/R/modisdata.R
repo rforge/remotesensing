@@ -22,7 +22,7 @@ if (!isGeneric("modis.data")){
 
 setMethod("modis.data", signature(x='missing'), 
 		function(x, ...) {
-			return(new("modis.data"))
+			return(new("modis.data",...))
 		}
 )
 
@@ -67,10 +67,30 @@ setMethod("modis.data", signature(x="data.frame"),
 setMethod("modis.data", signature(x="RasterStack"),
 		function(x){
 			m <- new("modis.data", product="", acqdate="", zone="", version="", 
-					proddate="", projection=projection(x), extent=extent(x), ncols=ncol(x), nrows=nrow(x), imgvals=as.data.frame(values(x)))
+					proddate="", projection=projection(x), extent=extent(x), ncols=ncol(x), nrows=nrow(x), imgvals=data.frame(values(x)))
 			return(m)			
 		}
 
+)
+
+setMethod("modis.data", signature(x="character"),
+		function(x, nodata=FALSE){
+			info <- modisFiles(path=dirname(x), pattern=basename(x))
+			if (length(x)>1){
+				base <- stack(x)
+			} else {
+				base <- raster(x)
+			}
+			m <- new("modis.data", product=info$product[1], acqdate=info$acqdate[1], zone=info$zone[1], version=info$version[1], 
+					proddate=info$proddate[1], projection=projection(base), extent=extent(base), ncols=ncol(base), nrows=nrow(base),imgvals=data.frame())
+			if(!nodata) {
+				m@imgvals <- data.frame(values(base))
+				colnames(m@imgvals) <- info$band
+			}	
+			rm(base)
+			gc(verbose=FALSE,reset=TRUE)
+			return(m)
+		}		
 )
 
 modis.brick <- function(modis, process=NULL, intlayers=NULL, writeto=NULL, intNA=-15, fltNA=-9999.0, format="GTiff", skipx=FALSE, ...){

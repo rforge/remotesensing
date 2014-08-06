@@ -1,1 +1,7 @@
+import(rgdal)
+import(bitops)
+import(RemoteSensing)
+import(methods)
+import(RCurl)
+import(mvbutils)
 exportPattern("^[^\\.]")

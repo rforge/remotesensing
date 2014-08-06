@@ -88,7 +88,7 @@ modisRice <- function(inpath, informat, outformat="raster", tiles="all", valscal
 	if (outformat=="raster"){
         outext <- ".grd"
     } else if (outformat=="GTiff"){
-        if (!require(rgdal)) stop("rgdal loading failed")
+        #if (!require(rgdal)) stop("rgdal loading failed")
         outext <- ".tif"
         opts <- c("COMPRESS=LZW", "TFW=YES")
     } else {

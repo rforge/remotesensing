@@ -10,12 +10,12 @@ dl.renew <- 2
 modis.integrity <- function(localfile, xml){
 	cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)	
 	if (class(cksumver)=="try-error"){
-		cksum <- file.info(paste(savedir,hdffile, sep="/"))$size
+		cksum <- file.info(localfile)$size
 		chk <- xml[grep("FileSize>",xml)]
 		idx <- unlist(gregexpr("[[:digit:]]", chk))
 		chk <- as.numeric(substr(chk, min(idx), max(idx)))
 	} else {
-		cksum <- system(paste("cksum", paste(savedir,hdffile, sep="/")), intern=TRUE)
+		cksum <- system(paste("cksum", localfile), intern=TRUE)
 		cksum <- unlist(strsplit(cksum[length(cksum)], " "))[1]
 		chk <- xml[grep("Checksum>",xml)]						
 		idx <- unlist(gregexpr("[[:digit:]]", chk))
@@ -140,7 +140,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 	return(result)
 }
 
-modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), options=vector(),...){
+modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), ouput_projection="SIN", resampling_type="NEAREST_NEIGHBOR", OPP="6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0",options=vector(),...){
 	
 	success <- FALSE
 	
@@ -168,9 +168,9 @@ modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME
 			mrtconfig <- c(paste('INPUT_FILENAME = ', hdffile, sep=""), 
 					'SPECTRAL_SUBSET = ( ', paste(spectral_subset, collapse=" "),' )',
 					paste('OUTPUT_FILENAME = ', outdir,"/", sub(".hdf","",basename(hdffile)),'.tif', sep=""), 
-					'RESAMPLING_TYPE = NEAREST_NEIGHBOR', 
-					'OUTPUT_PROJECTION_TYPE = SIN',
-					'OUTPUT_PROJECTION_PARAMETERS = ( 6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )',
+					paste('RESAMPLING_TYPE =', resampling_type), 
+					paste('OUTPUT_PROJECTION_TYPE =', toupper(output_projection)),
+					paste('OUTPUT_PROJECTION_PARAMETERS = (', OPP,')'),
 					options)
 			writeLines(mrtconfig,filename)
 			success <- system(paste(MRT, '/resample -p ', MRT, '/modisconfig.prm', sep=""))

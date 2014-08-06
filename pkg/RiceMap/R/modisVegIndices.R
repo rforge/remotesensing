@@ -96,7 +96,7 @@ modisVeg <- function(inpath, informat, outformat="raster", tiles="all"){
 	if (outformat=="raster"){
         ext <- ".grd"
     } else if (outformat=="GTiff"){
-        if (!require(rgdal)) stop("rgdal loading failed")
+        #if (!require(rgdal)) stop("rgdal loading failed")
         ext <- ".tif"
         opts <- c("COMPRESS=LZW", "TFW=YES")
     } else {

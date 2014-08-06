@@ -5,7 +5,7 @@
 # Licence GPL v3
 
 modisRiceValidate <- function(perhapsPath, eviPath, outPath, tileNumber, year, valscale=NULL, format='raster'){
-    require(rgdal)
+    #require(rgdal)
 
 	# thresholds:
 	upperT <- 0.75   #considered as the highest EVI value of rice; adjustable
