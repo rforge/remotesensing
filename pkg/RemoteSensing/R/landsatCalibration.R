@@ -31,7 +31,7 @@ dn2rad <- function(x, filename='', ...)
         stop('This object has already been calibrated')
     }
 
-    gb      <- RemoteSensing:::.getGainBias(x)
+    gb      <- .getGainBias(x)
     gain    <- gb[, "gain"][names(x)]
     bias    <- gb[, "bias"][names(x)]
 
@@ -75,7 +75,7 @@ dn2ref  <- function( x, filename='', ... )
         stop('only available for Landsat objects')    
     }
 
-    gb   <- RemoteSensing:::.getGainBias(x)
+    gb   <- .getGainBias(x)
     gain <- gb[,"gain"][names(x)]
     bias <- gb[,"bias"][names(x)]
     
@@ -86,13 +86,13 @@ dn2ref  <- function( x, filename='', ... )
     getDS <- function(doy)
     {
         # ds = earth to sun distance in astronomical units}
-        return ( 1.0 + 0.01672 * sin( 2 * base:::pi * ( doy - 93.5 ) / 365 ) )
+        return ( 1.0 + 0.01672 * sin( 2 * base::pi * ( doy - 93.5 ) / 365 ) )
     }
         
-    ESUN    <- RemoteSensing:::.esun(x@sensor@spacecraft, x@sensor@name)[names(x)]
+    ESUN    <- .esun(x@sensor@spacecraft, x@sensor@name)[names(x)]
     doy     <- as.integer(format(as.Date(x@sensor@acquisition_date),"%j"))
     ds      <- getDS(doy)
-    xfac    <- (base:::pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation) * base:::pi/180))
+    xfac    <- (base::pi * ds * ds) / (ESUN * cos ((90 - x@sensor@sun_elevation) * base::pi/180))
     
     if (filename!='')
     {
@@ -416,7 +416,7 @@ dn2temp <- function(x, filename='', ...)
 {
 # not used?
 #Conversion of Radiance to Reflectance Top Of Atmosphere for Landsat  TM, ETM+ and Aster
-    xfac <- (base:::pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* base:::pi/180))
+    xfac <- (base::pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* base::pi/180))
     #reflectance <- (radiance * pi * ds * ds) / (ESUN * cos ((90 - sun_elevation)* pi/180))
     reflectance <- calc(radiance, fun = function(x) {t(t(x)*xfac)}, forcefun=TRUE)
     #reflectance <- radiance / ((cos((90-sun_elevation)*pi/180)/(pi*ds*ds))*ESUN)

@@ -1,3 +1,4 @@
 import(raster)
+import(methods)
 exportClasses(Landsat)
 exportPattern("^[^\\.]")

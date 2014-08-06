@@ -40,7 +40,7 @@ getLandsatCPF <- function(filename) {
 landsat <- function(filename) 
 {
     
-    pars     <- RemoteSensing:::.readMetadata(filename)
+    pars     <- .readMetadata(filename)
     pathname <- dirname(filename)
     newMTL   <- length(pars[pars[,1]=="LANDSAT_SCENE_ID",2])==1 # NEW if TRUE
     
