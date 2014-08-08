@@ -140,7 +140,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 	return(result)
 }
 
-modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), ouput_projection="SIN", resampling_type="NEAREST_NEIGHBOR", OPP="6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0",options=vector(),...){
+modis.hdf2tif <- function(hdffile, outdir=getwd(), MRT_HOME=Sys.getenv("MRT_HOME"), rm.hdf=FALSE, res.files=TRUE, spectral_subset=c(1,1,1,1,0,1,1,0,0,0,0,1,0), output_projection="SIN", resampling_type="NEAREST_NEIGHBOR", OPP="6371007.181 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0",options=vector(),...){
 	
 	success <- FALSE
 	
