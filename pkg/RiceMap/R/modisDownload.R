@@ -25,7 +25,16 @@ modis.integrity <- function(localfile, xml){
 	return(cksum==chk)
 }
 
-modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="MOD09A1", savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/MOLT/", dl.mode=dl.smart, checkurl=TRUE, integrity=TRUE, skip.exists=TRUE, verbose=TRUE, ...){
+modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5, savedir=getwd(), modis.site="http://e4ftl01.cr.usgs.gov/", dl.mode=dl.smart, checkurl=TRUE, integrity=TRUE, skip.exists=TRUE, verbose=TRUE, ...){
+	modprods <- read.csv(system.file("modis.products.ref.csv", package="RiceMap"), stringsAsFactors=FALSE)
+	prod.info <- modprods[grep(product,modprods$ShortName),]
+	modis.site <- paste(modis.site,"MO", switch(prod.info$Platform,Aqua="LA",Terra="LT",Combined="TA"),"/",sep="")
+	
+	message("Determining correct product URL...")
+	modis.page <- unlist(strsplit(getURL(modis.site, dirlistonly=TRUE),"\n"))
+	modis.page <- modis.page[grep(paste(product,sprintf(paste("%03d",sep=""),prod.ver),sep="."),modis.page)]
+	link.st <- regexpr(paste(">",product,".*./",sep=""), modis.page)
+	link.en <- regexpr("</a>", modis.page)
 	
 	#Initialize required objects
 	if (!force.directories(savedir,recursive=TRUE)){ # Ensure the path exists on disk
@@ -48,7 +57,25 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 	
 	for (i in 1:length(years)){
 		# Generate ACQDATE based on year and doy
-		acqdates <- format(as.Date(paste(years[i], doy), "%Y %j"), "%Y.%m.%d")
+		if(is.null(doy)){
+			tim.gran <- paste("t",gsub(" ", "", prod.info$Temporal.Granularity),sep="")
+			acqdates <- switch(tim.gran,
+					t4day=format(as.Date(paste(years[i],seq(from=1,to=365, by=4)), "%Y %j"), "%Y.%m.%d"), 
+					t8day=format(as.Date(paste(years[i],seq(from=1,to=365, by=8)), "%Y %j"), "%Y.%m.%d"), 
+					t16day=format(as.Date(paste(years[i],ifelse(rep(prod.info$Platform,23)=="Aqua",seq(from=9,to=365, by=16),seq(from=1,to=365, by=16))), "%Y %j"), "%Y.%m.%d"), 
+					tYearly=format(as.Date(paste(years[i], 1), "%Y %j"), "%Y.%m.%d"),
+					tmonthly=format(as.Date(paste(years[i], 1:12,1), "%Y %m %d"), "%Y.%m.%d"),
+					tdaily=format(as.Date(paste(years[i], 1:365), "%Y %j"), "%Y.%m.%d"), NA
+			)		
+			
+		} else {
+			acqdates <- format(as.Date(paste(years[i], doy), "%Y %j"), "%Y.%m.%d")	
+		}	
+		
+		if(sum(is.na(acqdates))>0){
+			stop("Unsupported product ", product,". Kindly contact the developer.")
+		}
+		
 		#subfolders <- as.Date(validFolders()[1], "%Y.%m.%d")
 		
 		for (j in 1:length(acqdates)){
@@ -57,7 +84,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 				next
 			}
 			
-			product.site <- paste(modis.site, product, ".005", "/", acqdates[j], "/", sep="") # MODIS FTP URL for specified product
+			product.site <- paste(modis.site, substr(modis.page, link.st[1]+1,link.en-1), acqdates[j], "/", sep="") # MODIS FTP URL for specified product
 						
 			if (checkurl){
 				if (verbose) message("Checking if ", acqdates[j], " is available in ", dirname(product.site), appendLF=TRUE)
@@ -105,6 +132,9 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 							result <- c(result,paste(savedir,hdffile,sep="/"))
 							next
 						} else {
+							#if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
+							#hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
+							
 							message("FAILED. Removing old file.", appendLF=TRUE)
 							unlink(paste(savedir,hdffile, sep="/")) 
 						}
@@ -116,7 +146,7 @@ modis.download <- function(tile, years, doy=seq(from=1,to=365, by=8), product="M
 					
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
-					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='wb',quiet=!verbose)
+					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='ab',quiet=!verbose)
 					
 					# check integrity
 					if (integrity){

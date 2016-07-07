@@ -1,0 +1,69 @@
+ShortName,Platform,MODISDataProduct,Raster type,Res,Temporal Granularity
+MCD12C1,Combined,Land Cover Type,CMG,5600,Yearly
+MCD12Q1,Combined,Land Cover Type,Tile,500,Yearly
+MCD12Q2,Combined,Land Cover Dynamics,Tile,500,Yearly
+MCD15A2,Combined,Leaf Area Index - FPAR,Tile,1000,8 day
+MCD15A3,Combined,Leaf Area Index - FPAR,Tile,1000,4 day
+MCD43A1,Combined,BRDF-Albedo Model Parameters,Tile,500,16 day
+MCD43A2,Combined,BRDF-Albedo Quality,Tile,500,16 day
+MCD43A3,Combined,Albedo,Tile,500,16 day
+MCD43A4,Combined,Nadir BRDF-Adjusted Reflectance,Tile,500,16 day
+MCD43B1,Combined,BRDF-Albedo Model Parameters,Tile,1000,16 day
+MCD43B2,Combined,BRDF-Albedo Quality,Tile,1000,16 day
+MCD43B3,Combined,Albedo,Tile,1000,16 day
+MCD43B4,Combined,Nadir BRDF-Adjusted Reflectance,Tile,1000,16 day
+MCD43C1,Combined,BRDF-Albedo Model Parameters,CMG,5600,16 day
+MCD43C2,Combined,BRDF-Albedo Snow-free Quality,CMG,5600,16 day
+MCD43C3,Combined,Albedo,CMG,5600,16 day
+MCD43C4,Combined,Nadir BRDF-Adjusted Reflectance,CMG,5600,16 day
+MCD45A1,Combined,Thermal Anomalies & Fire,Tile,500,Monthly
+MOD09A1,Terra,Surface Reflectance Bands 1–7,Tile,500,8 day
+MOD09CMG,Terra,Surface Reflectance Bands 1–7,CMG,5600,Daily
+MOD09GA,Terra,Surface Reflectance Bands 1–7,Tile,500,Daily
+MOD09GQ,Terra,Surface Reflectance Bands 1–2,Tile,250,Daily
+MOD09Q1,Terra,Surface Reflectance Bands 1–2,Tile,250,8 day
+MOD11A1,Terra,Land Surface Temperature & Emissivity,Tile,1000,Daily
+MOD11A2,Terra,Land Surface Temperature & Emissivity,Tile,1000,8 day
+MOD11B1,Terra,Land Surface Temperature & Emissivity,Tile,5600,Daily
+MOD11C1,Terra,Land Surface Temperature & Emissivity,CMG,5600,Daily
+MOD11C2,Terra,Land Surface Temperature & Emissivity,CMG,5600,8 day
+MOD11C3,Terra,Land Surface Temperature & Emissivity,CMG,5600,Monthly
+MOD11_L2,Terra,Land Surface Temperature & Emissivity,Swath,1000,5 min
+MOD13A1,Terra,Vegetation Indices,Tile,500,16 day
+MOD13A2,Terra,Vegetation Indices,Tile,1000,16 day
+MOD13A3,Terra,Vegetation Indices,Tile,1000,Monthly
+MOD13C1,Terra,Vegetation Indices,CMG,5600,16 day
+MOD13C2,Terra,Vegetation Indices,CMG,5600,Monthly
+MOD13Q1,Terra,Vegetation Indices,Tile,250,16 day
+MOD14,Terra,Thermal Anomalies & Fire,Swath,1000,5 min
+MOD14A1,Terra,Thermal Anomalies & Fire,Tile,1000,Daily
+MOD14A2,Terra,Thermal Anomalies & Fire,Tile,1000,8 day
+MOD15A2,Terra,Leaf Area Index - FPAR,Tile,1000,8 day
+MOD17A2,Terra,Gross Primary Productivity,Tile,1000,8 day
+MOD17A3,Terra,Net Primary Productivity,Tile,1000,Yearly
+MOD44A,Terra,Vegetation Continuous Cover,Tile,250,96 day
+MOD44B,Terra,Vegetation Continuous Fields,Tile,250,Yearly
+MOD44W,Terra,Land Water Mask Derived,Tile,250,None
+MYD09A1,Aqua,Surface Reflectance Bands 1–7,Tile,500,8 day
+MYD09CMG,Aqua,Surface Reflectance Bands 1–7,CMG,5600,Daily
+MYD09GA,Aqua,Surface Reflectance Bands 1–7,Tile,500,Daily
+MYD09GQ,Aqua,Surface Reflectance Bands 1–2,Tile,250,Daily
+MYD09Q1,Aqua,Surface Reflectance Bands 1–2,Tile,250,8 day
+MYD11A1,Aqua,Land Surface Temperature & Emissivity,Tile,1000,Daily
+MYD11A2,Aqua,Land Surface Temperature & Emissivity,Tile,1000,8 day
+MYD11B1,Aqua,Land Surface Temperature & Emissivity,Tile,5600,Daily
+MYD11C1,Aqua,Land Surface Temperature & Emissivity,CMG,5600,Daily
+MYD11C2,Aqua,Land Surface Temperature & Emissivity,CMG,5600,8 day
+MYD11C3,Aqua,Land Surface Temperature & Emissivity,CMG,5600,Monthly
+MYD11_L2,Aqua,Land Surface Temperature & Emissivity,Swath,1000,5 min
+MYD13A1,Aqua,Vegetation Indices,Tile,500,16 day
+MYD13A2,Aqua,Vegetation Indices,Tile,1000,16 day
+MYD13A3,Aqua,Vegetation Indices,Tile,1000,Monthly
+MYD13C1,Aqua,Vegetation Indices,CMG,5600,16 day
+MYD13C2,Aqua,Vegetation Indices,CMG,5600,Monthly
+MYD13Q1,Aqua,Vegetation Indices,Tile,250,16 day
+MYD14,Aqua,Thermal Anomalies & Fire,Swath,1000,5 min
+MYD14A1,Aqua,Thermal Anomalies & Fire,Tile,1000,Daily
+MYD14A2,Aqua,Thermal Anomalies & Fire,Tile,1000,8 day
+MYD15A2,Aqua,Leaf Area Index - FPAR,Tile,1000,8 day
+MYD17A2,Aqua,Gross Primary Productivity,Tile,1000,8 day
