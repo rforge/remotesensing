@@ -8,8 +8,8 @@ dl.smart <- 1
 dl.renew <- 2
 
 modis.integrity <- function(localfile, xml){
-	cksumver <- try(system("cksum --version", intern=TRUE), silent=TRUE)	
-	if (class(cksumver)=="try-error"){
+	cksumver <- Sys.which("cksum")	
+	if (cksumver==""){
 		cksum <- file.info(localfile)$size
 		chk <- xml[grep("FileSize>",xml)]
 		idx <- unlist(gregexpr("[[:digit:]]", chk))
@@ -31,7 +31,7 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 	modis.site <- paste(modis.site,"MO", switch(prod.info$Platform,Aqua="LA",Terra="LT",Combined="TA"),"/",sep="")
 	
 	message("Determining correct product URL...")
-	modis.page <- unlist(strsplit(getURL(modis.site, dirlistonly=TRUE),"\n"))
+	modis.page <- unlist(strsplit(getURL(modis.site, dirlistonly=TRUE, ...),"\n"))
 	modis.page <- modis.page[grep(paste(product,sprintf(paste("%03d",sep=""),prod.ver),sep="."),modis.page)]
 	link.st <- regexpr(paste(">",product,".*./",sep=""), modis.page)
 	link.en <- regexpr("</a>", modis.page)
@@ -57,7 +57,7 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 	
 	for (i in 1:length(years)){
 		# Generate ACQDATE based on year and doy
-		if(is.null(doy)){
+		if(is.null(doy)|is.na(doy)){
 			tim.gran <- paste("t",gsub(" ", "", prod.info$Temporal.Granularity),sep="")
 			acqdates <- switch(tim.gran,
 					t4day=format(as.Date(paste(years[i],seq(from=1,to=365, by=4)), "%Y %j"), "%Y.%m.%d"), 
@@ -96,7 +96,7 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 			if (verbose) message("Acquiring file list in ", product.site, appendLF=TRUE)		
 			
 			# get list of files in product.site 
-			files <- getURL(product.site, .opts=curlOptions(ftplistonly=TRUE))	
+			files <- getURL(product.site, dirlistonly=TRUE)	
 			# parse list by line
 			files <- unlist(strsplit(files,"\n")) 
 			
@@ -111,8 +111,11 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 					hdffile <- substr(tilefiles[1], regexpr(product,tilefiles[1]), regexpr("hdf",tilefiles[1])+2)
 					xmlfile <- substr(tilefiles[2], regexpr(product,tilefiles[2]), regexpr("xml",tilefiles[2])+2)
 					
-					if (integrity) xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
-					
+					if (integrity) {
+					  download.file(paste(product.site, xmlfile, sep=""), destfile=xmlfile, quiet=!verbose, ...)
+					  xml <- readLines(xmlfile)
+					  #xml <- unlist(strsplit(getURL(paste(product.site, xmlfile, sep="")),"\n"))
+					}
 					if (file.exists(paste(savedir,hdffile, sep="/")) & skip.exists) {
 						if (verbose) message(hdffile, " exists locally.", appendLF=TRUE)
 						result <- c(result,paste(savedir,hdffile,sep="/"))
@@ -146,7 +149,7 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 					
 					# File not yet downloaded - attempt to get it!
 					if (verbose) message("Downloading ", product.site, hdffile, appendLF=TRUE)		
-					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), method='internal', mode='ab',quiet=!verbose)
+					hdf <- download.file(paste(product.site, hdffile, sep=""), destfile=paste(savedir,hdffile, sep="/"), quiet=!verbose, ...)
 					
 					# check integrity
 					if (integrity){
