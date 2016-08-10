@@ -31,7 +31,7 @@ modis.download <- function(tile, years, doy=NULL, product="MOD09A1", prod.ver=5,
 	modis.site <- paste(modis.site,"MO", switch(prod.info$Platform,Aqua="LA",Terra="LT",Combined="TA"),"/",sep="")
 	
 	message("Determining correct product URL...")
-	modis.page <- unlist(strsplit(getURL(modis.site, dirlistonly=TRUE, ...),"\n"))
+	modis.page <- unlist(strsplit(getURL(modis.site, dirlistonly=TRUE),"\n"))
 	modis.page <- modis.page[grep(paste(product,sprintf(paste("%03d",sep=""),prod.ver),sep="."),modis.page)]
 	link.st <- regexpr(paste(">",product,".*./",sep=""), modis.page)
 	link.en <- regexpr("</a>", modis.page)
