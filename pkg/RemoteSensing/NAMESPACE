@@ -1,4 +1,6 @@
 import(raster)
+import(bitops)
 import(methods)
+importFrom("utils", "download.file")
 exportClasses(Landsat)
 exportPattern("^[^\\.]")
