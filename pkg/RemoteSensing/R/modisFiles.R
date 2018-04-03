@@ -3,12 +3,12 @@
 # Version 0.2
 # Licence GPL v3
 
-modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'version', 'proddate', 'band'), format="GTiff",...) {
+modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'version', 'proddate', 'band'), file.ext="tif",...) {
     
     mfiles <- dir(...)    
-    mfiles <- mfiles[grep(paste(formatExt(format),"$",sep=""),mfiles)]
+    mfiles <- mfiles[grep(paste(file.ext,"$",sep=""),mfiles)]
 	if (length(mfiles)<1) {
-		message("No files found matching ", formatExt(format))
+		message("No files found matching ", file.ext)
 		return(vector())
 	}
 	
@@ -16,7 +16,7 @@ modisFiles <- function(sep="\\.", modisinfo=c('product', 'acqdate', 'zone', 'ver
 	info <- basename(mfiles)
 	
 	# Remove Extension
-	info <- gsub(paste(".", formatExt(format),sep=""),"",info)
+	info <- gsub(paste(".", file.ext ,sep=""),"",info)
 	
 	x <- unlist(strsplit(info, sep))
 	m <- data.frame(matrix(x, ncol=length(modisinfo), byrow=TRUE), stringsAsFactors=FALSE)

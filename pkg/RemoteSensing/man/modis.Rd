@@ -10,19 +10,22 @@ Get a table with parsed Modis files
 }
 
 \usage{
-modisFiles(path)
+modisFiles(sep, modisinfo, file.ext, ...)
 }
 
 
 \arguments{
-  \item{path}{ path (folder) where the files are}
+  \item{sep}{ symbol separating information to be extracted from the filenames. default is period (".")}
+  \item{modisinfo}{ a vector of chacter strings }
+  \item{file.ext}{ File extension name of file for filtering(default: "tif")}
+  \item{...}{ arguments from dir/list.files }
 }
   
 \value{
 data.frame
 }
 
-\author{ Robert Hijmans and Sonia Asilo }
+\author{ Robert Hijmans, Sonia Asilo, Jorrel Khalil Aunario }
 
-\keyword{ spatial }
+\keyword{ spatial, modis }
 

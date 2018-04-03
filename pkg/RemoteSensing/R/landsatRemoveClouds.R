@@ -11,7 +11,7 @@ removeClouds <- function (x, filename='', ...) {
 
 
 	cloudMask <- .cloudMask(x)
-	nocloudM <- reclass(cloudMask, c(NA,NA,1))
+	nocloudM <- reclassify(cloudMask, c(NA,NA,1))
 	y <- mask(x, nocloudM)
 	x@layers <- stack(y)@layers
  	return(x)
@@ -214,7 +214,7 @@ removeClouds <- function (x, filename='', ...) {
 	#majority analysis on 0 values in cloudMask
 	maj <- focal(cloudMask, fun=modal, ngb=3, keepdata=TRUE)
 	cloudMask <- overlay(cloudMask, maj, fun=sum)
-	cloudMask <- reclass(cloudMask, c(-Inf,0,FALSE, 0, Inf, TRUE))
+	cloudMask <- reclassify(cloudMask, c(-Inf,0,FALSE, 0, Inf, TRUE))
 	#cloudMask <- (cloudMask + maj) > 0
 	
 	return(cloudMask)
