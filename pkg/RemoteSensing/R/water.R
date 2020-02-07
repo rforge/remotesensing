@@ -3,10 +3,12 @@
 # License GPL3
 # Version 2, March 2009
 
-
+.normalized_index <- function(x1, x2){
+	return((x1-x2)/(x1+x2))
+}
 nddi <- function(ndvi, ndwi) {
 # NDDI: Normalized Difference Drought Index {
-	result<- (ndvi - ndwi) / (ndvi + ndwi)
+	result<- .normalized_index(ndvi, ndwi)
 	result[is.infinite(result)] <- NA
 	result[result < 0] <- 0
 	result[result > 2] <- 2
@@ -20,19 +22,31 @@ drought <- function(ndvi, ndwi) {
 	return(!res)
 }
 
-ndwi <- function(nir, swir2) {
+ndwi <- function(green, nir) {
 # NDWI: Normalized Difference Water Index
-	result<- (nir - swir2) / (nir + swir2)
+# Stuart McFeeters. 1996. The Use of Normalized Difference Water Index in the Delination of
+#	Open Water Features. International Journal of Remote Sensing 27(14):3025-3033
+	result<- .normalized_index(green, nir)
 	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
 	result[result > 1] <- 1
 	return(result)
 }
 
+mndwi <- function(green, swir) {
+# MNDWI: Modified Normalized Difference Water Index
+# Hanqui XU. 2006. Modification of Normalized Difference Water Index to Enhance Open Water
+#	Features om Remotely Sensed Imagery. International Journal of Remote Sensing 17(7):1425-1432
+	result<- .normalized_index(green,swir)
+	result[is.infinite(result)] <- NA
+	result[result < -1] <- -1
+	result[result > 1] <- 1
+	return(result)
+}
 
 lswi<-function(nir, swir) {
  #LSWI: Land Surface Water Index
-	result <- (nir - swir) / (nir + swir)
+	result <- .normalized_index(nir , swir)
 	result[is.infinite(result)] <- NA
 	result[result < -1] <- -1
 	result[result > 1] <- 1
@@ -56,7 +70,6 @@ waterModis<-function(ndvi, band7) {
  #Prototyping a global algorithm for systematic fire-affected
  #area mapping using MODIS time series data. 
  #Remote Sensing of Environment 97:137-162.
- 
 	result<- ndvi * band7
 	return( (ndvi < 0.1) & (band7 < 0.04) )	
 	

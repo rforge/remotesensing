@@ -2,6 +2,7 @@
 
 \alias{nddi}
 \alias{ndwi}
+\alias{mndwi}
 \alias{drought}
 \alias{lswi}
 \alias{water}
@@ -15,8 +16,9 @@
 }
 
 \usage{
-ndwi(nir, swir2) 
+ndwi(green, nir) 
 nddi(ndvi, ndwi)
+mndwi(green, swir) 
 drought(ndvi, ndwi)
 lswi(nir, swir) 
 water(ndvi, albedo) 
@@ -24,9 +26,9 @@ waterModis(ndvi, band7)
 }
 
 \arguments{
+  \item{green}{ Value of the \code{GREEN} satellite band }
   \item{nir}{ Value of the \code{NIR} satellite band }
   \item{swir}{ Value of the \code{SWIR} satellite band }
-  \item{swir2}{ Value of the \code{SWIR2} satellite band }
   \item{ndvi}{ NDVI values }
   \item{ndwi}{ NDWI values }
   \item{band7}{ MODIS \code{Band7} satellite band values}
